@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Курс Essential — UEFN с нуля</title>
+  <meta name="description" content="Обучение UEFN — ваш курс Essential." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       NAV (logged-in variant)
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%; overflow: hidden;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; line-height: 1; color: #fff; white-space: nowrap;
+    }
+    .nav__links {
+      display: flex; align-items: center;
+      gap: clamp(12px,1.8vw,26px); margin-inline: auto;
+    }
+    .nav__links a {
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 400;
+      color: #fff; white-space: nowrap; transition: opacity .2s;
+    }
+    .nav__links a:hover { opacity: 0.65; }
+    .nav__auth { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .nav__plan-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(1,102,195,.20) 0%, rgba(59,207,254,.20) 100%);
+      border: 1px solid rgba(59,207,254,.18);
+      border-radius: 100px; padding: 10px 22px;
+      white-space: nowrap; cursor: default;
+    }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .2s;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: var(--r-sm);
+      margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px); display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 600; color: var(--c-muted);
+      padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a {
+      width: 100%; padding: 14px; font-size: 15px;
+      box-sizing: border-box; text-align: center; justify-content: center;
+    }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; }
+      .nav__auth { display: none; }
+      .nav__burger { display: flex; }
+      .nav__avatar-mobile { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) {
+      .nav__logo-text { font-size: 11px; }
+      .nav__burger { width: 36px; height: 36px; }
+    }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main {
+      flex: 1;
+      padding-top: calc(var(--nav-h) + clamp(32px, 4vw, 56px));
+      padding-bottom: clamp(64px, 8vw, 100px);
+    }
+    .page-wrap {
+      max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px);
+    }
+
+    /* ═══════════════════════════════════
+       1. COURSE HEADER
+    ═══════════════════════════════════ */
+    .course-header {
+      margin-bottom: clamp(28px, 3.5vw, 48px);
+    }
+    .course-header__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(26px, 3.5vw, 52px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════
+       PROGRESS BAR
+    ═══════════════════════════════════ */
+    .course-progress {
+      margin-top: clamp(16px, 2vw, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .course-progress__meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .course-progress__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 500;
+      color: var(--c-muted);
+    }
+    .course-progress__pct {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 700;
+      color: var(--c-cyan);
+    }
+    .course-progress__last {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px, .8vw, 12px);
+      font-weight: 400;
+      color: var(--c-dim);
+    }
+    .course-progress__track {
+      width: 100%;
+      height: 6px;
+      border-radius: 100px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+    }
+    .course-progress__fill {
+      height: 100%;
+      border-radius: 100px;
+      background: var(--g-accent);
+      transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ═══════════════════════════════════
+       2. LESSON NAVIGATION
+    ═══════════════════════════════════ */
+    .lesson-nav-wrap {
+      margin-bottom: clamp(36px, 5vw, 64px);
+      /*
+        overflow-x: clip — clips horizontal overflow WITHOUT establishing a scroll
+        container, so overflow-y stays truly visible and the active card's
+        box-shadow glow is NOT clipped top/bottom.
+      */
+      overflow-x: clip;
+      overflow-y: visible;
+      scrollbar-width: none;
+      margin-inline: calc(-1 * var(--px));
+      /* generous vertical padding so glow + translateY never touch the edge */
+      padding: 24px var(--px) 20px;
+    }
+    .lesson-nav-wrap::-webkit-scrollbar { display: none; }
+
+    .lesson-nav {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: clamp(8px, 1vw, 14px);
+      min-width: 720px; /* prevents cards from collapsing too small before scroll kicks in */
+    }
+
+    /* Base card */
+    .lcard {
+      position: relative;
+      border-radius: clamp(18px, 1.8vw, 26px);
+      padding: clamp(16px, 1.6vw, 22px) clamp(14px, 1.4vw, 20px);
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      gap: clamp(20px, 2.5vw, 36px);
+      min-height: clamp(140px, 15vw, 200px);
+      transition: transform .2s, box-shadow .2s;
+      overflow: hidden;
+    }
+    .lcard:hover { transform: translateY(-3px); z-index: 2; }
+
+    /* ── 1. Done — subdued dark-navy gradient, NOT overly bright ── */
+    .lcard--done {
+      background: linear-gradient(165deg, #1c3360 0%, #162c52 50%, #112044 100%);
+      border: 1px solid rgba(59,207,254,.15);
+    }
+    .lcard--done:hover { box-shadow: 0 10px 32px rgba(1,60,160,.38); }
+
+    /* ── 2. Active / current — near-transparent bg + solid cyan border + glow ── */
+    .lcard--active {
+      background: rgba(15, 22, 36, 0.75);
+      border: 1.5px solid rgba(59,207,254,.80);
+      box-shadow: 0 0 0 4px rgba(59,207,254,.07), 0 0 28px rgba(59,207,254,.28);
+      overflow: visible; /* let the glow breathe */
+    }
+    .lcard--active:hover {
+      box-shadow: 0 0 0 5px rgba(59,207,254,.10), 0 0 36px rgba(59,207,254,.38);
+    }
+
+    /* ── 3. Future / upcoming — ghost style, no icons, no disabled look ── */
+    .lcard--future {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.09);
+      cursor: pointer;
+    }
+    .lcard--future:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 24px rgba(0,0,0,.25);
+      border-color: rgba(255,255,255,.15);
+    }
+
+    /* Card number label */
+    .lcard__num {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(10px, .85vw, 13px);
+      font-weight: 400;
+      line-height: 1;
+    }
+    .lcard--done   .lcard__num { color: rgba(255,255,255,.60); }
+    .lcard--active .lcard__num { color: var(--c-cyan); }
+    .lcard--future .lcard__num { color: rgba(255,255,255,.32); }
+
+    /* Card title */
+    .lcard__title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px, .95vw, 14px);
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .lcard--done   .lcard__title { color: #fff; }
+    .lcard--active .lcard__title { color: #fff; }
+    .lcard--future .lcard__title { color: rgba(255,255,255,.38); }
+
+    /* Done checkmark badge (top-right) */
+    .lcard__check {
+      position: absolute;
+      top: clamp(10px, 1vw, 14px);
+      right: clamp(10px, 1vw, 14px);
+      width: clamp(22px, 2.2vw, 28px);
+      height: clamp(22px, 2.2vw, 28px);
+      border-radius: 50%;
+      background: rgba(59,207,254,.15);
+      border: 1.5px solid rgba(59,207,254,.50);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .lcard__check svg {
+      width: clamp(10px, 1vw, 13px);
+      height: clamp(10px, 1vw, 13px);
+      stroke: var(--c-cyan); fill: none;
+      stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    /* Active dot indicator */
+    .lcard__active-dot {
+      position: absolute;
+      top: clamp(10px, 1vw, 14px);
+      right: clamp(10px, 1vw, 14px);
+      width: clamp(8px, .7vw, 10px);
+      height: clamp(8px, .7vw, 10px);
+      border-radius: 50%;
+      background: var(--c-cyan);
+      box-shadow: 0 0 8px var(--c-cyan);
+    }
+
+    /* ═══════════════════════════════════
+       3. LESSON CONTENT (2-col)
+    ═══════════════════════════════════ */
+    .lesson-content {
+      display: grid;
+      grid-template-columns: 5fr 8fr;
+      gap: clamp(32px, 5vw, 80px);
+      align-items: start;
+    }
+
+    /* ── Left: lesson info ── */
+    .lesson-info {}
+
+    .lesson-info__num {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 400;
+      color: var(--c-cyan);
+      margin-bottom: clamp(8px, .8vw, 12px);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .lesson-info__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(20px, 2.2vw, 32px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+      color: #fff;
+      margin-bottom: clamp(24px, 3vw, 40px);
+    }
+
+    .lesson-topics {
+      display: flex; flex-direction: column;
+      gap: clamp(14px, 1.5vw, 20px);
+    }
+
+    .lesson-topic {
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+
+    .lesson-topic__icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lesson-topic__icon svg {
+      width: 16px; height: 16px;
+      stroke: var(--c-cyan); fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+
+    .lesson-topic__text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px, 1vw, 15px);
+      font-weight: 400;
+      color: var(--c-muted);
+      line-height: 1.55;
+    }
+
+    /* ── Right: videos ── */
+    .lesson-videos {
+      display: flex; flex-direction: column;
+      gap: clamp(20px, 2.5vw, 32px);
+      min-width: 0;
+    }
+
+    .video-card {
+      border-radius: clamp(16px, 1.5vw, 24px);
+      overflow: hidden;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      transition: border-color .2s, transform .2s;
+      cursor: pointer;
+    }
+    .video-card:hover {
+      border-color: rgba(255,255,255,.14);
+      transform: translateY(-2px);
+    }
+
+    /* Thumbnail */
+    .video-card__thumb {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: linear-gradient(165deg, #0d2340 0%, #091828 40%, #060e18 100%);
+    }
+
+    /* Landscape scene drawn with CSS gradients */
+    .video-card__thumb::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 70% 60%, rgba(1,60,130,.55) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(0,30,80,.70) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(10,30,60,.30) 0%, rgba(5,15,35,.80) 100%);
+    }
+    /* Silhouette mountains */
+    .video-card__thumb::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 45%;
+      background: linear-gradient(180deg, transparent 0%, rgba(4,12,24,.90) 100%);
+    }
+
+    .video-card__thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+
+    /* Play button overlay */
+    .video-card__play {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    .video-card__play-btn {
+      width: clamp(44px, 4vw, 64px);
+      height: clamp(44px, 4vw, 64px);
+      border-radius: 50%;
+      background: rgba(255,255,255,.13);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid rgba(255,255,255,.22);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .2s;
+    }
+    .video-card:hover .video-card__play-btn {
+      background: rgba(59,207,254,.20);
+      border-color: rgba(59,207,254,.45);
+      transform: scale(1.08);
+    }
+    .video-card__play-btn svg {
+      width: clamp(14px, 1.4vw, 20px);
+      height: clamp(14px, 1.4vw, 20px);
+      fill: #fff; margin-left: 2px;
+    }
+
+    /* Current lesson badge on active video */
+    .video-card__badge {
+      position: absolute;
+      top: clamp(10px, 1vw, 14px);
+      left: clamp(10px, 1vw, 14px);
+      z-index: 3;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600;
+      color: #fff;
+      background: var(--g-accent);
+      border-radius: 100px;
+      padding: 4px 10px;
+      letter-spacing: .02em;
+    }
+
+    /* Video card body */
+    .video-card__body {
+      padding: clamp(16px, 1.6vw, 24px) clamp(18px, 1.8vw, 28px) clamp(18px, 1.8vw, 28px);
+    }
+
+    .video-card__title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 17px);
+      font-weight: 700; color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .video-card__desc {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 400;
+      color: var(--c-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Divider between main video block and "also in module" ── */
+    .lesson-videos__more-label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px, .85vw, 13px);
+      font-weight: 600;
+      color: var(--c-dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding-top: clamp(4px, .5vw, 8px);
+      border-top: 1px solid var(--c-border);
+      margin-bottom: calc(-1 * clamp(6px, .8vw, 12px));
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1000px) {
+      .lesson-content { grid-template-columns: 1fr; gap: clamp(32px, 4vw, 48px); }
+    }
+
+    @media (max-width: 700px) {
+      /* ── Wrapper: настоящий горизонтальный скролл ── */
+      .lesson-nav-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        /* Убираем горизонтальный padding с враппера —
+           padding-inline на самом flex-контейнере ниже надёжнее для scroll */
+        padding-block: 28px 24px;
+        padding-inline: 0;
+      }
+
+      /* ── Grid → Flex: карточки в один ряд ── */
+      .lesson-nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 12px;
+        min-width: unset;
+        width: max-content;
+        /* padding на flex-контейнере гарантирует левый отступ ≡ странице,
+           и работает корректно в Chrome, Firefox и Safari */
+        padding-inline-start: var(--px);
+        padding-inline-end: var(--px);
+      }
+
+      /* ── Квадратные карточки фиксированного размера ── */
+      .lcard {
+        flex: 0 0 158px;           /* не сжимать, не растягивать */
+        width: 158px;
+        height: 158px;
+        min-height: unset;
+        padding: 14px;
+        gap: 0;
+        border-radius: 20px;
+        scroll-snap-align: start;
+      }
+
+      /* Немного уменьшить шрифты внутри квадратных карточек */
+      .lcard__num   { font-size: 11px; }
+      .lcard__title { font-size: 12px; line-height: 1.35; }
+
+      /* Значок галочки/точки чуть меньше */
+      .lcard__check {
+        width: 22px; height: 22px;
+        top: 12px; right: 12px;
+      }
+      .lcard__active-dot {
+        width: 8px; height: 8px;
+        top: 12px; right: 12px;
+      }
+    }
+
+    /* Ещё немного меньше на совсем узких экранах */
+    @media (max-width: 400px) {
+      .lcard {
+        flex: 0 0 144px;
+        width: 144px;
+        height: 144px;
+      }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px, 6vw, 80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px, 2.5vw, 32px); }
+    .footer__grid {
+      display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto;
+      column-gap: clamp(32px, 5vw, 80px); row-gap: 0; align-items: start;
+    }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px, 3vw, 48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px, 2vw, 32px); padding: clamp(14px, 2.3vw, 26px) clamp(16px, 1.8vw, 28px); width: clamp(200px, 16.25vw, 303px); height: clamp(64px, 5.75vw, 96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px, 2.4vw, 46px); text-decoration: none; transition: background .2s, border-color .2s; cursor: pointer; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px, 3vw, 40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px, 8vw, 48px); justify-self: stretch; align-self: auto; margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; grid-column: unset; grid-row: unset; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+      .footer__legal a { font-size: 12px; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__plan-badge" id="js-nav-plan">Essential</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </a>
+  </div>
+</header>
+
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <div class="drawer-btns">
+    <a href="profile.html" class="nav__plan-badge">Essential</a>
+  </div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+  <div class="page-wrap">
+
+    <!-- 1. HEADER -->
+    <section class="course-header">
+      <h1 class="course-header__title">Курс Essential</h1>
+      <div class="course-progress">
+        <div class="course-progress__meta">
+          <span class="course-progress__label">Прогресс курса</span>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <span class="course-progress__last" id="js-progress-last"></span>
+            <span class="course-progress__pct" id="js-progress-pct">0%</span>
+          </div>
+        </div>
+        <div class="course-progress__track">
+          <div class="course-progress__fill" id="js-progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LESSON NAVIGATION -->
+    <div class="lesson-nav-wrap">
+      <div class="lesson-nav">
+
+        <!-- Lesson 1 — done -->
+        <div class="lcard lcard--done" onclick="selectLesson(1)" data-lesson="1">
+          <span class="lcard__num">1 занятие</span>
+          <p class="lcard__title">Старт: установка и знакомство с UEFN</p>
+          <span class="lcard__check" aria-label="Завершено">
+            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+          </span>
+        </div>
+
+        <!-- Lesson 2 — done -->
+        <div class="lcard lcard--done" onclick="selectLesson(2)" data-lesson="2">
+          <span class="lcard__num">2 занятие</span>
+          <p class="lcard__title">Первая карта без кода</p>
+          <span class="lcard__check" aria-label="Завершено">
+            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+          </span>
+        </div>
+
+        <!-- Lesson 3 — done -->
+        <div class="lcard lcard--done" onclick="selectLesson(3)" data-lesson="3">
+          <span class="lcard__num">3 занятие</span>
+          <p class="lcard__title">Оформление карты: готовые модели</p>
+          <span class="lcard__check" aria-label="Завершено">
+            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+          </span>
+        </div>
+
+        <!-- Lesson 4 — active -->
+        <div class="lcard lcard--active" onclick="selectLesson(4)" data-lesson="4">
+          <span class="lcard__num">4 занятие</span>
+          <p class="lcard__title">Код на Verse: первые шаги</p>
+          <span class="lcard__active-dot" aria-label="Текущий урок"></span>
+        </div>
+
+        <!-- Lesson 5 — future -->
+        <div class="lcard lcard--future" onclick="selectLesson(5)" data-lesson="5">
+          <span class="lcard__num">5 занятие</span>
+          <p class="lcard__title">Тестируем с друзьями и готовим релиз</p>
+        </div>
+
+        <!-- Lesson 6 — future -->
+        <div class="lcard lcard--future" onclick="selectLesson(6)" data-lesson="6">
+          <span class="lcard__num">6 занятие</span>
+          <p class="lcard__title">Публикация, продвижение и первые метрики</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. LESSON CONTENT -->
+    <div class="lesson-content">
+
+      <!-- Left: info + topics -->
+      <div class="lesson-info">
+        <p class="lesson-info__num" id="js-lesson-num">4 занятие</p>
+        <h2 class="lesson-info__title" id="js-lesson-title">Код на Verse: первые шаги</h2>
+
+        <ul class="lesson-topics" id="js-lesson-topics">
+          <li class="lesson-topic">
+            <span class="lesson-topic__icon">
+              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
+            </span>
+            <span class="lesson-topic__text">Зачем нужен Verse и как «подключать» код к устройствам. Пишем первый скрипт.</span>
+          </li>
+          <li class="lesson-topic">
+            <span class="lesson-topic__icon">
+              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
+            </span>
+            <span class="lesson-topic__text">Основы программирования в Verse: переменные, условия, циклы.</span>
+          </li>
+          <li class="lesson-topic">
+            <span class="lesson-topic__icon">
+              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
+            </span>
+            <span class="lesson-topic__text">Создаём коды с помощью ИИ и учимся их правильно адаптировать.</span>
+          </li>
+          <li class="lesson-topic">
+            <span class="lesson-topic__icon">
+              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
+            </span>
+            <span class="lesson-topic__text">Как заставить карту реагировать: условия, таймеры и счётчики.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right: videos -->
+      <div class="lesson-videos">
+
+        <!-- Main video -->
+        <div class="video-card">
+          <div class="video-card__thumb">
+            <span class="video-card__badge">Текущий урок</span>
+            <div class="video-card__play">
+              <div class="video-card__play-btn">
+                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="video-card__body">
+            <h3 class="video-card__title">Код на Verse: первые шаги</h3>
+            <p class="video-card__desc">Начинаем знакомство с языком Verse — пишем первый рабочий скрипт, подключаем его к устройствам на карте и учимся отлаживать поведение прямо в редакторе.</p>
+          </div>
+        </div>
+
+        <!-- More in this module label -->
+        <p class="lesson-videos__more-label">Ещё в этом занятии</p>
+
+        <!-- Extra video 1 -->
+        <div class="video-card">
+          <div class="video-card__thumb">
+            <div class="video-card__play">
+              <div class="video-card__play-btn">
+                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="video-card__body">
+            <h3 class="video-card__title">Переменные и условия в Verse</h3>
+            <p class="video-card__desc">Разбираем синтаксис: как хранить данные, писать условия if/else и строить первую логику геймплея без готовых шаблонов.</p>
+          </div>
+        </div>
+
+        <!-- Extra video 2 -->
+        <div class="video-card">
+          <div class="video-card__thumb">
+            <div class="video-card__play">
+              <div class="video-card__play-btn">
+                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="video-card__body">
+            <h3 class="video-card__title">ИИ-помощник в разработке на Verse</h3>
+            <p class="video-card__desc">Показываем, как использовать ChatGPT и Copilot для генерации кода, и главное — как проверять и адаптировать результат под свою карту.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav" aria-label="Навигация сайта">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#partnership">Партнёрка</a>
+      </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon" aria-hidden="true">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* Nav scroll shadow */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 8);
+}, { passive: true });
+
+/* Burger */
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v;
+  burger.classList.toggle('open', v);
+  drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v));
+  document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => {
+  a.addEventListener('click', () => setDrawer(false));
+});
+
+/* ── LocalStorage progress ── */
+const LS_KEY = 'uefn_course_progress';
+const TOTAL_LESSONS = 6;
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  // Default mock state: lessons 1-3 completed, lesson 4 is current
+  return {
+    currentLesson: 4,
+    completedLessons: [1, 2, 3],
+    viewedLessons: [1, 2, 3, 4],
+    lastActivity: new Date().toISOString().slice(0, 10)
+  };
+}
+
+function saveProgress(p) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(p)); } catch(e) {}
+}
+
+let progress = loadProgress();
+// Ensure saved on first load so state persists from now on
+saveProgress(progress);
+
+function getPercent() {
+  return Math.round((progress.completedLessons.length / TOTAL_LESSONS) * 100);
+}
+
+function renderProgressBar() {
+  const pct = getPercent();
+  const barEl  = document.getElementById('js-progress-bar');
+  const pctEl  = document.getElementById('js-progress-pct');
+  const lastEl = document.getElementById('js-progress-last');
+  if (barEl)  barEl.style.width  = pct + '%';
+  if (pctEl)  pctEl.textContent  = pct + '%';
+  if (lastEl && progress.lastActivity) {
+    const d = new Date(progress.lastActivity + 'T12:00:00');
+    lastEl.textContent = 'Последняя активность: ' +
+      d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  }
+}
+
+/* ── Apply saved state to lesson cards on load ── */
+function applyProgressToCards() {
+  document.querySelectorAll('.lcard').forEach(card => {
+    const n = +card.dataset.lesson;
+    // Remove all state classes first
+    card.classList.remove('lcard--done', 'lcard--active', 'lcard--future');
+    // Remove badge elements inserted dynamically (keep original structure clean)
+    card.querySelectorAll('.lcard__check, .lcard__active-dot').forEach(el => el.remove());
+
+    if (progress.completedLessons.includes(n)) {
+      card.classList.add('lcard--done');
+      const check = document.createElement('span');
+      check.className = 'lcard__check';
+      check.setAttribute('aria-label', 'Завершено');
+      check.innerHTML = '<svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+      card.appendChild(check);
+    } else if (n === progress.currentLesson) {
+      card.classList.add('lcard--active');
+      const dot = document.createElement('span');
+      dot.className = 'lcard__active-dot';
+      dot.setAttribute('aria-label', 'Текущий урок');
+      card.appendChild(dot);
+    } else {
+      card.classList.add('lcard--future');
+    }
+  });
+}
+
+/* ── Lesson data ── */
+const LESSONS = {
+  1: {
+    num: '1 занятие',
+    title: 'Старт: установка и знакомство с UEFN',
+    topics: [
+      'Скачиваем и устанавливаем UEFN, знакомимся с интерфейсом редактора.',
+      'Создаём первый проект: выбираем шаблон и настраиваем базовые параметры.',
+      'Учимся навигировать по сцене и работать с ассетами из библиотеки Fortnite.',
+      'Публикуем тестовую карту и открываем её для себя в игре.',
+    ],
+    badge: null
+  },
+  2: {
+    num: '2 занятие',
+    title: 'Первая карта без кода',
+    topics: [
+      'Строим игровое пространство из готовых пропсов и ландшафтных инструментов.',
+      'Расставляем точки спавна, зоны и триггеры через визуальный редактор.',
+      'Настраиваем освещение и атмосферу: туман, небо, пост-эффекты.',
+      'Тестируем карту в соло и правим первые баги окружения.',
+    ],
+    badge: null
+  },
+  3: {
+    num: '3 занятие',
+    title: 'Оформление карты: готовые модели',
+    topics: [
+      'Находим и импортируем ассеты из Fab-маркетплейса напрямую в UEFN.',
+      'Расставляем декорации, настраиваем коллизии и LOD-уровни.',
+      'Работаем с материалами: меняем цвета и текстуры без знания шейдеров.',
+      'Оптимизируем сцену под лимиты памяти Fortnite Creative.',
+    ],
+    badge: null
+  },
+  4: {
+    num: '4 занятие',
+    title: 'Код на Verse: первые шаги',
+    topics: [
+      'Зачем нужен Verse и как «подключать» код к устройствам. Пишем первый скрипт.',
+      'Основы программирования в Verse: переменные, условия, циклы.',
+      'Создаём коды с помощью ИИ и учимся их правильно адаптировать.',
+      'Как заставить карту реагировать: условия, таймеры и счётчики.',
+    ],
+    badge: 'Текущий урок'
+  },
+  5: {
+    num: '5 занятие',
+    title: 'Тестируем с друзьями и готовим релиз',
+    topics: [
+      'Запускаем плейтест с друзьями: как пригласить игроков и собрать обратную связь.',
+      'Находим и исправляем баги геймплея, которые всплыли во время теста.',
+      'Оптимизируем карту: удаляем лишнее, снижаем нагрузку на память.',
+      'Финальный чеклист перед публикацией в Creative.',
+    ],
+    badge: null
+  },
+  6: {
+    num: '6 занятие',
+    title: 'Публикация, продвижение и первые метрики',
+    topics: [
+      'Публикуем карту: заполняем описание, выбираем теги и тип игры.',
+      'Как работает алгоритм продвижения в Fortnite Creative.',
+      'Анализируем первые метрики: просмотры, уникальные игроки, удержание.',
+      'Собираем обратную связь от сообщества и планируем следующее обновление.',
+    ],
+    badge: null
+  },
+};
+
+const videoTitles = {
+  1: ['Старт: установка и знакомство с UEFN', 'Настройка первого проекта'],
+  2: ['Первая карта без кода', 'Инструменты ландшафта и освещение'],
+  3: ['Оформление карты: готовые модели', 'Импорт ассетов из Fab'],
+  4: ['Код на Verse: первые шаги', 'Переменные и условия в Verse', 'ИИ-помощник в разработке на Verse'],
+};
+
+function selectLesson(num) {
+  const lesson = LESSONS[num];
+  if (!lesson) return;
+
+  /* Update heading */
+  document.getElementById('js-lesson-num').textContent   = lesson.num;
+  document.getElementById('js-lesson-title').textContent = lesson.title;
+
+  /* Update topics */
+  const ul = document.getElementById('js-lesson-topics');
+  ul.innerHTML = lesson.topics.map(t => `
+    <li class="lesson-topic">
+      <span class="lesson-topic__icon">
+        <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </span>
+      <span class="lesson-topic__text">${t}</span>
+    </li>`).join('');
+
+  /* Highlight selected done/future card with a subtle outline ring */
+  document.querySelectorAll('.lcard').forEach(c => {
+    const isThis = +c.dataset.lesson === num;
+    const isNotActive = !c.classList.contains('lcard--active');
+    if (isThis && isNotActive) {
+      c.style.outline = '2px solid rgba(59,207,254,.45)';
+      c.style.outlineOffset = '3px';
+    } else {
+      c.style.outline = '';
+      c.style.outlineOffset = '';
+    }
+  });
+
+  /* Scroll lesson nav into view */
+  const activeCard = document.querySelector(`.lcard[data-lesson="${num}"]`);
+  if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+  /* ── Save progress ── */
+  if (!progress.viewedLessons.includes(num)) {
+    progress.viewedLessons.push(num);
+  }
+  progress.currentLesson = num;
+  progress.lastActivity = new Date().toISOString().slice(0, 10);
+  saveProgress(progress);
+  renderProgressBar();
+}
+
+/* ── Init on page load ── */
+applyProgressToCards();
+renderProgressBar();
+// Pre-select the saved current lesson in the info panel
+selectLesson(progress.currentLesson);
+</script>
+</body>
+</html>

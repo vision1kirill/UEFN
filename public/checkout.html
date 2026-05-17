@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Оформление заказа — UEFN с нуля</title>
+  <meta name="description" content="Оформление заказа — UEFN с нуля." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       NAV
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%; overflow: hidden;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; color: #fff; white-space: nowrap;
+    }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-family: 'Golos Text', sans-serif; font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .nav__plan-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff;
+      background: linear-gradient(135deg, rgba(1,102,195,.20) 0%, rgba(59,207,254,.20) 100%);
+      border: 1px solid rgba(59,207,254,.18); border-radius: 100px; padding: 10px 22px;
+      white-space: nowrap; cursor: default;
+    }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600;
+      color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a { width: 100%; padding: 14px; font-size: 15px; text-align: center; }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; } .nav__auth { display: none; }
+      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } .nav__burger { width: 36px; height: 36px; } }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(32px,4vw,56px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       1. HEADER
+    ═══════════════════════════════════ */
+    .page-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(26px, 3.5vw, 52px); font-weight: 800;
+      line-height: 1.08; letter-spacing: -0.03em; color: #fff;
+      margin-bottom: clamp(28px, 4vw, 48px);
+    }
+
+    /* ═══════════════════════════════════
+       2. PROMO BAR
+    ═══════════════════════════════════ */
+    .promo-bar {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: clamp(12px, 1.5vw, 20px);
+      padding: clamp(18px, 2vw, 26px) clamp(20px, 3vw, 48px);
+      background: linear-gradient(135deg, rgba(1,102,195,.30) 0%, rgba(59,207,254,.18) 100%);
+      border: 1px solid rgba(59,207,254,.22);
+      border-radius: clamp(18px, 1.8vw, 28px);
+      margin-bottom: clamp(28px, 4vw, 48px);
+    }
+    .promo-bar__label {
+      font-family: 'Golos Text', sans-serif; font-size: clamp(14px,1.1vw,17px);
+      font-weight: 600; color: #fff; white-space: nowrap;
+    }
+    .promo-input-wrap { position: relative; display: flex; align-items: center; }
+    .promo-input {
+      height: clamp(40px,4vw,48px); padding: 0 clamp(36px,3.5vw,44px) 0 clamp(14px,1.4vw,18px);
+      background: rgba(255,255,255,.10); border: 1.5px solid rgba(255,255,255,.20);
+      border-radius: 100px; font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,1vw,15px); color: #fff; outline: none; transition: border-color .2s;
+      width: clamp(160px,16vw,220px);
+    }
+    .promo-input::placeholder { color: var(--c-dim); }
+    .promo-input:focus { border-color: rgba(59,207,254,.55); }
+    .promo-clear {
+      position: absolute; right: 12px; width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background .2s;
+    }
+    .promo-clear:hover { background: rgba(255,255,255,.30); }
+    .promo-clear svg { width: 9px; height: 9px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .btn-promo-apply {
+      padding: clamp(10px,1vw,13px) clamp(20px,2vw,32px);
+      background: transparent; border: 1.5px solid rgba(255,255,255,.30); border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(13px,1vw,15px); font-weight: 600; color: #fff;
+      cursor: pointer; transition: background .2s, border-color .2s; white-space: nowrap;
+    }
+    .btn-promo-apply:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.50); }
+
+    /* Promo feedback */
+    .promo-feedback {
+      width: 100%; display: none;
+      align-items: center; gap: 8px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(12.5px,.95vw,14px);
+      font-weight: 500; line-height: 1.3;
+      padding: 10px 16px; border-radius: 12px;
+      margin-top: 8px; margin-bottom: clamp(12px,1.5vw,20px);
+    }
+    .promo-feedback.show { display: flex; }
+    .promo-feedback__icon { width: 16px; height: 16px; flex-shrink: 0; }
+    /* Success */
+    .promo-feedback--ok {
+      background: rgba(34,197,94,.10);
+      border: 1px solid rgba(34,197,94,.25);
+      color: #22C55E;
+    }
+    /* Errors */
+    .promo-feedback--err {
+      background: rgba(239,68,68,.10);
+      border: 1px solid rgba(239,68,68,.22);
+      color: #F87171;
+    }
+    /* Input states */
+    .promo-input.promo-input--ok    { border-color: rgba(34,197,94,.55); }
+    .promo-input.promo-input--err   { border-color: rgba(239,68,68,.55); }
+
+    @media (max-width: 560px) {
+      .promo-bar { justify-content: flex-start; }
+      .promo-input { width: 100%; }
+      .promo-input-wrap { flex: 1; }
+    }
+
+    /* ═══════════════════════════════════
+       3. PLAN CARDS
+    ═══════════════════════════════════ */
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: stretch;
+      gap: clamp(14px,1.5vw,22px);
+      margin-bottom: clamp(28px,4vw,44px);
+    }
+    .plan {
+      padding: clamp(24px,2.5vw,32px) clamp(20px,2vw,28px);
+      border-radius: clamp(28px,2.5vw,40px);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background:
+        linear-gradient(var(--c-surf2), var(--c-surf2)) padding-box,
+        rgba(255,255,255,.08) border-box;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: box-shadow .25s, transform .25s;
+    }
+    @media (hover: hover) {
+      .plan:hover {
+        background:
+          linear-gradient(var(--c-surf2), var(--c-surf2)) padding-box,
+          var(--g-border) border-box;
+        box-shadow: 0 0 52px rgba(59,207,254,.10);
+        transform: translateY(-4px);
+      }
+      .plan:hover .plan__btn {
+        background: var(--g-accent);
+        border-color: transparent;
+        color: #fff;
+      }
+    }
+    /* Selected state */
+    .plan--selected {
+      background:
+        linear-gradient(var(--c-surf2), var(--c-surf2)) padding-box,
+        var(--g-border) border-box !important;
+      border: 2px solid transparent !important;
+      box-shadow: 0 0 52px rgba(59,207,254,.18) !important;
+    }
+    .plan--selected .plan__btn {
+      background: var(--g-accent);
+      border-color: transparent;
+      color: #fff;
+    }
+    /* Deluxe premium highlight */
+    .plan--deluxe {
+      background:
+        linear-gradient(rgba(255,255,255,.05), rgba(255,255,255,.05)) padding-box,
+        rgba(255,255,255,.08) border-box;
+      overflow: hidden;
+    }
+    .plan--deluxe::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle at center, rgba(255,255,255,.09) 0%, rgba(59,207,254,.06) 30%, transparent 70%);
+      filter: blur(48px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .plan--deluxe > * { position: relative; z-index: 1; }
+    @media (hover: hover) {
+      .plan--deluxe:hover {
+        background:
+          linear-gradient(rgba(255,255,255,.05), rgba(255,255,255,.05)) padding-box,
+          var(--g-border) border-box;
+      }
+    }
+    /* Deluxe selected: keep premium bg + add cyan border & stronger glow */
+    .plan--deluxe.plan--selected {
+      background:
+        linear-gradient(rgba(255,255,255,.05), rgba(255,255,255,.05)) padding-box,
+        var(--g-border) border-box !important;
+      border: 2px solid transparent !important;
+      box-shadow: 0 0 72px rgba(59,207,254,.30) !important;
+    }
+    @media (max-width: 767px) {
+      .plan--deluxe::before { top: -50px; right: -50px; width: 200px; height: 200px; filter: blur(30px); }
+    }
+    .plan__badge {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 400;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.7);
+    }
+    .plan__name {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(17px,1.5625vw,24px); font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+      padding-right: 84px;
+    }
+    .plan__desc {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: rgba(255,255,255,.88);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .plan__highlight {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .plan__highlight-icon { width: 20px; height: 20px; flex-shrink: 0; object-fit: contain; margin-top: 1px; }
+    .plan__highlight-text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: rgba(255,255,255,.9); line-height: 1.45;
+    }
+    .plan__highlight-text .rub { font-size: inherit; font-weight: inherit; vertical-align: baseline; margin-left: 4px; }
+    .plan__features-header {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 600;
+      color: #fff; margin-bottom: 12px;
+    }
+    .plan__features {
+      display: flex; flex-direction: column; gap: 10px;
+      flex: 1; margin-bottom: clamp(20px,2.5vw,32px);
+    }
+    .plan__feature {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; color: rgba(255,255,255,.88); line-height: 1.45;
+    }
+    .plan__feature img { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; object-fit: contain; }
+    .plan__note { font-family: 'Golos Text', sans-serif; font-size: 11px; color: rgba(255,255,255,.38); line-height: 1.5; margin-top: 10px; }
+    .plan__price-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin-top: auto;
+    }
+    .plan__price {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(20px,2vw,30px); font-weight: 700;
+      line-height: 1; color: #fff; margin-bottom: 4px;
+    }
+    .plan__price .rub { font-size: inherit; font-weight: inherit; vertical-align: baseline; margin-left: 4px; }
+    .plan__old-price {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 12px; color: var(--c-dim); text-decoration: line-through;
+    }
+    .plan__btn {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,.25);
+      border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 600;
+      padding: 10px 20px; cursor: pointer;
+      transition: background .25s, border-color .25s;
+      white-space: nowrap;
+    }
+
+    /* Dimmed unselected plan */
+    .plan--dimmed {
+      opacity: .38;
+      filter: saturate(.4);
+      pointer-events: auto;
+      transition: opacity .25s, filter .25s;
+    }
+    .plan--dimmed:hover { opacity: .58; filter: saturate(.7); }
+
+    /* Plan cards responsive */
+    @media (max-width: 840px) {
+      .plans-grid { grid-template-columns: 1fr; gap: clamp(10px,2vw,16px); }
+    }
+
+    /* ═══════════════════════════════════
+       4. PAY BUTTON (top)
+    ═══════════════════════════════════ */
+    .btn-pay-wrap {
+      display: flex; justify-content: center;
+      margin-bottom: clamp(40px,6vw,72px);
+    }
+    .btn-pay {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: clamp(16px,1.6vw,20px) clamp(48px,6vw,80px);
+      background: var(--g-accent); border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(15px,1.2vw,18px); font-weight: 600; color: #fff;
+      cursor: pointer; transition: opacity .2s, transform .15s; border: none;
+      white-space: nowrap; min-width: clamp(220px,24vw,320px);
+    }
+    .btn-pay:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-pay:active { transform: translateY(0); }
+
+    /* ═══════════════════════════════════
+       4b. PARTNERSHIP SUBSCRIPTION
+    ═══════════════════════════════════ */
+    .psub-card {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr;
+      grid-template-rows: 1fr auto;
+      column-gap: clamp(40px,6vw,96px);
+      row-gap: 0;
+      align-items: stretch;
+      padding: clamp(40px,4.2vw,68px) clamp(48px,5.2vw,80px);
+      border-radius: clamp(28px,3.125vw,60px);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      margin-bottom: clamp(28px,3.5vw,44px);
+      transition: border-color .2s;
+    }
+    .psub-card--active { border-color: rgba(59,207,254,.20); }
+
+    /* Left-top: title */
+    .psub__title-wrap {
+      grid-column: 1; grid-row: 1;
+      display: flex; align-items: flex-start;
+      padding-bottom: clamp(16px,2vw,28px);
+    }
+    .psub__title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(16px,1.5625vw,24px);
+      font-weight: 600; line-height: 1.25;
+    }
+
+    /* Left-bottom: period selector + toggle */
+    .psub__bottom {
+      grid-column: 1; grid-row: 2;
+      display: flex; align-items: flex-end;
+    }
+    .psub__bottom-inner { display: flex; flex-direction: column; gap: clamp(12px,1.4vw,18px); }
+    /* ── Shared period button text ── */
+    .psub-btn__dur   { font-family:'Golos Text',sans-serif; font-size:clamp(13px,1vw,15px); font-weight:700; color:#fff; white-space:nowrap; }
+    .psub-btn__price { font-family:'Golos Text',sans-serif; font-size:clamp(12px,.95vw,14px); color:rgba(255,255,255,.55); white-space:nowrap; }
+    .psub-btn__badge { font-size:11px; font-weight:700; color:#22C55E; white-space:nowrap; }
+
+    .psub__periods { display:flex; gap:clamp(10px,1.2vw,16px); flex-wrap:wrap; }
+
+    /* ── Вариант В: Плитки со свечением ── */
+    .psub-btn-c {
+      display:flex; flex-direction:column; align-items:flex-start; gap:5px;
+      padding: clamp(14px,1.4vw,18px) clamp(18px,1.8vw,26px);
+      border-radius:16px; font-family:'Golos Text',sans-serif;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.10);
+      border-top: 3px solid rgba(255,255,255,.16);
+      cursor:pointer; transition:all .22s; min-width: clamp(96px,8vw,120px);
+    }
+    .psub-btn-c:hover { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.20); border-top-color:rgba(255,255,255,.35); }
+    .psub-btn-c.psub-active { background:rgba(59,207,254,.10); border-color:rgba(59,207,254,.25); border-top:3px solid var(--c-cyan); box-shadow:0 6px 28px rgba(59,207,254,.20); }
+    .psub-btn-c.psub-active .psub-btn__price { color:var(--c-cyan); }
+    .psub-btn-c.psub-active .psub-btn__dur { color:#fff; }
+
+
+
+    /* Middle: checklist */
+    .psub__col { display: flex; flex-direction: column; justify-content: center; gap: clamp(18px,2.2vw,34px); }
+    .psub__col--mid  { grid-column: 2; grid-row: 1 / 3; }
+    .psub__col--right { grid-column: 3; grid-row: 1 / 3; justify-content: flex-start; align-self: start; }
+    /* p-check shared style */
+    .p-check { display: flex; align-items: flex-start; gap: clamp(10px,.9vw,14px); }
+    .p-check__icon { width: clamp(20px,1.4vw,24px); height: clamp(20px,1.4vw,24px); flex-shrink: 0; margin-top: 1px; }
+    .p-check__icon img { width: 100%; height: 100%; display: block; }
+    .p-check__text { font-size: clamp(13px,1vw,16px); font-weight: 500; color: #fff; line-height: 1.55; }
+
+    .psub__soon-label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 10px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: rgba(255,255,255,.30);
+      margin-top: -8px; margin-bottom: -10px;
+    }
+    .psub__check--soon { opacity: .55; }
+
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .psub-card {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .psub__title-wrap { grid-column: 1; grid-row: 1; padding-bottom: 16px; }
+      .psub__bottom     { grid-column: 1; grid-row: 2; align-items: flex-start; padding-top: 4px; }
+      .psub__col--mid   { grid-column: 2; grid-row: 1 / 3; }
+      .psub__col--right {
+        grid-column: 1 / 3; grid-row: 3;
+        flex-direction: row; gap: clamp(16px,3vw,40px);
+        padding-top: clamp(16px,2vw,28px);
+        border-top: 1px solid rgba(255,255,255,.06);
+        margin-top: clamp(16px,2vw,28px);
+      }
+    }
+    @media (max-width: 680px) {
+      .psub-card {
+        display: flex; flex-direction: column;
+        padding: clamp(24px,6vw,32px) clamp(20px,5.5vw,28px);
+        border-radius: clamp(20px,5vw,32px); gap: 0;
+      }
+      .psub__title-wrap  { order: 1; padding-bottom: clamp(20px,5vw,28px); }
+      .psub__col--mid    { order: 2; gap: clamp(14px,4vw,18px); }
+      .psub__col--right  { display: none; }
+      .psub__bottom      { order: 3; padding-top: clamp(20px,5vw,28px); align-items: flex-start; }
+    }
+
+    /* ════════════════════════════════════
+       5. ADDITIONAL SERVICES
+    ═══════════════════════════════════ */
+    .services-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(20px,2vw,28px); font-weight: 800;
+      letter-spacing: -0.02em; color: #fff;
+      margin-bottom: clamp(16px,2vw,24px);
+    }
+    .services-list {
+      display: flex; flex-direction: column; gap: clamp(8px,1vw,12px);
+      margin-bottom: clamp(32px,4vw,52px);
+    }
+
+    /* Service toggle row */
+    .svc-row {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: clamp(14px,1.4vw,20px);
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .svc-row:hover { border-color: rgba(255,255,255,.12); }
+    .svc-row--active { border-color: rgba(59,207,254,.25); }
+
+    .svc-row__header {
+      display: flex; align-items: flex-start; gap: clamp(10px,1.2vw,16px);
+      padding: clamp(14px,1.6vw,20px) clamp(16px,2vw,28px);
+      cursor: pointer;
+    }
+    .svc-row__header .toggle-switch { margin-top: 2px; flex-shrink: 0; }
+    .svc-row__info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .svc-row__name {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,1vw,15px); font-weight: 600; color: #fff;
+    }
+    .svc-row__desc {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11.5px,.85vw,13px); font-weight: 400; color: var(--c-muted);
+      line-height: 1.4;
+    }
+    .svc-row__price {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-cyan);
+      white-space: nowrap;
+    }
+
+    /* Toggle switch */
+    .toggle-switch { flex-shrink: 0; position: relative; width: 44px; height: 24px; }
+    .toggle-switch input { display: none; }
+    .toggle-switch__track {
+      position: absolute; inset: 0; border-radius: 100px;
+      background: rgba(255,255,255,.14); cursor: pointer; transition: background .25s;
+    }
+    .toggle-switch__track::before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px; left: 3px; top: 3px;
+      background: rgba(255,255,255,.70); border-radius: 50%; transition: transform .25s;
+    }
+    .toggle-switch input:checked + .toggle-switch__track { background: var(--g-accent); }
+    .toggle-switch input:checked + .toggle-switch__track::before { transform: translateX(20px); background: #fff; }
+
+    /* Expanded content inside svc-row */
+    .svc-expand {
+      display: none;
+      padding: 0 clamp(16px,2vw,28px) clamp(16px,2vw,24px);
+    }
+    .svc-expand--open { display: block; }
+    .svc-expand__grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: clamp(10px,1.2vw,16px);
+      padding-top: clamp(12px,1.4vw,18px);
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .svc-sub {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+      border-radius: clamp(10px,1vw,14px);
+      padding: clamp(12px,1.2vw,16px);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .svc-sub__info { flex: 1; }
+    .svc-sub__name {
+      font-family: 'Golos Text', sans-serif; font-size: clamp(11px,.9vw,13px); font-weight: 600;
+      color: var(--c-muted); line-height: 1.35; margin-bottom: 4px;
+    }
+    .svc-sub__price { font-family: 'Golos Text', sans-serif; font-size: clamp(10px,.8vw,12px); color: var(--c-dim); }
+    .svc-sub__footer { display: flex; align-items: center; justify-content: space-between; }
+
+    @media (max-width: 640px) {
+      .svc-expand__grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════
+       6. BUY BUTTON (bottom)
+    ═══════════════════════════════════ */
+    .btn-buy-wrap { display: flex; justify-content: center; }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__plan-badge">Essential</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge">Essential</a></div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+  <div class="page-wrap">
+
+    <h1 class="page-title">Оформление заказа</h1>
+
+    <!-- PROMO BAR -->
+    <div class="promo-bar">
+      <span class="promo-bar__label">Есть промокод?</span>
+      <div class="promo-input-wrap">
+        <input class="promo-input" id="js-promo" name="promo_code" type="text" value="HappyNewYear" placeholder="Введите промокод" autocomplete="off" />
+        <button class="promo-clear" id="js-promo-clear" type="button" aria-label="Очистить">
+          <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+        </button>
+      </div>
+      <button class="btn-promo-apply" id="js-promo-apply" type="button">Применить</button>
+    </div>
+    <!-- Promo feedback line -->
+    <div class="promo-feedback" id="js-promo-feedback">
+      <svg class="promo-feedback__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="js-promo-feedback-icon"></svg>
+      <span id="js-promo-feedback-text"></span>
+    </div>
+
+    <!-- PLAN CARDS -->
+    <div class="plans-grid">
+
+      <!-- Essential -->
+      <article class="plan" data-plan="essential" onclick="selectPlan('essential')">
+        <span class="plan__badge">Старт</span>
+        <p class="plan__name">Essential</p>
+        <p class="plan__desc">Базовый пакет без лишнего: уроки, задания, обновления и ответы по материалу курса. Для тех, кто хочет спокойно пройти курс и собрать первую рабочую карту.</p>
+        <div class="plan__highlight">
+          <img src="фотографии/star.png" alt="" class="plan__highlight-icon" />
+          <span class="plan__highlight-text">База: курс + задания</span>
+        </div>
+        <ul class="plan__features">
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Все видеоуроки и понятная структура по шагам</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Чек-листы и задания к модулям</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Помощь в освоении материала</li>
+        </ul>
+        <div class="plan__price-row">
+          <div>
+            <p class="plan__price">1&nbsp;499 <span class="rub">₽</span></p>
+            <p class="plan__old-price">2&nbsp;998 ₽</p>
+          </div>
+          <button class="plan__btn" onclick="event.stopPropagation(); selectPlan('essential')">Выбрать</button>
+        </div>
+      </article>
+
+      <!-- Extra (selected by default) -->
+      <article class="plan plan--selected" data-plan="extra" onclick="selectPlan('extra')">
+        <span class="plan__badge">Рекомендуем</span>
+        <p class="plan__name">Extra</p>
+        <p class="plan__desc">Оптимальный пакет: всё из Essential + инструменты, которые помогают быстрее выпустить карту. Для тех, кто хочет выйти к публикации быстрее и с поддержкой команды.</p>
+        <p class="plan__features-header">Всё из Essential плюс:</p>
+        <ul class="plan__features">
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Тег под публикацию островов</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Пользователь делает карту сам, мы проверяем и даём советы</li>
+        </ul>
+        <div class="plan__price-row">
+          <div>
+            <p class="plan__price">2&nbsp;749 <span class="rub">₽</span></p>
+            <p class="plan__old-price">3&nbsp;999 ₽</p>
+          </div>
+          <button class="plan__btn" onclick="event.stopPropagation(); selectPlan('extra')">Выбрать</button>
+        </div>
+      </article>
+
+      <!-- Deluxe -->
+      <article class="plan plan--deluxe" data-plan="deluxe" onclick="selectPlan('deluxe')">
+        <span class="plan__badge">Максимум</span>
+        <p class="plan__name">Deluxe</p>
+        <p class="plan__desc">Максимальный пакет: меньше делать с нуля, больше использовать готовые ресурсы и шаблоны. Для тех, кто хочет брать максимум готовых решений и запускаться быстрее.</p>
+        <div class="plan__highlight">
+          <img src="фотографии/star.png" alt="" class="plan__highlight-icon" />
+          <span class="plan__highlight-text">3 месяца подписки «Сотрудничество» включены в пакет, бонус ~1&nbsp;872 <span class="rub">₽</span></span>
+        </div>
+        <p class="plan__features-header">Всё из Extra плюс:</p>
+        <ul class="plan__features">
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Готовые карты, шаблоны и ассеты — на 3 месяца через подписку «Сотрудничество»</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Шаблоны интерфейса и игровые механики</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Помощь с оформлением страницы карты</li>
+          <li class="plan__feature"><img src="фотографии/ok_white.png" alt="" />Персональный разбор перед публикацией</li>
+        </ul>
+        <p class="plan__note">После окончания 3 месяцев подписки «Сотрудничество» доступ к готовым картам, шаблонам и ассетам пропадает.</p>
+        <div class="plan__price-row">
+          <div>
+            <p class="plan__price">3&nbsp;749 <span class="rub">₽</span></p>
+            <p class="plan__old-price">5&nbsp;499 ₽</p>
+          </div>
+          <button class="plan__btn" onclick="event.stopPropagation(); selectPlan('deluxe')">Выбрать</button>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- PARTNERSHIP SUBSCRIPTION -->
+    <div class="psub-card" id="js-psub-card">
+
+      <!-- Left-top: title -->
+      <div class="psub__title-wrap">
+        <h2 class="psub__title">Подписка<br>сотрудничества</h2>
+      </div>
+
+      <!-- Middle: checklist -->
+      <div class="psub__col psub__col--mid">
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Закрытый чат</span>
+        </div>
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Библиотека готовых карт</span>
+        </div>
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Дополнительные уроки</span>
+        </div>
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Поддержка от команды</span>
+        </div>
+      </div>
+
+      <!-- Left-bottom: period selector (3 style variants) -->
+      <div class="psub__bottom">
+        <div class="psub__bottom-inner">
+          <div class="psub__periods" id="js-psub-variants">
+            <button class="psub-btn-c" data-months="1" data-price="624">
+              <span class="psub-btn__dur">1 месяц</span>
+              <span class="psub-btn__price">624 ₽</span>
+            </button>
+            <button class="psub-btn-c" data-months="3" data-price="1620">
+              <span class="psub-btn__dur">3 месяца</span>
+              <span class="psub-btn__price">1 620 ₽</span>
+              <span class="psub-btn__badge">−13%</span>
+            </button>
+            <button class="psub-btn-c" data-months="6" data-price="2808">
+              <span class="psub-btn__dur">6 месяцев</span>
+              <span class="psub-btn__price">2 808 ₽</span>
+              <span class="psub-btn__badge">−25%</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: descriptive items -->
+      <div class="psub__col psub__col--right">
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Подскажем, как быстрее подготовить карту к публикации и продвижению.</span>
+        </div>
+        <div class="p-check">
+          <span class="p-check__icon"><img src="фотографии/ok.png" alt="" /></span>
+          <span class="p-check__text">Разберём проблемы, которые могут возникнуть в процессе создания карт.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ADDITIONAL SERVICES -->
+    <h2 class="services-title">Дополнительные услуги</h2>
+    <div class="services-list">
+
+      <!-- 1. Буст карты -->
+      <div class="svc-row" id="svc-boost">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Буст карты</span>
+            <span class="svc-row__desc">Временное продвижение карты через инструменты команды</span>
+            <span class="svc-row__price">500 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="500" onchange="updateTotal(); toggleRowActive('svc-boost', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+      <!-- 2. Продвижение карты -->
+      <div class="svc-row" id="svc-promo">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Продвижение карты</span>
+            <span class="svc-row__desc">Размещение в каналах и сообществах, помощь с охватом</span>
+            <span class="svc-row__price">1 000 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="1000" onchange="updateTotal(); toggleRowActive('svc-promo', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+      <!-- 3. Оформление страницы карты -->
+      <div class="svc-row" id="svc-page">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Оформление страницы карты</span>
+            <span class="svc-row__desc">Обложка, описание, теги — профессионально и под вашу карту</span>
+            <span class="svc-row__price">300 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="300" onchange="updateTotal(); toggleRowActive('svc-page', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+      <!-- 4. Дополнительное превью -->
+      <div class="svc-row" id="svc-preview">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Дополнительное превью</span>
+            <span class="svc-row__desc">Создание thumbnail-изображения для острова</span>
+            <span class="svc-row__price">500 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="500" onchange="updateTotal(); toggleRowActive('svc-preview', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+      <!-- 5. Индивидуальная консультация -->
+      <div class="svc-row" id="svc-consult">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Индивидуальная консультация</span>
+            <span class="svc-row__desc">Личный созвон с наставником по вашей карте или вопросу</span>
+            <span class="svc-row__price">1 500 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="1500" onchange="updateTotal(); toggleRowActive('svc-consult', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+      <!-- 6. Создание карты под запрос -->
+      <div class="svc-row" id="svc-custom">
+        <div class="svc-row__header">
+          <div class="svc-row__info">
+            <span class="svc-row__name">Создание карты под запрос</span>
+            <span class="svc-row__desc">Команда создаёт карту по вашему ТЗ — концепция, механики, запуск</span>
+            <span class="svc-row__price">5 000 ₽</span>
+          </div>
+          <label class="toggle-switch"><input type="checkbox" data-price="5000" onchange="updateTotal(); toggleRowActive('svc-custom', this)"><span class="toggle-switch__track"></span></label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAY BUTTON (bottom) -->
+    <div class="btn-buy-wrap">
+      <button class="btn-pay" id="js-btn-buy" type="button">Оплатить 2&nbsp;749&nbsp;₽</button>
+    </div>
+
+  </div>
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#partnership">Партнёрка</a>
+      </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v; burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v)); document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ── Promo clear ── */
+document.getElementById('js-promo-clear').addEventListener('click', () => {
+  document.getElementById('js-promo').value = '';
+  document.getElementById('js-promo').focus();
+});
+
+/* ── Partnership subscription ── */
+let partnerSubPrice = 0;
+let activeSubBtn = null;
+
+document.querySelectorAll('.psub-btn-c').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const isAlreadyActive = btn.classList.contains('psub-active');
+    /* Clear all */
+    document.querySelectorAll('.psub-btn-c').forEach(b => b.classList.remove('psub-active'));
+    document.getElementById('js-psub-card').classList.remove('psub-card--active');
+    if (isAlreadyActive) {
+      /* Toggle off */
+      partnerSubPrice = 0;
+      activeSubBtn = null;
+    } else {
+      /* Select */
+      btn.classList.add('psub-active');
+      partnerSubPrice = +btn.dataset.price;
+      activeSubBtn = btn;
+      document.getElementById('js-psub-card').classList.add('psub-card--active');
+    }
+    updateTotal();
+  });
+});
+
+/* ── Plans ── */
+const PLANS = { essential: 1499, extra: 2749, deluxe: 3749 };
+let selectedPlan = 'extra';
+
+function selectPlan(key) {
+  selectedPlan = key;
+  document.querySelectorAll('.plan').forEach(c => {
+    const isSelected = c.dataset.plan === key;
+    c.classList.toggle('plan--selected', isSelected);
+    c.classList.toggle('plan--dimmed', !isSelected);
+  });
+  updateTotal();
+}
+
+/* ── Toggle row active border ── */
+function toggleRowActive(rowId, input) {
+  document.getElementById(rowId).classList.toggle('svc-row--active', input.checked);
+}
+
+/* ── Expandable section ── */
+function toggleExpand(expandId) {
+  const el = document.getElementById(expandId);
+  if (el) el.classList.toggle('svc-expand--open');
+}
+
+/* ── Price calculation ── */
+function formatPrice(n) {
+  return n.toLocaleString('ru-RU');
+}
+function updateTotal() {
+  const planPrice = PLANS[selectedPlan];
+  let extra = 0;
+  document.querySelectorAll('.svc-row input[type=checkbox][data-price]').forEach(inp => {
+    if (inp.checked) extra += parseInt(inp.dataset.price, 10);
+  });
+  const subtotal = planPrice + extra + partnerSubPrice;
+  const discount = Math.round(subtotal * promoDiscount);
+  const total    = subtotal - discount;
+
+  const btn = document.getElementById('js-btn-buy');
+  if (discount > 0) {
+    btn.innerHTML =
+      'Оплатить&nbsp;<s style="opacity:.5;font-weight:400">' + formatPrice(subtotal) + '&nbsp;₽</s>&nbsp;' + formatPrice(total) + '&nbsp;₽';
+  } else {
+    btn.textContent = 'Оплатить ' + formatPrice(total) + ' ₽';
+  }
+}
+
+/* ── Promo logic ── */
+const PROMO_CODES = {
+  'UEFN2026':    { discount: 0.15, label: 'Скидка 15% применена' },
+  'HAPPYNEWYEAR':{ discount: 0.10, label: 'Скидка 10% применена' },
+  'PARTNER10':   { discount: 0.10, label: 'Партнёрский промокод — скидка 10%' },
+  'EXPIRED':     { expired: true },
+  'NOFIT':       { nofit: true },
+};
+
+let promoDiscount = 0; // 0–1
+
+function showPromoFeedback(type, text) {
+  const fb   = document.getElementById('js-promo-feedback');
+  const icon = document.getElementById('js-promo-feedback-icon');
+  const msg  = document.getElementById('js-promo-feedback-text');
+  const inp  = document.getElementById('js-promo');
+
+  fb.className  = 'promo-feedback show promo-feedback--' + type;
+  msg.textContent = text;
+  inp.classList.toggle('promo-input--ok',  type === 'ok');
+  inp.classList.toggle('promo-input--err', type === 'err');
+
+  /* SVG icon: checkmark or x */
+  if (type === 'ok') {
+    icon.innerHTML = '<polyline points="2 8 6 12 14 4"/>';
+  } else {
+    icon.innerHTML = '<line x1="2" y1="2" x2="14" y2="14"/><line x1="14" y1="2" x2="2" y2="14"/>';
+  }
+}
+
+function clearPromoFeedback() {
+  const fb  = document.getElementById('js-promo-feedback');
+  const inp = document.getElementById('js-promo');
+  fb.className = 'promo-feedback';
+  inp.classList.remove('promo-input--ok', 'promo-input--err');
+  promoDiscount = 0;
+  updateTotal();
+}
+
+document.getElementById('js-promo-apply').addEventListener('click', () => {
+  const raw  = document.getElementById('js-promo').value.trim().toUpperCase();
+  if (!raw) { showPromoFeedback('err', 'Введите промокод'); return; }
+
+  const code = PROMO_CODES[raw];
+  if (!code) {
+    promoDiscount = 0;
+    showPromoFeedback('err', 'Промокод не найден или недействителен');
+  } else if (code.expired) {
+    promoDiscount = 0;
+    showPromoFeedback('err', 'Срок действия промокода истёк');
+  } else if (code.nofit) {
+    promoDiscount = 0;
+    showPromoFeedback('err', 'Промокод не применяется к выбранному товару');
+  } else {
+    promoDiscount = code.discount;
+    showPromoFeedback('ok', code.label);
+  }
+  updateTotal();
+});
+
+document.getElementById('js-promo-clear').addEventListener('click', () => {
+  document.getElementById('js-promo').value = '';
+  clearPromoFeedback();
+});
+
+document.getElementById('js-promo').addEventListener('input', clearPromoFeedback);
+
+/* Init — read URL params */
+(function () {
+  const params = new URLSearchParams(location.search);
+  const plan = params.get('plan');
+  selectPlan(['essential', 'extra', 'deluxe'].includes(plan) ? plan : 'extra');
+
+  if (params.get('psub') === '1') {
+    /* Scroll to partnership sub block after a short delay so layout is ready */
+    setTimeout(() => {
+      const el = document.getElementById('js-psub-card');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+})();
+updateTotal();
+</script>
+</body>
+</html>

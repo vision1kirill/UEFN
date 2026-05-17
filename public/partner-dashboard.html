@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Партнёрская панель — UEFN с нуля</title>
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body { font-family: 'Golos Text', sans-serif; background: var(--c-bg); color: var(--c-text); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+    :root {
+      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
+      --c-cyan: #3BCFFE; --c-blue: #0166C3;
+      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
+      --c-dim: rgba(255,255,255,.30); --c-border: rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent: linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ── NAV ── */
+    .nav { position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h); width: 100%; display: flex; align-items: center; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(15,19,23,.80); transition: box-shadow .3s; }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner { max-width: var(--wrap); width: 100%; margin-inline: auto; padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px); }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer { position: fixed; inset: var(--nav-h) 0 0; z-index: 190; background: rgba(15,19,23,.97); backdrop-filter: blur(24px); display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px; transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
+    .nav__drawer a:hover { color: #fff; }
+    @media (max-width: 1100px) { .nav__links { display: none; } .nav__auth { display: none; } .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; } }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
+
+    /* ── PAGE ── */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
+
+    /* ── TAB NAV ── */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
+
+    /* ── REFERRAL BLOCK ── */
+    .ref-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(12px,1.5vw,20px);
+      margin-bottom: clamp(20px,2.5vw,32px);
+    }
+    @media (max-width: 640px) { .ref-block { grid-template-columns: 1fr; } }
+
+    .ref-card {
+      background: var(--c-surf2);
+      border: 1px solid var(--c-border);
+      border-radius: clamp(16px,1.6vw,22px);
+      padding: clamp(18px,2vw,26px) clamp(18px,2vw,26px);
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color .2s;
+    }
+    .ref-card:hover { border-color: rgba(59,207,254,.20); }
+    .ref-card__label {
+      font-size: clamp(11px,.78vw,13px); font-weight: 400;
+      color: var(--c-dim); letter-spacing: .02em;
+    }
+    .ref-card__row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ref-card__value {
+      flex: 1;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,.95vw,15px); font-weight: 600; color: #fff;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .ref-card__copy {
+      flex-shrink: 0;
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: rgba(59,207,254,.08);
+      border: 1px solid rgba(59,207,254,.18);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background .2s, border-color .2s;
+    }
+    .ref-card__copy:hover { background: rgba(59,207,254,.16); border-color: rgba(59,207,254,.35); }
+    .ref-card__copy svg { width: 16px; height: 16px; stroke: var(--c-cyan); }
+    .ref-card__copied {
+      font-size: clamp(10.5px,.75vw,12px); color: #22C55E; font-weight: 500;
+      height: 16px; opacity: 0; transition: opacity .25s;
+    }
+    .ref-card__copied.show { opacity: 1; }
+
+    /* ── METRIC CARDS ── */
+    .metrics-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: clamp(12px,1.5vw,20px); }
+    .metric-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(18px,1.8vw,26px);
+      padding: clamp(20px,2.2vw,30px) clamp(18px,2vw,26px);
+      display: flex; flex-direction: column; gap: clamp(14px,1.8vw,22px);
+      transition: border-color .2s;
+    }
+    .metric-card:hover { border-color: rgba(255,255,255,.14); }
+    .metric-card__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 400;
+      color: var(--c-muted); line-height: 1.4;
+    }
+    .metric-card__value {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(26px,2.8vw,40px); font-weight: 700; color: #fff; line-height: 1;
+    }
+    .metric-card__delta {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.8vw,13px); color: #22C55E; margin-top: -8px;
+    }
+    @media (max-width: 860px) { .metrics-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 440px) { .metrics-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(18px,1.8vw,26px);
+      padding: clamp(20px,2.2vw,30px) clamp(20px,2.2vw,30px) clamp(14px,1.8vw,22px);
+    }
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 14px; margin-bottom: clamp(18px,2.2vw,28px);
+    }
+    .chart-title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(16px,1.3vw,20px); font-weight: 700; color: #fff;
+    }
+    .period-pills { display: flex; gap: clamp(6px,.8vw,10px); flex-wrap: wrap; }
+    .period-btn {
+      padding: clamp(7px,.7vw,10px) clamp(14px,1.3vw,20px);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.85vw,13px); font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05);
+      border: 1.5px solid transparent; cursor: pointer; white-space: nowrap;
+      transition: color .2s, background .2s, border-color .2s;
+    }
+    .period-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .period-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    /* SVG wrap */
+    .chart-wrap { position: relative; }
+    .chart-svg-wrap { width: 100%; overflow: hidden; margin-bottom: clamp(6px,.8vw,10px); }
+    .chart-svg { width: 100%; height: auto; display: block; cursor: crosshair; }
+
+    .chart-xaxis { display: flex; justify-content: space-between; padding-inline: 2px; }
+    .chart-xaxis span { font-family: 'Golos Text', sans-serif; font-size: clamp(9px,.65vw,11px); color: var(--c-dim); }
+
+    /* Tooltip */
+    .chart-tooltip {
+      position: absolute; top: 0; pointer-events: none; display: none;
+      background: rgba(15,19,23,.96); border: 1px solid rgba(255,255,255,.13);
+      border-radius: 12px; padding: 10px 14px; white-space: nowrap;
+      z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+    .chart-tooltip__date { font-family: 'Golos Text', sans-serif; font-size: 11px; color: var(--c-dim); margin-bottom: 6px; }
+    .chart-tooltip__val { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 700; color: #fff; }
+
+    /* mobile hint */
+    .chart-touch-hint { display: none; font-family: 'Golos Text', sans-serif; font-size: 11px; color: var(--c-dim); text-align: center; margin-top: 6px; }
+    @media (hover: none) { .chart-touch-hint { display: block; } }
+
+    /* ── FOOTER ── */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); transition: background .2s, border-color .2s; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; }
+    @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
+    @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__user-name">Татьяна</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a><a href="profile.html">Профиль</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="page-wrap">
+
+    <h1 class="page-title">Панель управления</h1>
+
+    <!-- TAB NAV -->
+    <nav class="tab-nav">
+      <a class="tab-btn active" href="partner-dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="partner-purchases.html">Покупки</a>
+      <a class="tab-btn" href="partner-payouts.html">Выплаты</a>
+    </nav>
+
+    <!-- REFERRAL BLOCK -->
+    <div class="ref-block">
+      <div class="ref-card">
+        <span class="ref-card__label">Ваша реферальная ссылка</span>
+        <div class="ref-card__row">
+          <span class="ref-card__value" id="js-ref-link">https://uefn-s-nulya.ru/r/tatyana</span>
+          <button class="ref-card__copy" onclick="copyRef('js-ref-link','js-ref-copied')" aria-label="Скопировать ссылку">
+            <svg viewBox="0 0 18 18" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="10" height="10" rx="2"/><path d="M5 13H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+        <span class="ref-card__copied" id="js-ref-copied">Скопировано!</span>
+      </div>
+      <div class="ref-card">
+        <span class="ref-card__label">Ваш промокод</span>
+        <div class="ref-card__row">
+          <span class="ref-card__value" id="js-ref-promo">TATYANA15</span>
+          <button class="ref-card__copy" onclick="copyRef('js-ref-promo','js-promo-copied')" aria-label="Скопировать промокод">
+            <svg viewBox="0 0 18 18" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="10" height="10" rx="2"/><path d="M5 13H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+        <span class="ref-card__copied" id="js-promo-copied">Скопировано!</span>
+      </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="dash-section metrics-grid" id="js-metrics"></div>
+
+    <!-- CHART -->
+    <div class="dash-section">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Оборот</span>
+          <div class="period-pills" id="js-periods">
+            <button class="period-btn" data-period="day">День</button>
+            <button class="period-btn" data-period="week">Неделя</button>
+            <button class="period-btn active" data-period="month">Месяц</button>
+            <button class="period-btn" data-period="all">Всё время</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-svg-wrap">
+            <svg class="chart-svg" id="js-chart" viewBox="0 0 900 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Grid lines -->
+              <line x1="0" y1="44"  x2="900" y2="44"  stroke="rgba(255,255,255,.055)" stroke-width="1"/>
+              <line x1="0" y1="99"  x2="900" y2="99"  stroke="rgba(255,255,255,.055)" stroke-width="1"/>
+              <line x1="0" y1="154" x2="900" y2="154" stroke="rgba(255,255,255,.055)" stroke-width="1"/>
+              <line x1="0" y1="209" x2="900" y2="209" stroke="rgba(255,255,255,.055)" stroke-width="1"/>
+              <!-- gradient fill under line -->
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3BCFFE" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#3BCFFE" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="js-fill" fill="url(#lineGrad)" stroke="none"/>
+              <path id="js-line" fill="none" stroke="#3BCFFE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Hover indicator -->
+              <g id="js-ind" style="display:none; pointer-events:none">
+                <line id="js-ind-line" x1="0" y1="0" x2="0" y2="220" stroke="rgba(255,255,255,.22)" stroke-width="1" stroke-dasharray="5,3"/>
+                <circle id="js-ind-dot" r="5" fill="#3BCFFE" stroke="#0F1317" stroke-width="2.5"/>
+              </g>
+              <rect id="js-overlay" x="0" y="0" width="900" height="220" fill="transparent"/>
+            </svg>
+          </div>
+          <div class="chart-xaxis" id="js-xaxis"></div>
+          <div class="chart-tooltip" id="js-tip"></div>
+          <p class="chart-touch-hint">Нажмите на график для просмотра</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand"><span class="footer__copy">© 2025…2026</span><div class="footer__brand-logo"><img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" /><span class="footer__brand-logo-text">UEFN с нуля</span></div></div>
+      <div class="footer__legal"><a href="#">Политика конфиденциальности</a><a href="#">Пользовательское соглашение</a></div>
+      <nav class="footer__nav"><a href="index.html#advantages">О курсе</a><a href="index.html#partnership">Подписка</a><a href="index.html#curriculum">Программа</a><a href="index.html#faq">Ответы на вопросы</a><a href="index.html#pricing">Тарифы</a><a href="partner.html">Партнёрка</a></nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram"><div class="footer__tg-capsule-text"><span class="footer__tg-capsule-sub">Вступайте в группу</span><span class="footer__tg-capsule-name">Телеграм</span></div><div class="footer__tg-icon"><img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" /></div></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
+const burger = document.getElementById('js-burger'), drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) { drawerOpen=v; burger.classList.toggle('open',v); drawer.classList.toggle('open',v); burger.setAttribute('aria-expanded',String(v)); document.body.style.overflow=v?'hidden':''; }
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ════════════════════════════════════
+   COPY REFERRAL / PROMO
+════════════════════════════════════ */
+function copyRef(valueId, feedbackId) {
+  const text = document.getElementById(valueId).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const fb = document.getElementById(feedbackId);
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 2000);
+  });
+}
+
+/* ════════════════════════════════════
+   METRICS
+════════════════════════════════════ */
+const metrics = [
+  { label: 'Перешло по вашей ссылке',        value: '1 335', delta: '+42 за месяц' },
+  { label: 'Ввели ваш промокод',              value: '1 335', delta: '+18 за месяц' },
+  { label: 'Совершили покупки по промокоду',  value: '1 335', delta: '+11 за месяц' },
+  { label: 'Оформили подписку',               value: '1 335', delta: '+7 за месяц'  },
+];
+
+const metricsEl = document.getElementById('js-metrics');
+metrics.forEach(m => {
+  metricsEl.insertAdjacentHTML('beforeend', `
+    <div class="metric-card">
+      <p class="metric-card__label">${m.label}</p>
+      <p class="metric-card__value">${m.value}</p>
+      <p class="metric-card__delta">${m.delta}</p>
+    </div>`);
+});
+
+/* ════════════════════════════════════
+   SMOOTH PATH (Catmull-Rom → Bezier)
+════════════════════════════════════ */
+function smoothPath(pts, tension = 0.38) {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i-1,0)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(i+2,pts.length-1)];
+    const cp1x = p1[0]+(p2[0]-p0[0])*tension, cp1y = p1[1]+(p2[1]-p0[1])*tension;
+    const cp2x = p2[0]-(p3[0]-p1[0])*tension, cp2y = p2[1]-(p3[1]-p1[1])*tension;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+}
+
+/* ════════════════════════════════════
+   CHART DATA  (Y: 0=top, 220=bottom)
+════════════════════════════════════ */
+const VW = 900, VH = 220, PAD_B = 11; /* padB keeps line above x-axis */
+
+const PERIODS = {
+  day: {
+    labels: ['00:00','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','23:59'],
+    values: [1200,800,600,900,1800,3200,4100,3800,4500,3900,3200,2400,1900],
+    /* Revenue ₽ */
+  },
+  week: {
+    labels: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'],
+    values: [12000,18500,14200,22000,19800,28000,24500],
+  },
+  month: {
+    labels: ['5.04','7.04','9.04','11.04','13.04','15.04','17.04','19.04','21.04','23.04','25.04','27.04','30.04'],
+    values: [38000,52000,41000,68000,55000,72000,63000,80000,58000,74000,66000,82000,45000],
+  },
+  all: {
+    labels: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+    values: [120000,145000,132000,198000,175000,210000,188000,230000,205000,242000,218000,260000],
+  },
+};
+
+function buildPts(values) {
+  const n = values.length;
+  const min = Math.min(...values), max = Math.max(...values), rng = max - min || 1;
+  return values.map((v, i) => [
+    Math.round(i * VW / (n - 1)),
+    Math.round(VH - PAD_B - ((v - min) / rng) * (VH - PAD_B * 2 - 20)),
+  ]);
+}
+
+const lineEl    = document.getElementById('js-line');
+const fillEl    = document.getElementById('js-fill');
+const xaxisEl   = document.getElementById('js-xaxis');
+const indG      = document.getElementById('js-ind');
+const indLine   = document.getElementById('js-ind-line');
+const indDot    = document.getElementById('js-ind-dot');
+const tipEl     = document.getElementById('js-tip');
+const chartSvg  = document.getElementById('js-chart');
+const overlay   = document.getElementById('js-overlay');
+
+let currentPts = [], currentData = PERIODS.month;
+
+function renderChart(data) {
+  currentData = data;
+  const pts = buildPts(data.values);
+  currentPts = pts;
+  const linePath = smoothPath(pts);
+  lineEl.setAttribute('d', linePath);
+
+  /* Fill: close path down to bottom */
+  const last = pts[pts.length - 1], first = pts[0];
+  const fillPath = linePath + ` L ${last[0]} ${VH} L ${first[0]} ${VH} Z`;
+  fillEl.setAttribute('d', fillPath);
+
+  /* X-axis labels */
+  xaxisEl.innerHTML = '';
+  data.labels.forEach(l => {
+    const s = document.createElement('span'); s.textContent = l; xaxisEl.appendChild(s);
+  });
+
+  hideChartTip();
+}
+
+function getIdx(clientX) {
+  const rect = chartSvg.getBoundingClientRect();
+  const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return Math.round(frac * (currentPts.length - 1));
+}
+
+function showChartTip(clientX) {
+  const idx = getIdx(clientX);
+  const rect = chartSvg.getBoundingClientRect();
+  const svgX = currentPts[idx][0];
+  const svgY = currentPts[idx][1];
+
+  indLine.setAttribute('x1', svgX); indLine.setAttribute('x2', svgX);
+  indDot.setAttribute('cx', svgX); indDot.setAttribute('cy', svgY);
+  indG.style.display = '';
+
+  const val = currentData.values[idx].toLocaleString('ru-RU');
+  tipEl.innerHTML = `<div class="chart-tooltip__date">${currentData.labels[idx]}</div><div class="chart-tooltip__val">${val} ₽</div>`;
+
+  const screenX = (svgX / VW) * rect.width;
+  const tipW = 130;
+  let left = screenX + 14;
+  if (left + tipW > rect.width) left = screenX - tipW - 10;
+  tipEl.style.left = left + 'px';
+  tipEl.style.display = 'block';
+}
+
+function hideChartTip() { indG.style.display = 'none'; tipEl.style.display = 'none'; }
+
+overlay.addEventListener('mousemove', e => showChartTip(e.clientX));
+overlay.addEventListener('mouseleave', hideChartTip);
+let touchActive = false;
+overlay.addEventListener('touchstart', e => { e.preventDefault(); touchActive=true; showChartTip(e.touches[0].clientX); }, {passive:false});
+overlay.addEventListener('touchmove',  e => { e.preventDefault(); showChartTip(e.touches[0].clientX); }, {passive:false});
+overlay.addEventListener('touchend',   () => { touchActive=false; hideChartTip(); });
+document.addEventListener('touchstart', e => { if (touchActive && !chartSvg.contains(e.target)) hideChartTip(); });
+
+/* Period buttons */
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderChart(PERIODS[btn.dataset.period]);
+  });
+});
+
+/* Initial render */
+renderChart(PERIODS.month);
+</script>
+</body>
+</html>

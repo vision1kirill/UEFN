@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Партнёрка — UEFN с нуля</title>
+  <meta name="description" content="Подать заявку на партнёрство — UEFN с нуля." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       NAV
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%; overflow: hidden;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; color: #fff; white-space: nowrap;
+    }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-family: 'Golos Text', sans-serif; font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .nav__plan-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff;
+      background: linear-gradient(135deg, rgba(1,102,195,.20) 0%, rgba(59,207,254,.20) 100%);
+      border: 1px solid rgba(59,207,254,.18); border-radius: 100px; padding: 10px 22px;
+      white-space: nowrap; cursor: default;
+    }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600;
+      color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a { width: 100%; padding: 14px; font-size: 15px; text-align: center; }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; } .nav__auth { display: none; }
+      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } .nav__burger { width: 36px; height: 36px; } }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(32px,4vw,56px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       PARTNER LAYOUT
+    ═══════════════════════════════════ */
+    .partner-grid {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: clamp(32px, 5vw, 80px);
+      align-items: start;
+    }
+
+    /* LEFT — title + description */
+    .partner-aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 32px);
+    }
+    .partner-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(28px, 4vw, 56px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: clamp(16px, 2vw, 24px);
+    }
+    .partner-desc {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px, 1vw, 15px);
+      font-weight: 400;
+      color: var(--c-muted);
+      line-height: 1.65;
+      max-width: 320px;
+    }
+
+    /* ═══════════════════════════════════
+       FORM FIELDS
+    ═══════════════════════════════════ */
+    .partner-form {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(10px, 1.2vw, 14px);
+    }
+
+    /* Individual field card */
+    .field-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: clamp(16px, 1.6vw, 22px);
+      padding: clamp(14px, 1.6vw, 22px) clamp(16px, 1.8vw, 24px);
+      transition: border-color .2s;
+    }
+    .field-card:focus-within {
+      border-color: rgba(59,207,254,.30);
+    }
+
+    .field-card__label {
+      display: block;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(10px, .75vw, 12px);
+      font-weight: 400;
+      color: var(--c-muted);
+      margin-bottom: 6px;
+      letter-spacing: .01em;
+    }
+
+    .field-card input,
+    .field-card textarea {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px, 1vw, 15px);
+      font-weight: 500;
+      color: #fff;
+      line-height: 1.5;
+      resize: none;
+    }
+    .field-card input::placeholder,
+    .field-card textarea::placeholder {
+      color: rgba(255,255,255,.22);
+      font-weight: 400;
+    }
+    .field-card textarea {
+      min-height: clamp(64px, 7vw, 88px);
+    }
+
+    /* ═══════════════════════════════════
+       RADIO — Тип сотрудничества
+    ═══════════════════════════════════ */
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(8px, 1vw, 12px);
+      padding-top: 2px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: clamp(12px, 1.3vw, 16px) clamp(12px, 1.2vw, 16px);
+      border-radius: clamp(12px, 1.2vw, 16px);
+      border: 1.5px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.03);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    .radio-option:hover { border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.055); }
+    .radio-option.selected {
+      border-color: rgba(59,207,254,.45);
+      background: rgba(59,207,254,.06);
+    }
+
+    /* circle indicator */
+    .radio-option__dot {
+      flex-shrink: 0;
+      width: clamp(22px, 2.2vw, 28px);
+      height: clamp(22px, 2.2vw, 28px);
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.20);
+      background: rgba(255,255,255,.05);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+    }
+    .radio-option.selected .radio-option__dot {
+      background: var(--g-accent);
+      border-color: transparent;
+    }
+    .radio-option__dot svg {
+      width: 12px; height: 12px;
+      stroke: transparent; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .radio-option.selected .radio-option__dot svg { stroke: #fff; }
+
+    .radio-option__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 500;
+      color: rgba(255,255,255,.75);
+      line-height: 1.35;
+      transition: color .2s;
+    }
+    .radio-option.selected .radio-option__label { color: #fff; }
+
+    @media (max-width: 480px) {
+      .radio-group { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════
+       SLUG FIELD + PREVIEW
+    ═══════════════════════════════════ */
+    .slug-preview {
+      margin-top: 10px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .slug-preview__row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px;
+    }
+    .slug-preview__icon {
+      flex-shrink: 0; width: 14px; height: 14px;
+      stroke: var(--c-dim); fill: none;
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .slug-preview__text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.8vw,13px); font-weight: 400;
+      color: var(--c-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .slug-preview__text span {
+      color: var(--c-cyan); font-weight: 600;
+    }
+    .slug-err {
+      font-size: clamp(10px,.72vw,11.5px); color: #F87171;
+      font-weight: 400; display: none; margin-top: 4px;
+    }
+    .slug-err.show { display: block; }
+
+    /* ═══════════════════════════════════
+       CHECKBOX — Согласие с условиями
+    ═══════════════════════════════════ */
+    .agree-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: clamp(14px, 1.4vw, 18px) clamp(16px, 1.8vw, 24px);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: clamp(16px, 1.6vw, 22px);
+      cursor: pointer;
+      transition: border-color .2s;
+      user-select: none;
+    }
+    .agree-row:has(.agree-checkbox:checked) {
+      border-color: rgba(59,207,254,.30);
+    }
+    .agree-checkbox {
+      position: absolute;
+      opacity: 0;
+      width: 0; height: 0;
+    }
+    .agree-box {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.05);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+      margin-top: 1px;
+    }
+    .agree-checkbox:checked + .agree-box {
+      background: var(--g-accent);
+      border-color: transparent;
+    }
+    .agree-box svg {
+      width: 12px; height: 12px;
+      stroke: transparent; fill: none;
+      stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .agree-checkbox:checked + .agree-box svg { stroke: #fff; }
+    .agree-text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 400;
+      color: rgba(255,255,255,.65);
+      line-height: 1.5;
+    }
+    .agree-text a {
+      color: var(--c-cyan);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .agree-text a:hover { opacity: .8; }
+
+    /* ═══════════════════════════════════
+       SUBMIT BUTTON
+    ═══════════════════════════════════ */
+    .btn-submit-wrap {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: clamp(4px, .8vw, 10px);
+    }
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: clamp(15px, 1.5vw, 18px) clamp(40px, 5vw, 64px);
+      background: var(--g-accent);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 16px);
+      font-weight: 600; color: #fff;
+      cursor: pointer; border: none;
+      transition: opacity .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .btn-submit:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ═══════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════ */
+    @media (max-width: 900px) {
+      .partner-grid {
+        grid-template-columns: 1fr;
+        gap: clamp(24px, 4vw, 40px);
+      }
+      .partner-aside {
+        position: static;
+      }
+      .partner-desc { max-width: 100%; }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__plan-badge">Essential</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge">Essential</a></div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+  <div class="page-wrap">
+    <div class="partner-grid">
+
+      <!-- LEFT: title + description -->
+      <aside class="partner-aside">
+        <h1 class="partner-title">Партнёрка</h1>
+        <p class="partner-desc">После регистрации и покупки курса вы получите доступ в личный кабинет и сразу сможете начать обучение</p>
+      </aside>
+
+      <!-- RIGHT: form -->
+      <form class="partner-form" onsubmit="return false;">
+
+        <!-- Имя -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-name">Имя или никнейм</label>
+          <input id="f-name" name="name" type="text" placeholder="Александр" value="Александр" autocomplete="name" />
+        </div>
+
+        <!-- Email -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-email">Электронная почта</label>
+          <input id="f-email" name="email" type="email" placeholder="example@mail.ru" value="alexander8849@mail.ru" autocomplete="email" />
+        </div>
+
+        <!-- Telegram -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-tg">Телеграм для связи</label>
+          <input id="f-tg" name="telegram" type="text" placeholder="@username" value="alexander8849" autocomplete="off" />
+        </div>
+
+        <!-- Партнёрский слаг -->
+        <div class="field-card" id="f-slug-card">
+          <label class="field-card__label" for="f-slug">Ваш уникальный идентификатор</label>
+          <input id="f-slug" name="slug" type="text" placeholder="mygamedev" autocomplete="off"
+                 oninput="onSlugInput(this)" maxlength="32" />
+          <div class="slug-preview" id="js-slug-preview" style="display:none">
+            <div class="slug-preview__row">
+              <svg class="slug-preview__icon" viewBox="0 0 14 14"><path d="M8.5 4.5l-3 3M5.5 8.5l-2 2a1.8 1.8 0 0 0 2.5 2.5l2-2M8.5 5.5l2-2a1.8 1.8 0 0 0-2.5-2.5l-2 2"/></svg>
+              <span class="slug-preview__text">uefn-s-nulya.ru/r/<span id="js-slug-link-val">mygamedev</span></span>
+            </div>
+            <div class="slug-preview__row">
+              <svg class="slug-preview__icon" viewBox="0 0 14 14"><rect x="1" y="4" width="12" height="7" rx="1.5"/><path d="M4 4V3a2 2 0 0 1 4 0v1"/></svg>
+              <span class="slug-preview__text">Промокод: <span id="js-slug-promo-val">MYGAMEDEV15</span></span>
+            </div>
+          </div>
+          <span class="slug-err" id="js-slug-err">Только латинские буквы, цифры и дефис. Минимум 3 символа.</span>
+        </div>
+
+        <!-- Аудитория -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-audience">Аудитория (примерное количество подписчиков/зрителей)</label>
+          <input id="f-audience" name="audience" type="text" placeholder="Например: 5 000 подписчиков в YouTube" autocomplete="off" />
+        </div>
+
+        <!-- Тип сотрудничества -->
+        <div class="field-card">
+          <span class="field-card__label">Тип сотрудничества</span>
+          <input type="hidden" name="cooperation_type" id="f-type" value="partner" />
+          <div class="radio-group">
+            <div class="radio-option selected" data-val="partner" onclick="selectType(this)">
+              <div class="radio-option__dot">
+                <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+              </div>
+              <span class="radio-option__label">Хочу стать партнёром</span>
+            </div>
+            <div class="radio-option" data-val="attract" onclick="selectType(this)">
+              <div class="radio-option__dot">
+                <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+              </div>
+              <span class="radio-option__label">Хочу привлекать клиентов</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Краткая информация о себе -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-about">Краткая информация о себе</label>
+          <textarea id="f-about" name="about" placeholder="Расскажите о себе...">После регистрации и покупки курса вы получите доступ в личный кабинет и сразу сможете начать обучение</textarea>
+        </div>
+
+        <!-- Опыт -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-exp">Опыт, чем вы занимаетесь</label>
+          <textarea id="f-exp" name="experience" placeholder="Ваш опыт и деятельность...">После регистрации и покупки курса вы получите доступ в личный кабинет и сразу сможете начать обучение</textarea>
+        </div>
+
+        <!-- Соцсети -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-social">Ваши соцсети, каналы, проекты или портфолио</label>
+          <textarea id="f-social" name="social_links" placeholder="Ссылки на ваши проекты...">https://www.youtube.com/id/23442432432
+https://www.youtube.com/id/23442432432</textarea>
+        </div>
+
+        <!-- Откуда будет идти трафик -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-traffic">Откуда будет идти трафик</label>
+          <textarea id="f-traffic" name="traffic_source" placeholder="Например: YouTube-канал, Telegram, Instagram, сарафанное радио..."></textarea>
+        </div>
+
+        <!-- Почему хотите сотрудничать -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-why">Почему вы хотите с нами сотрудничать</label>
+          <textarea id="f-why" name="motivation" placeholder="Расскажите о мотивации...">Очень нравится проект</textarea>
+        </div>
+
+        <!-- Дополнительный комментарий -->
+        <div class="field-card">
+          <label class="field-card__label" for="f-comment">Дополнительный комментарий (необязательно)</label>
+          <textarea id="f-comment" name="comment" placeholder="Любые дополнения...">Очень нравится проект</textarea>
+        </div>
+
+        <!-- Согласие с условиями -->
+        <label class="agree-row">
+          <input class="agree-checkbox" type="checkbox" id="f-agree" name="agree" value="1" />
+          <span class="agree-box">
+            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
+          </span>
+          <span class="agree-text">
+            Я ознакомился(-ась) и согласен(-на) с&nbsp;<a href="#">условиями партнёрской программы</a>
+            и&nbsp;<a href="#">политикой конфиденциальности</a>
+          </span>
+        </label>
+
+        <!-- Submit -->
+        <div class="btn-submit-wrap">
+          <button class="btn-submit" type="submit" id="js-submit-btn" onclick="handleSubmit(event)">Продолжить</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="partner.html">Партнёрка</a>
+      </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v; burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v)); document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ── Radio type selector ── */
+function selectType(el) {
+  document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('f-type').value = el.dataset.val;
+}
+
+/* ── Slug live preview ── */
+function onSlugInput(input) {
+  const raw   = input.value;
+  const clean = raw.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const preview = document.getElementById('js-slug-preview');
+  const errEl   = document.getElementById('js-slug-err');
+  const card    = document.getElementById('f-slug-card');
+
+  if (!raw) {
+    preview.style.display = 'none';
+    errEl.classList.remove('show');
+    card.style.borderColor = '';
+    return;
+  }
+
+  const valid = /^[a-z0-9-]{3,}$/.test(clean);
+  errEl.classList.toggle('show', !valid);
+  card.style.borderColor = valid ? 'rgba(59,207,254,.30)' : 'rgba(248,113,113,.45)';
+
+  if (valid) {
+    const promo = clean.replace(/-/g, '').toUpperCase() + '15';
+    document.getElementById('js-slug-link-val').textContent  = clean;
+    document.getElementById('js-slug-promo-val').textContent = promo;
+    preview.style.display = '';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+/* ── Auto-resize textareas ── */
+document.querySelectorAll('textarea').forEach(ta => {
+  const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.addEventListener('input', resize);
+  resize();
+});
+
+/* ── Submit validation ── */
+function handleSubmit(e) {
+  e.preventDefault();
+  const agree = document.getElementById('f-agree');
+  const agreeRow = agree.closest('.agree-row');
+  if (!agree.checked) {
+    agreeRow.style.borderColor = 'rgba(255,80,80,.55)';
+    agreeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { agreeRow.style.borderColor = ''; }, 2000);
+    return;
+  }
+  location.href = 'partner-verify.html';
+}
+</script>
+</body>
+</html>

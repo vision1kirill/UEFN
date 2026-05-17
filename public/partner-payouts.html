@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Выплаты — UEFN с нуля</title>
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body { font-family: 'Golos Text', sans-serif; background: var(--c-bg); color: var(--c-text); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+    :root {
+      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
+      --c-cyan: #3BCFFE; --c-blue: #0166C3;
+      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
+      --c-dim: rgba(255,255,255,.30); --c-border: rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent: linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ── NAV ── */
+    .nav { position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h); width: 100%; display: flex; align-items: center; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(15,19,23,.80); transition: box-shadow .3s; }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner { max-width: var(--wrap); width: 100%; margin-inline: auto; padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px); }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer { position: fixed; inset: var(--nav-h) 0 0; z-index: 190; background: rgba(15,19,23,.97); backdrop-filter: blur(24px); display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px; transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
+    .nav__drawer a:hover { color: #fff; }
+    @media (max-width: 1100px) { .nav__links { display: none; } .nav__auth { display: none; } .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; } }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
+
+    /* ── PAGE ── */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
+
+    /* ── TAB NAV ── */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    /* ── BALANCE SUMMARY ── */
+    .balance-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(12px,1.5vw,20px);
+      margin-bottom: clamp(24px,3vw,40px);
+    }
+    @media (max-width: 640px) { .balance-grid { grid-template-columns: 1fr; } }
+    .balance-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(16px,1.5vw,22px);
+      padding: clamp(18px,2vw,26px) clamp(18px,2vw,28px);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .balance-card--available { border-color: rgba(59,207,254,.20); }
+    .balance-card__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.8vw,13px); font-weight: 400; color: var(--c-dim);
+      letter-spacing: .02em;
+    }
+    .balance-card__amount {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(20px,2vw,30px); font-weight: 800; color: #fff;
+      letter-spacing: -.02em;
+    }
+    .balance-card--available .balance-card__amount { color: var(--c-cyan); }
+    .balance-card__sub {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.78vw,12.5px); color: var(--c-dim); font-weight: 400;
+    }
+
+    /* ── WITHDRAW BUTTON on balance card ── */
+    .balance-card--available { position: relative; }
+    .btn-withdraw {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-top: 14px;
+      padding: 10px 20px;
+      background: var(--g-accent);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.85vw,14px); font-weight: 600; color: #fff;
+      border: none; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      white-space: nowrap; align-self: flex-start;
+    }
+    .btn-withdraw:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-withdraw:active { transform: translateY(0); }
+    .btn-withdraw svg { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.60);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px var(--px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      width: 100%; max-width: 480px;
+      background: var(--c-surf2);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: clamp(20px,2vw,28px);
+      padding: clamp(20px,2.2vw,30px);
+      display: flex; flex-direction: column; gap: 0;
+      transform: translateY(16px); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal__header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .modal__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(17px,1.4vw,22px); font-weight: 800;
+      letter-spacing: -.025em; color: #fff;
+    }
+    .modal__close {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+      cursor: pointer; flex-shrink: 0; transition: background .2s;
+    }
+    .modal__close:hover { background: rgba(255,255,255,.12); }
+    .modal__close svg { width: 14px; height: 14px; stroke: var(--c-muted); fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+    /* ── Modal spacing ── */
+    #js-modal-form > * + * { margin-top: clamp(14px,1.5vw,20px); }
+    /* Tighter gap between header and form */
+    .modal__header { margin-bottom: clamp(16px,1.6vw,22px); }
+
+    /* ── Commission info ── */
+    .modal-commission {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      padding: clamp(10px,1vw,13px) clamp(14px,1.4vw,18px);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: clamp(11px,1.1vw,14px);
+    }
+    .modal-commission__item { display: flex; flex-direction: column; gap: 3px; }
+    .modal-commission__label { font-size: clamp(10px,.68vw,11px); color: var(--c-dim); font-weight: 400; letter-spacing: .02em; }
+    .modal-commission__value { font-family: 'Golos Text', sans-serif; font-size: clamp(13px,.92vw,15px); font-weight: 700; color: #fff; }
+    .modal-commission__value--receive { color: #22C55E; }
+    .modal-commission__sep { width: 1px; align-self: stretch; background: rgba(255,255,255,.08); flex-shrink: 0; }
+
+    /* ── Amount field ── */
+    .modal-amount {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: clamp(14px,1.4vw,18px);
+      padding: clamp(14px,1.5vw,20px) clamp(16px,1.6vw,22px);
+      transition: border-color .2s;
+    }
+    .modal-amount:focus-within { border-color: rgba(59,207,254,.35); }
+    .modal-amount__label {
+      display: block; font-size: clamp(10px,.7vw,11.5px); color: var(--c-dim); font-weight: 400;
+      letter-spacing: .02em; margin-bottom: 6px;
+    }
+    .modal-amount__row { display: flex; align-items: baseline; gap: 6px; }
+    .modal-amount__input {
+      flex: 1; background: none; border: none; outline: none;
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(22px,2.2vw,32px); font-weight: 800;
+      color: var(--c-cyan); width: 100%;
+    }
+    .modal-amount__input::placeholder { color: rgba(59,207,254,.35); }
+    .modal-amount__currency {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(16px,1.5vw,22px); font-weight: 800; color: var(--c-cyan);
+      flex-shrink: 0;
+    }
+    .modal-amount__max {
+      display: flex; align-items: center; justify-content: space-between; margin-top: 8px;
+    }
+    .modal-amount__hint { font-size: clamp(10.5px,.75vw,12px); color: var(--c-dim); }
+    .modal-amount__all {
+      font-size: clamp(10.5px,.75vw,12px); font-weight: 600; color: var(--c-cyan);
+      cursor: pointer; background: none; border: none; padding: 0;
+      font-family: 'Golos Text', sans-serif; transition: opacity .2s;
+    }
+    .modal-amount__all:hover { opacity: .75; }
+
+    /* ── Method select ── */
+    .modal-section__label {
+      font-size: clamp(11px,.78vw,13px); font-weight: 500; color: var(--c-muted);
+      margin-bottom: clamp(10px,1vw,14px); display: block;
+    }
+    .method-list { display: flex; flex-direction: column; gap: clamp(8px,.9vw,11px); }
+    .method-opt {
+      display: flex; align-items: center; gap: 12px;
+      padding: clamp(12px,1.2vw,16px) clamp(14px,1.4vw,18px);
+      background: rgba(255,255,255,.03);
+      border: 1.5px solid rgba(255,255,255,.08);
+      border-radius: clamp(12px,1.2vw,16px);
+      cursor: pointer; transition: border-color .2s, background .2s; user-select: none;
+    }
+    .method-opt:hover { background: rgba(255,255,255,.055); border-color: rgba(255,255,255,.14); }
+    .method-opt.selected { border-color: rgba(59,207,254,.45); background: rgba(59,207,254,.05); }
+    .method-opt__dot {
+      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.22); background: rgba(255,255,255,.05);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+    }
+    .method-opt.selected .method-opt__dot { background: var(--g-accent); border-color: transparent; }
+    .method-opt__dot svg { width: 10px; height: 10px; stroke: transparent; fill: none; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+    .method-opt.selected .method-opt__dot svg { stroke: #fff; }
+    .method-opt__info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .method-opt__name { font-size: clamp(13px,.95vw,15px); font-weight: 600; color: #fff; }
+    .method-opt__desc { font-size: clamp(11px,.75vw,12.5px); color: var(--c-dim); font-weight: 400; }
+
+    /* ── Requisites input ── */
+    .modal-req {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: clamp(14px,1.4vw,18px);
+      padding: clamp(14px,1.5vw,20px) clamp(16px,1.6vw,22px);
+      transition: border-color .2s;
+    }
+    .modal-req:focus-within { border-color: rgba(59,207,254,.35); }
+    .modal-req__label { display: block; font-size: clamp(10px,.7vw,11.5px); color: var(--c-dim); font-weight: 400; letter-spacing: .02em; margin-bottom: 6px; }
+    .modal-req__input {
+      display: block; width: 100%; background: none; border: none; outline: none;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,.95vw,15px); font-weight: 500; color: #fff;
+    }
+    .modal-req__input::placeholder { color: rgba(255,255,255,.22); font-weight: 400; }
+
+    /* ── Confirm button ── */
+    .btn-confirm {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: clamp(14px,1.4vw,18px) 24px;
+      background: var(--g-accent);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(14px,1.1vw,16px);
+      font-weight: 600; color: #fff; border: none; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-confirm:hover { opacity: .88; transform: translateY(-2px); }
+    .btn-confirm:active { transform: translateY(0); }
+
+    /* ── Success state ── */
+    .modal-success {
+      display: none; flex-direction: column; align-items: center;
+      gap: clamp(14px,1.5vw,20px); text-align: center; padding: clamp(10px,1vw,16px) 0;
+    }
+    .modal-success__icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(34,197,94,.12); border: 1.5px solid rgba(34,197,94,.30);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-success__icon svg { width: 28px; height: 28px; stroke: #22C55E; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .modal-success__title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.3vw,20px); font-weight: 800; color: #fff; }
+    .modal-success__desc { font-size: clamp(12px,.88vw,14px); color: var(--c-muted); line-height: 1.6; max-width: 340px; }
+
+    /* Payout status badge */
+    .pout-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: 100px;
+      font-size: clamp(10.5px,.72vw,12px); font-weight: 600; white-space: nowrap;
+    }
+    .pout-badge::before { content:''; display:block; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .pout-badge--paid     { background:rgba(34,197,94,.10);  border:1px solid rgba(34,197,94,.22);  color:#22C55E; }
+    .pout-badge--paid::before     { background:#22C55E; }
+    .pout-badge--pending  { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
+    .pout-badge--pending::before  { background:#FBBF24; }
+    .pout-badge--approved { background:rgba(59,130,246,.10); border:1px solid rgba(59,130,246,.22); color:#60A5FA; }
+    .pout-badge--approved::before { background:#60A5FA; }
+    .pout-badge--rejected { background:rgba(239,68,68,.10);  border:1px solid rgba(239,68,68,.22);  color:#F87171; }
+    .pout-badge--rejected::before { background:#F87171; }
+    .pout-badge--cancelled{ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--c-dim); }
+    .pout-badge--cancelled::before{ background:rgba(255,255,255,.3); }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(18px,1.8vw,26px);
+      padding: clamp(20px,2.2vw,30px) clamp(20px,2.2vw,30px) clamp(14px,1.8vw,22px);
+      margin-bottom: clamp(28px,3.5vw,48px);
+    }
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 14px; margin-bottom: clamp(18px,2.2vw,28px);
+    }
+    .chart-title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(16px,1.3vw,20px); font-weight: 700; color: #fff;
+    }
+    /* Legend */
+    .chart-legend { display: flex; align-items: center; gap: clamp(16px,1.8vw,28px); flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-dot--accrual { background: #3B82F6; box-shadow: 0 0 8px rgba(59,130,246,.5); }
+    .legend-dot--payout  { background: #22C55E; box-shadow: 0 0 8px rgba(34,197,94,.5); }
+    .legend-label { font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.85vw,14px); color: var(--c-muted); }
+
+    /* SVG */
+    .chart-wrap { position: relative; }
+    .chart-svg-wrap { width: 100%; overflow: hidden; margin-bottom: clamp(6px,.8vw,10px); }
+    .chart-svg { width: 100%; height: auto; display: block; cursor: crosshair; }
+    .chart-xaxis { display: flex; justify-content: space-between; padding-inline: 2px; }
+    .chart-xaxis span { font-family: 'Golos Text', sans-serif; font-size: clamp(9px,.65vw,11px); color: var(--c-dim); }
+
+    /* Tooltip */
+    .chart-tooltip {
+      position: absolute; top: 0; pointer-events: none; display: none;
+      background: rgba(15,19,23,.96); border: 1px solid rgba(255,255,255,.13);
+      border-radius: 14px; padding: 12px 16px; white-space: nowrap;
+      z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,.5); min-width: 160px;
+    }
+    .chart-tooltip__date { font-family: 'Golos Text', sans-serif; font-size: 11px; color: var(--c-dim); margin-bottom: 8px; }
+    .chart-tooltip__row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .chart-tooltip__row:last-child { margin-bottom: 0; }
+    .chart-tooltip__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chart-tooltip__dot--a { background: #3B82F6; }
+    .chart-tooltip__dot--p { background: #22C55E; }
+    .chart-tooltip__name { font-family: 'Golos Text', sans-serif; font-size: 12px; color: var(--c-muted); flex: 1; }
+    .chart-tooltip__val  { font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 700; color: #fff; }
+
+    .chart-touch-hint { display: none; font-family: 'Golos Text', sans-serif; font-size: 11px; color: var(--c-dim); text-align: center; margin-top: 6px; }
+    @media (hover: none) { .chart-touch-hint { display: block; } }
+
+    /* ── LISTS GRID ── */
+    .lists-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px,2vw,28px);
+      align-items: start;
+    }
+    @media (max-width: 700px) { .lists-grid { grid-template-columns: 1fr; } }
+
+    .list-section__heading {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(16px,1.4vw,22px); font-weight: 800;
+      letter-spacing: -0.02em; color: #fff;
+      margin-bottom: clamp(14px,1.6vw,20px);
+    }
+    .entry-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
+
+    /* ── ENTRY ROW ── */
+    .entry-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(10px,1.2vw,16px);
+      padding: clamp(14px,1.6vw,20px) clamp(16px,1.8vw,24px);
+      background: var(--c-surf2);
+      border: 1px solid var(--c-border);
+      border-radius: clamp(14px,1.4vw,18px);
+      transition: border-color .2s;
+    }
+    .entry-row--payout { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .entry-row:hover { border-color: rgba(255,255,255,.13); }
+
+    .entry-field { display: flex; flex-direction: column; gap: 4px; }
+    .entry-field__label { font-size: clamp(10px,.7vw,11px); color: var(--c-dim); font-weight: 400; letter-spacing: .02em; }
+    .entry-field__value { font-size: clamp(13px,.95vw,15px); font-weight: 700; color: #fff; }
+
+    /* Accrual amount — blue tint */
+    .entry-row--accrual .entry-field:first-child .entry-field__value { color: #3B82F6; }
+    /* Payout amount — green tint */
+    .entry-row--payout .entry-field:first-child .entry-field__value { color: #22C55E; }
+
+    @media (max-width: 640px) { .entry-row--payout { grid-template-columns: 1fr 1fr; } }
+
+    /* ── FOOTER ── */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); transition: background .2s, border-color .2s; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; }
+    @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
+    @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__user-name">Татьяна</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a><a href="profile.html">Профиль</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="page-wrap">
+
+    <h1 class="page-title">Панель управления</h1>
+
+    <!-- TAB NAV -->
+    <nav class="tab-nav">
+      <a class="tab-btn" href="partner-dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="partner-purchases.html">Покупки</a>
+      <a class="tab-btn active" href="partner-payouts.html">Выплаты</a>
+    </nav>
+
+    <!-- BALANCE SUMMARY -->
+    <div class="balance-grid">
+      <div class="balance-card balance-card--available">
+        <span class="balance-card__label">Доступный баланс</span>
+        <span class="balance-card__amount">3 748 ₽</span>
+        <span class="balance-card__sub">Готово к выводу</span>
+        <button class="btn-withdraw" onclick="openModal()">
+          <svg viewBox="0 0 16 16"><path d="M8 2v10M4 8l4 4 4-4"/><line x1="2" y1="14" x2="14" y2="14"/></svg>
+          Вывести средства
+        </button>
+      </div>
+      <div class="balance-card">
+        <span class="balance-card__label">Ожидают выплаты</span>
+        <span class="balance-card__amount">374 ₽</span>
+        <span class="balance-card__sub">Обрабатываются</span>
+      </div>
+      <div class="balance-card">
+        <span class="balance-card__label">Уже выплачено</span>
+        <span class="balance-card__amount">20 483 ₽</span>
+        <span class="balance-card__sub">За всё время</span>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title">Статистика по финансам</span>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-dot legend-dot--accrual"></span>
+            <span class="legend-label">Начисления</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot legend-dot--payout"></span>
+            <span class="legend-label">Выплаты</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-svg-wrap">
+          <svg class="chart-svg" id="js-chart" viewBox="0 0 900 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid lines -->
+            <line x1="0" y1="48"  x2="900" y2="48"  stroke="rgba(255,255,255,.045)" stroke-width="1"/>
+            <line x1="0" y1="96"  x2="900" y2="96"  stroke="rgba(255,255,255,.045)" stroke-width="1"/>
+            <line x1="0" y1="144" x2="900" y2="144" stroke="rgba(255,255,255,.045)" stroke-width="1"/>
+            <line x1="0" y1="192" x2="900" y2="192" stroke="rgba(255,255,255,.045)" stroke-width="1"/>
+            <!-- Gradients -->
+            <defs>
+              <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.14"/>
+                <stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="gradP" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#22C55E" stop-opacity="0.14"/>
+                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Fill areas -->
+            <path id="js-fill-a" fill="url(#gradA)" stroke="none"/>
+            <path id="js-fill-p" fill="url(#gradP)" stroke="none"/>
+            <!-- Lines -->
+            <path id="js-line-a" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path id="js-line-p" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Hover indicator -->
+            <g id="js-ind" style="display:none; pointer-events:none">
+              <line id="js-ind-line" x1="0" y1="0" x2="0" y2="240" stroke="rgba(255,255,255,.20)" stroke-width="1" stroke-dasharray="5,3"/>
+              <circle id="js-dot-a" r="5" fill="#3B82F6" stroke="#0F1317" stroke-width="2.5"/>
+              <circle id="js-dot-p" r="5" fill="#22C55E" stroke="#0F1317" stroke-width="2.5"/>
+            </g>
+            <!-- Overlay for pointer events -->
+            <rect id="js-overlay" x="0" y="0" width="900" height="240" fill="transparent"/>
+          </svg>
+        </div>
+        <div class="chart-xaxis" id="js-xaxis"></div>
+        <div class="chart-tooltip" id="js-tip"></div>
+        <p class="chart-touch-hint">Нажмите на график для просмотра</p>
+      </div>
+    </div>
+
+    <!-- LISTS -->
+    <div class="lists-grid">
+
+      <!-- Начисления -->
+      <div class="list-section">
+        <h2 class="list-section__heading">Начисления</h2>
+        <div class="entry-list" id="js-accruals"></div>
+      </div>
+
+      <!-- Выплаты -->
+      <div class="list-section">
+        <h2 class="list-section__heading">Выплаты</h2>
+        <div class="entry-list" id="js-payouts"></div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- ██ WITHDRAW MODAL ██ -->
+<div class="modal-overlay" id="js-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-title">
+  <div class="modal" id="js-modal">
+
+    <!-- Header -->
+    <div class="modal__header">
+      <h2 class="modal__title" id="js-modal-title">Вывести средства</h2>
+      <button class="modal__close" onclick="closeModal()" aria-label="Закрыть">
+        <svg viewBox="0 0 14 14"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div id="js-modal-form">
+
+      <!-- Amount -->
+      <div class="modal-amount">
+        <span class="modal-amount__label">Сумма вывода</span>
+        <div class="modal-amount__row">
+          <input class="modal-amount__input" id="js-withdraw-amount" type="number" min="100" max="3748" value="3748" placeholder="0" />
+          <span class="modal-amount__currency">₽</span>
+        </div>
+        <div class="modal-amount__max">
+          <span class="modal-amount__hint">Доступно: 3 748 ₽ · Мин. 100 ₽</span>
+          <button class="modal-amount__all" onclick="document.getElementById('js-withdraw-amount').value=3748">Вся сумма</button>
+        </div>
+      </div>
+
+      <!-- Commission -->
+      <div class="modal-commission" id="js-commission">
+        <div class="modal-commission__item">
+          <span class="modal-commission__label">Комиссия</span>
+          <span class="modal-commission__value" id="js-comm-fee">75 ₽ (2%)</span>
+        </div>
+        <div class="modal-commission__sep"></div>
+        <div class="modal-commission__item">
+          <span class="modal-commission__label">К получению</span>
+          <span class="modal-commission__value modal-commission__value--receive" id="js-comm-receive">3 673 ₽</span>
+        </div>
+      </div>
+
+      <!-- Method -->
+      <div class="modal-section">
+        <span class="modal-section__label">Способ выплаты</span>
+        <div class="method-list">
+          <label class="method-opt selected" onclick="selectMethod(this,'card')">
+            <div class="method-opt__dot">
+              <svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
+            </div>
+            <div class="method-opt__info">
+              <span class="method-opt__name">Банковская карта</span>
+              <span class="method-opt__desc">Visa, Mastercard, Мир · 1–3 рабочих дня</span>
+            </div>
+          </label>
+          <label class="method-opt" onclick="selectMethod(this,'usdt')">
+            <div class="method-opt__dot">
+              <svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
+            </div>
+            <div class="method-opt__info">
+              <span class="method-opt__name">USDT (TRC-20)</span>
+              <span class="method-opt__desc">Крипта · до 30 минут</span>
+            </div>
+          </label>
+          <label class="method-opt" onclick="selectMethod(this,'sbp')">
+            <div class="method-opt__dot">
+              <svg viewBox="0 0 12 12"><polyline points="1.5 6 4.5 9 10.5 3"/></svg>
+            </div>
+            <div class="method-opt__info">
+              <span class="method-opt__name">СБП</span>
+              <span class="method-opt__desc">По номеру телефона · несколько минут</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Requisites -->
+      <div class="modal-req">
+        <label class="modal-req__label" id="js-req-label">Номер карты</label>
+        <input class="modal-req__input" id="js-req-input" type="text" placeholder="0000 0000 0000 0000" maxlength="23" autocomplete="cc-number" />
+      </div>
+
+      <!-- Confirm -->
+      <button class="btn-confirm" onclick="submitWithdraw()">Подтвердить вывод</button>
+
+    </div>
+
+    <!-- Success state -->
+    <div class="modal-success" id="js-modal-success">
+      <div class="modal-success__icon">
+        <svg viewBox="0 0 28 28"><polyline points="4 14 10 20 24 8"/></svg>
+      </div>
+      <p class="modal-success__title">Заявка отправлена!</p>
+      <p class="modal-success__desc" id="js-success-desc">Средства будут переведены в течение 1–3 рабочих дней.</p>
+      <button class="btn-confirm" onclick="closeModal()" style="max-width:240px">Отлично</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand"><span class="footer__copy">© 2025…2026</span><div class="footer__brand-logo"><img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" /><span class="footer__brand-logo-text">UEFN с нуля</span></div></div>
+      <div class="footer__legal"><a href="#">Политика конфиденциальности</a><a href="#">Пользовательское соглашение</a></div>
+      <nav class="footer__nav"><a href="index.html#advantages">О курсе</a><a href="index.html#partnership">Подписка</a><a href="index.html#curriculum">Программа</a><a href="index.html#faq">Ответы на вопросы</a><a href="index.html#pricing">Тарифы</a><a href="partner.html">Партнёрка</a></nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram"><div class="footer__tg-capsule-text"><span class="footer__tg-capsule-sub">Вступайте в группу</span><span class="footer__tg-capsule-name">Телеграм</span></div><div class="footer__tg-icon"><img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" /></div></a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
+const burger = document.getElementById('js-burger'), drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) { drawerOpen=v; burger.classList.toggle('open',v); drawer.classList.toggle('open',v); burger.setAttribute('aria-expanded',String(v)); document.body.style.overflow=v?'hidden':''; }
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ════════════════════════════════════
+   DATA
+════════════════════════════════════ */
+const accruals = [
+  { amount: '1 499 ₽', date: '30 апреля 2026 в 15:54' },
+  { amount: '1 499 ₽', date: '28 апреля 2026 в 11:20' },
+  { amount: '2 998 ₽', date: '25 апреля 2026 в 09:05' },
+  { amount: '1 499 ₽', date: '22 апреля 2026 в 18:40' },
+  { amount: '4 497 ₽', date: '19 апреля 2026 в 14:15' },
+  { amount: '1 499 ₽', date: '15 апреля 2026 в 10:32' },
+  { amount: '2 998 ₽', date: '10 апреля 2026 в 15:54' },
+  { amount: '1 499 ₽', date: '07 апреля 2026 в 08:17' },
+  { amount: '1 499 ₽', date: '04 апреля 2026 в 21:50' },
+  { amount: '2 998 ₽', date: '01 апреля 2026 в 12:00' },
+];
+
+const payouts = [
+  { amount: '5 996 ₽', date: '28 апр 2026', method: 'Банковская карта', status: 'paid' },
+  { amount: '4 497 ₽', date: '21 апр 2026', method: 'Банковская карта', status: 'paid' },
+  { amount: '7 495 ₽', date: '14 апр 2026', method: 'USDT (TRC-20)',    status: 'paid' },
+  { amount: '374 ₽',   date: '10 апр 2026', method: 'Банковская карта', status: 'pending' },
+  { amount: '2 998 ₽', date: '07 апр 2026', method: 'USDT (TRC-20)',    status: 'approved' },
+  { amount: '4 497 ₽', date: '01 апр 2026', method: 'Банковская карта', status: 'paid' },
+];
+
+/* Chart data — accruals (blue, lower) and payouts (green, higher) */
+const CHART_LABELS  = ['1.04','4.04','7.04','10.04','13.04','16.04','19.04','22.04','25.04','28.04','30.04'];
+const CHART_ACCRUAL = [1499, 2998, 1499, 2998, 1499, 4497, 4497, 1499, 2998, 1499, 1499];
+const CHART_PAYOUT  = [0,    0,    4497, 0,    0,    7495, 0,    4497, 0,    5996, 0   ];
+/* Smoothed payout for visual (use cumulative-style values for a nicer curve) */
+const CHART_PAYOUT_VIS = [3200, 4800, 6200, 5100, 6800, 8400, 7200, 9100, 6500, 8800, 7400];
+const CHART_ACCRUAL_VIS= [1200, 1800, 1500, 2200, 1700, 2800, 2100, 1600, 2400, 1900, 1500];
+
+/* ════════════════════════════════════
+   SMOOTH PATH (Catmull-Rom → Bezier)
+════════════════════════════════════ */
+function smoothPath(pts, tension = 0.38) {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(i-1,0)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(i+2,pts.length-1)];
+    const cp1x = p1[0]+(p2[0]-p0[0])*tension, cp1y = p1[1]+(p2[1]-p0[1])*tension;
+    const cp2x = p2[0]-(p3[0]-p1[0])*tension, cp2y = p2[1]-(p3[1]-p1[1])*tension;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+  }
+  return d;
+}
+
+/* ════════════════════════════════════
+   CHART
+════════════════════════════════════ */
+const VW = 900, VH = 240, PAD_B = 12;
+
+function buildPts(valuesA, valuesB) {
+  /* Normalize across both datasets combined so lines share the same scale */
+  const all = [...valuesA, ...valuesB];
+  const min = Math.min(...all), max = Math.max(...all), rng = max - min || 1;
+  const n = valuesA.length;
+  const toY = v => Math.round(VH - PAD_B - ((v - min) / rng) * (VH - PAD_B * 2 - 20));
+  const ptsA = valuesA.map((v, i) => [Math.round(i * VW / (n-1)), toY(v)]);
+  const ptsB = valuesB.map((v, i) => [Math.round(i * VW / (n-1)), toY(v)]);
+  return { ptsA, ptsB };
+}
+
+const lineAEl  = document.getElementById('js-line-a');
+const linePEl  = document.getElementById('js-line-p');
+const fillAEl  = document.getElementById('js-fill-a');
+const fillPEl  = document.getElementById('js-fill-p');
+const xaxisEl  = document.getElementById('js-xaxis');
+const indG     = document.getElementById('js-ind');
+const indLine  = document.getElementById('js-ind-line');
+const dotAEl   = document.getElementById('js-dot-a');
+const dotPEl   = document.getElementById('js-dot-p');
+const tipEl    = document.getElementById('js-tip');
+const chartSvg = document.getElementById('js-chart');
+const overlay  = document.getElementById('js-overlay');
+
+let ptsA = [], ptsP = [];
+
+function renderChart() {
+  const { ptsA: a, ptsB: p } = buildPts(CHART_ACCRUAL_VIS, CHART_PAYOUT_VIS);
+  ptsA = a; ptsP = p;
+
+  const pathA = smoothPath(a), pathP = smoothPath(p);
+  lineAEl.setAttribute('d', pathA);
+  linePEl.setAttribute('d', pathP);
+
+  /* Fill — close down to bottom */
+  const lastA = a[a.length-1], firstA = a[0];
+  fillAEl.setAttribute('d', pathA + ` L ${lastA[0]} ${VH} L ${firstA[0]} ${VH} Z`);
+  const lastP = p[p.length-1], firstP = p[0];
+  fillPEl.setAttribute('d', pathP + ` L ${lastP[0]} ${VH} L ${firstP[0]} ${VH} Z`);
+
+  /* X-axis */
+  xaxisEl.innerHTML = '';
+  CHART_LABELS.forEach(l => { const s = document.createElement('span'); s.textContent = l; xaxisEl.appendChild(s); });
+
+  hideChartTip();
+}
+
+function getIdx(clientX) {
+  const rect = chartSvg.getBoundingClientRect();
+  const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return Math.round(frac * (ptsA.length - 1));
+}
+
+function showChartTip(clientX) {
+  const idx = getIdx(clientX);
+  const rect = chartSvg.getBoundingClientRect();
+
+  const svgX = ptsA[idx][0];
+  indLine.setAttribute('x1', svgX); indLine.setAttribute('x2', svgX);
+  dotAEl.setAttribute('cx', svgX); dotAEl.setAttribute('cy', ptsA[idx][1]);
+  dotPEl.setAttribute('cx', svgX); dotPEl.setAttribute('cy', ptsP[idx][1]);
+  indG.style.display = '';
+
+  const valA = CHART_ACCRUAL_VIS[idx].toLocaleString('ru-RU');
+  const valP = CHART_PAYOUT_VIS[idx].toLocaleString('ru-RU');
+  tipEl.innerHTML = `
+    <div class="chart-tooltip__date">${CHART_LABELS[idx]}</div>
+    <div class="chart-tooltip__row">
+      <span class="chart-tooltip__dot chart-tooltip__dot--a"></span>
+      <span class="chart-tooltip__name">Начисления</span>
+      <span class="chart-tooltip__val">${valA} ₽</span>
+    </div>
+    <div class="chart-tooltip__row">
+      <span class="chart-tooltip__dot chart-tooltip__dot--p"></span>
+      <span class="chart-tooltip__name">Выплаты</span>
+      <span class="chart-tooltip__val">${valP} ₽</span>
+    </div>`;
+
+  const screenX = (svgX / VW) * rect.width;
+  const tipW = 180;
+  let left = screenX + 14;
+  if (left + tipW > rect.width) left = screenX - tipW - 10;
+  tipEl.style.left = left + 'px';
+  tipEl.style.display = 'block';
+}
+
+function hideChartTip() { indG.style.display = 'none'; tipEl.style.display = 'none'; }
+
+overlay.addEventListener('mousemove', e => showChartTip(e.clientX));
+overlay.addEventListener('mouseleave', hideChartTip);
+let touchActive = false;
+overlay.addEventListener('touchstart', e => { e.preventDefault(); touchActive=true; showChartTip(e.touches[0].clientX); }, {passive:false});
+overlay.addEventListener('touchmove',  e => { e.preventDefault(); showChartTip(e.touches[0].clientX); }, {passive:false});
+overlay.addEventListener('touchend',   () => { touchActive=false; hideChartTip(); });
+
+/* ════════════════════════════════════
+   RENDER LISTS
+════════════════════════════════════ */
+const POUT_STATUS_LABEL = { paid:'Выплачено', pending:'Ожидает', approved:'Одобрена', rejected:'Отклонена', cancelled:'Отменена' };
+
+function renderEntries(data, containerId, type) {
+  const el = document.getElementById(containerId);
+  data.forEach(item => {
+    if (type === 'payout') {
+      const sc = item.status || 'pending';
+      el.insertAdjacentHTML('beforeend', `
+        <div class="entry-row entry-row--${type}">
+          <div class="entry-field">
+            <span class="entry-field__label">Сумма</span>
+            <span class="entry-field__value">${item.amount}</span>
+          </div>
+          <div class="entry-field">
+            <span class="entry-field__label">Дата</span>
+            <span class="entry-field__value" style="font-weight:500">${item.date}</span>
+          </div>
+          <div class="entry-field">
+            <span class="entry-field__label">Способ</span>
+            <span class="entry-field__value" style="font-size:clamp(11px,.78vw,13px);font-weight:500">${item.method}</span>
+          </div>
+          <div class="entry-field">
+            <span class="entry-field__label">Статус</span>
+            <span class="entry-field__value"><span class="pout-badge pout-badge--${sc}">${POUT_STATUS_LABEL[sc]}</span></span>
+          </div>
+        </div>`);
+    } else {
+      el.insertAdjacentHTML('beforeend', `
+        <div class="entry-row entry-row--${type}">
+          <div class="entry-field">
+            <span class="entry-field__label">Начислено</span>
+            <span class="entry-field__value">${item.amount}</span>
+          </div>
+          <div class="entry-field">
+            <span class="entry-field__label">Дата</span>
+            <span class="entry-field__value" style="font-weight:500">${item.date}</span>
+          </div>
+        </div>`);
+    }
+  });
+}
+
+/* Init */
+renderChart();
+renderEntries(accruals, 'js-accruals', 'accrual');
+renderEntries(payouts,  'js-payouts',  'payout');
+
+/* ════════════════════════════════════
+   WITHDRAW MODAL
+════════════════════════════════════ */
+const overlay2  = document.getElementById('js-modal-overlay');
+const formEl    = document.getElementById('js-modal-form');
+const successEl = document.getElementById('js-modal-success');
+
+let currentMethod = 'card';
+
+const METHOD_CONFIG = {
+  card: { label: 'Номер карты',         placeholder: '0000 0000 0000 0000', type: 'text', maxlen: '23', autocomplete: 'cc-number', hint: '1–3 рабочих дня', commission: 0.02 },
+  usdt: { label: 'Адрес USDT (TRC-20)', placeholder: 'TXxxx…',            type: 'text', maxlen: '42', autocomplete: 'off',       hint: 'до 30 минут',    commission: 0.01 },
+  sbp:  { label: 'Номер телефона',      placeholder: '+7 (___) ___-__-__', type: 'tel',  maxlen: '18', autocomplete: 'tel',       hint: 'несколько минут',commission: 0    },
+};
+
+function renderCommission() {
+  const amt  = Math.max(0, +document.getElementById('js-withdraw-amount').value || 0);
+  const rate = METHOD_CONFIG[currentMethod].commission;
+  const fee  = Math.round(amt * rate);
+  const net  = amt - fee;
+  const pct  = Math.round(rate * 100);
+  const feeEl = document.getElementById('js-comm-fee');
+  const recEl = document.getElementById('js-comm-receive');
+  feeEl.textContent = pct === 0 ? 'Бесплатно' : `${fee.toLocaleString('ru-RU')} ₽ (${pct}%)`;
+  recEl.textContent = `${Math.max(0, net).toLocaleString('ru-RU')} ₽`;
+}
+
+function openModal() {
+  formEl.style.display = '';
+  successEl.style.display = 'none';
+  overlay2.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderCommission();
+  document.getElementById('js-withdraw-amount').focus();
+}
+
+function closeModal() {
+  overlay2.classList.remove('open');
+  document.body.style.overflow = '';
+  // Reset success state after fade
+  setTimeout(() => { formEl.style.display = ''; successEl.style.display = 'none'; }, 300);
+}
+
+// Close on overlay click
+overlay2.addEventListener('click', e => { if (e.target === overlay2) closeModal(); });
+
+// Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function selectMethod(el, method) {
+  document.querySelectorAll('.method-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  currentMethod = method;
+  const cfg = METHOD_CONFIG[method];
+  const labelEl = document.getElementById('js-req-label');
+  const inputEl = document.getElementById('js-req-input');
+  labelEl.textContent   = cfg.label;
+  inputEl.placeholder   = cfg.placeholder;
+  inputEl.type          = cfg.type;
+  inputEl.maxLength     = cfg.maxlen;
+  inputEl.autocomplete  = cfg.autocomplete;
+  inputEl.value         = '';
+  renderCommission();
+}
+
+// Amount live update → recalc commission
+document.getElementById('js-withdraw-amount').addEventListener('input', renderCommission);
+
+// Card number formatting (spaces after every 4 digits)
+document.getElementById('js-req-input').addEventListener('input', function() {
+  if (currentMethod !== 'card') return;
+  let v = this.value.replace(/\D/g, '').slice(0, 16);
+  this.value = v.replace(/(.{4})/g, '$1 ').trim();
+});
+
+// Phone formatting for СБП
+document.getElementById('js-req-input').addEventListener('keydown', function() {
+  if (currentMethod !== 'sbp') return;
+  // basic formatting handled by placeholder, could expand if needed
+});
+
+function submitWithdraw() {
+  const amt   = +document.getElementById('js-withdraw-amount').value;
+  const req   = document.getElementById('js-req-input').value.trim();
+  const cfg   = METHOD_CONFIG[currentMethod];
+
+  if (!amt || amt < 100 || amt > 3748) {
+    const inp = document.getElementById('js-withdraw-amount');
+    inp.closest('.modal-amount').style.borderColor = 'rgba(239,68,68,.55)';
+    setTimeout(() => inp.closest('.modal-amount').style.borderColor = '', 1800);
+    return;
+  }
+  if (!req) {
+    const inp = document.getElementById('js-req-input');
+    inp.closest('.modal-req').style.borderColor = 'rgba(239,68,68,.55)';
+    setTimeout(() => inp.closest('.modal-req').style.borderColor = '', 1800);
+    return;
+  }
+
+  // Show success
+  const fee = Math.round(amt * cfg.commission);
+  const net = amt - fee;
+  formEl.style.display    = 'none';
+  successEl.style.display = 'flex';
+  document.getElementById('js-success-desc').textContent =
+    `${net.toLocaleString('ru-RU')} ₽ поступят через ${cfg.hint}.`;
+}
+</script>
+</body>
+</html>

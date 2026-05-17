@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиль — UEFN с нуля</title>
+  <meta name="description" content="Личный кабинет — UEFN с нуля." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+      --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       NAV (logged-in variant)
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%; overflow: hidden;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; line-height: 1; color: #fff; white-space: nowrap;
+    }
+    .nav__links {
+      display: flex; align-items: center;
+      gap: clamp(12px,1.8vw,26px); margin-inline: auto;
+    }
+    .nav__links a {
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 400;
+      color: #fff; white-space: nowrap; transition: opacity .2s;
+    }
+    .nav__links a:hover { opacity: 0.65; }
+    /* Auth zone */
+    .nav__auth {
+      display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    }
+    .nav__plan-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(1,102,195,.20) 0%, rgba(59,207,254,.20) 100%);
+      border: 1px solid rgba(59,207,254,.18);
+      border-radius: 100px;
+      padding: 10px 22px;
+      white-space: nowrap;
+      cursor: default;
+    }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .2s;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    /* Burger (mobile) */
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: var(--r-sm);
+      margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px); display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 600; color: var(--c-muted);
+      padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a,
+    .nav__drawer .drawer-btns button {
+      width: 100%; padding: 14px; font-size: 15px;
+      box-sizing: border-box; text-align: center; justify-content: center;
+    }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; }
+      .nav__auth { display: none; }
+      .nav__burger { display: flex; }
+      .nav__avatar-mobile { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) {
+      .nav__logo-text { font-size: 11px; }
+      .nav__burger { width: 36px; height: 36px; }
+    }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main {
+      flex: 1;
+      padding-top: calc(var(--nav-h) + clamp(32px, 4vw, 56px));
+      padding-bottom: clamp(64px, 8vw, 100px);
+    }
+    .page-wrap {
+      max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px);
+    }
+
+    /* ═══════════════════════════════════
+       1. GREETING
+    ═══════════════════════════════════ */
+    .greeting {
+      margin-bottom: clamp(28px, 4vw, 52px);
+    }
+    .greeting__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(26px, 3.5vw, 52px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════
+       2+3. PROFILE + COURSE ROW
+    ═══════════════════════════════════ */
+    .profile-row {
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: clamp(16px, 2vw, 24px);
+      margin-bottom: clamp(32px, 4vw, 52px);
+      align-items: stretch;
+    }
+
+    /* ── Profile card ── */
+    .profile-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: clamp(24px, 2.5vw, 40px);
+      padding: clamp(28px, 3vw, 44px) clamp(24px, 2.5vw, 40px);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(20px, 2.5vw, 32px);
+      justify-content: space-between;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .profile-field {}
+    .profile-field__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 12px; font-weight: 400;
+      color: var(--c-dim);
+      margin-bottom: 6px; line-height: 1;
+    }
+    .profile-field__row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .profile-field__value {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 17px);
+      font-weight: 700; color: #fff; line-height: 1.3;
+      min-width: 0; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .profile-field__row { min-width: 0; }
+    .profile-field__edit {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: transparent; border: none; cursor: pointer;
+      color: var(--c-dim); transition: color .2s, background .2s;
+      flex-shrink: 0; padding: 0;
+    }
+    .profile-field__edit:hover { color: var(--c-cyan); background: rgba(59,207,254,.08); }
+    .profile-field__edit svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    /* Edit input — hidden by default */
+    .profile-field__input {
+      display: none;
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(59,207,254,.4);
+      border-radius: var(--r-md);
+      padding: 7px 12px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 17px); font-weight: 500; color: #fff;
+      outline: none; width: 100%;
+    }
+    .profile-field__input:focus { border-color: var(--c-cyan); }
+    .profile-field.editing .profile-field__value,
+    .profile-field.editing .profile-field__edit { display: none; }
+    .profile-field.editing .profile-field__input { display: block; }
+
+    .profile-date {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 17px); font-weight: 700; color: #fff;
+    }
+
+    .profile-logout {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 28px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 600; color: #fff;
+      cursor: pointer; transition: background .2s, border-color .2s;
+      width: fit-content;
+    }
+    .profile-logout:hover { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.22); }
+
+    /* ── Status badges ── */
+    .status-row {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-bottom: clamp(20px, 2.5vw, 32px);
+    }
+    .status-item {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px;
+    }
+    .status-item__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12.5px, .9vw, 14px); font-weight: 400; color: var(--c-muted);
+      white-space: nowrap;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11.5px, .82vw, 13px); font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-badge::before {
+      content: ''; display: block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    /* Active */
+    .status-badge--active {
+      background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.25); color: #22C55E;
+    }
+    .status-badge--active::before { background: #22C55E; box-shadow: 0 0 6px rgba(34,197,94,.6); }
+    /* Expired */
+    .status-badge--expired {
+      background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.22); color: #F87171;
+    }
+    .status-badge--expired::before { background: #F87171; }
+    /* None */
+    .status-badge--none {
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); color: var(--c-dim);
+    }
+    .status-badge--none::before { background: rgba(255,255,255,.25); }
+    /* Refunded */
+    .status-badge--refunded {
+      background: rgba(251,191,36,.10); border: 1px solid rgba(251,191,36,.22); color: #FBBF24;
+    }
+    .status-badge--refunded::before { background: #FBBF24; }
+
+    /* ── Course card ── */
+    .course-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: clamp(24px, 2.5vw, 40px);
+      padding: clamp(28px, 3vw, 44px) clamp(24px, 2.5vw, 40px);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .course-card__header {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: clamp(10px, 1.5vw, 16px);
+    }
+    .course-card__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 400; color: var(--c-dim);
+    }
+    .course-card__expiry {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 400; color: var(--c-dim);
+    }
+    .course-card__name {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(20px, 2.2vw, 32px); font-weight: 700; color: #fff;
+      margin-bottom: clamp(24px, 3vw, 40px);
+    }
+
+    /* Progress steps */
+    .course-progress {
+      display: flex;
+      gap: clamp(12px, 2vw, 28px);
+      margin-bottom: clamp(28px, 3.5vw, 44px);
+      flex-wrap: wrap;
+    }
+    .progress-step {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      flex: 1; min-width: 0;
+    }
+    .progress-step__circle {
+      width: clamp(36px, 4vw, 52px);
+      height: clamp(36px, 4vw, 52px);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .progress-step__circle--done {
+      background: var(--g-accent);
+    }
+    .progress-step__circle--done svg {
+      width: clamp(14px, 1.6vw, 20px); height: clamp(14px, 1.6vw, 20px);
+      stroke: #fff; fill: none; stroke-width: 2.5;
+      stroke-linecap: round; stroke-linejoin: round;
+    }
+    .progress-step__circle--todo {
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.1);
+    }
+    .progress-step__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(10px, .85vw, 13px); font-weight: 400;
+      color: var(--c-muted); text-align: center; line-height: 1.3;
+      white-space: nowrap;
+    }
+    .progress-step--done .progress-step__label { color: #fff; }
+
+    .course-card__btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: clamp(13px, 1.3vw, 17px) clamp(32px, 3.5vw, 52px);
+      background: var(--g-accent); border: none; border-radius: 100px;
+      color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.05vw, 16px); font-weight: 600;
+      cursor: pointer; transition: opacity .2s, transform .15s;
+      white-space: nowrap; text-decoration: none;
+    }
+    .course-card__btn:hover { opacity: .88; transform: translateY(-1px); }
+    .course-card__btn:active { transform: translateY(0); }
+
+    /* ═══════════════════════════════════
+       4. ORDER HISTORY
+    ═══════════════════════════════════ */
+    .orders { }
+    .orders__title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(18px, 1.875vw, 26px); font-weight: 700;
+      color: #fff;
+      margin-bottom: clamp(16px, 2vw, 24px);
+    }
+    .orders__list {
+      display: flex; flex-direction: column;
+      gap: clamp(8px, 1vw, 12px);
+    }
+    .order-row {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto;
+      align-items: center;
+      gap: clamp(12px, 2vw, 28px);
+      padding: clamp(16px, 1.8vw, 24px) clamp(20px, 2.5vw, 36px);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: clamp(18px, 2vw, 28px);
+      transition: border-color .2s;
+    }
+    .order-row:hover { border-color: rgba(255,255,255,.10); }
+    .order-price {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.05vw, 16px); font-weight: 700; color: #fff;
+      white-space: nowrap;
+    }
+    .order-old-price {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px); font-weight: 400;
+      color: var(--c-dim); text-decoration: line-through;
+      white-space: nowrap;
+    }
+    .order-plan-promo {
+      display: flex; align-items: center; gap: clamp(8px, 1vw, 16px);
+      min-width: 0;
+    }
+    .order-plan {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.05vw, 16px); font-weight: 700; color: #fff;
+      white-space: nowrap;
+    }
+    .order-promo {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px, .85vw, 13px); font-weight: 400;
+      color: var(--c-cyan);
+      background: rgba(59,207,254,.08);
+      border: 1px solid rgba(59,207,254,.18);
+      border-radius: 100px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+    .order-date {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px); font-weight: 400;
+      color: var(--c-dim); white-space: nowrap;
+      text-align: right;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .profile-row { grid-template-columns: 1fr; }
+      .course-progress { gap: clamp(8px, 2vw, 16px); }
+    }
+    @media (max-width: 680px) {
+      .order-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px 16px;
+      }
+      .order-price     { grid-column: 1; grid-row: 1; }
+      .order-old-price { grid-column: 2; grid-row: 1; text-align: right; }
+      .order-plan-promo { grid-column: 1 / -1; grid-row: 2; }
+      .order-date      { grid-column: 1 / -1; grid-row: 3; text-align: left; color: var(--c-muted); }
+    }
+    @media (max-width: 480px) {
+      .course-progress { gap: 6px; }
+      .progress-step__label { font-size: 10px; }
+    }
+    @media (max-width: 420px) {
+      .course-progress { gap: 5px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+      .course-progress::-webkit-scrollbar { display: none; }
+      .progress-step { flex: 0 0 auto; min-width: 52px; }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px, 6vw, 80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px, 2.5vw, 32px); }
+    .footer__grid {
+      display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto;
+      column-gap: clamp(32px, 5vw, 80px); row-gap: 0; align-items: start;
+    }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px, 3vw, 48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px, 2vw, 32px); padding: clamp(14px, 2.3vw, 26px) clamp(16px, 1.8vw, 28px); width: clamp(200px, 16.25vw, 303px); height: clamp(64px, 5.75vw, 96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px, 2.4vw, 46px); text-decoration: none; transition: background .2s, border-color .2s; cursor: pointer; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px, 3vw, 40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px, 8vw, 48px); justify-self: stretch; align-self: auto; margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; grid-column: unset; grid-row: unset; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+      .footer__legal a { font-size: 12px; }
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV (logged in) ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <!-- Auth zone: plan badge + avatar -->
+    <div class="nav__auth">
+      <span class="nav__plan-badge" id="js-nav-plan">Essential</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </a>
+  </div>
+</header>
+
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <div class="drawer-btns">
+    <a href="profile.html" class="nav__plan-badge" style="display:flex;align-items:center;justify-content:center;">Essential</a>
+  </div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+  <div class="page-wrap">
+
+    <!-- 1. GREETING -->
+    <section class="greeting">
+      <h1 class="greeting__title" id="js-greeting">Здравствуйте, Александр</h1>
+    </section>
+
+    <!-- 2+3. PROFILE + COURSE -->
+    <div class="profile-row">
+
+      <!-- Profile card -->
+      <div class="profile-card">
+
+        <!-- Name -->
+        <div class="profile-field" id="field-name">
+          <p class="profile-field__label">Имя или никнейм</p>
+          <div class="profile-field__row">
+            <span class="profile-field__value" id="val-name">Александр</span>
+            <button class="profile-field__edit" aria-label="Редактировать имя" onclick="startEdit('field-name','val-name','input-name')">
+              <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><path d="M9 4l3 3"/></svg>
+            </button>
+          </div>
+          <input class="profile-field__input" id="input-name" type="text" value="Александр"
+            onblur="saveEdit('field-name','val-name','input-name')"
+            onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelEdit('field-name','val-name','input-name')" />
+        </div>
+
+        <!-- Email -->
+        <div class="profile-field" id="field-email">
+          <p class="profile-field__label">Электронная почта</p>
+          <div class="profile-field__row">
+            <span class="profile-field__value" id="val-email">alexander8849@mail.ru</span>
+            <button class="profile-field__edit" aria-label="Редактировать почту" onclick="startEdit('field-email','val-email','input-email')">
+              <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><path d="M9 4l3 3"/></svg>
+            </button>
+          </div>
+          <input class="profile-field__input" id="input-email" type="email" value="alexander8849@mail.ru"
+            onblur="saveEdit('field-email','val-email','input-email')"
+            onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelEdit('field-email','val-email','input-email')" />
+        </div>
+
+        <!-- Reg date -->
+        <div>
+          <p class="profile-field__label">Дата регистрации</p>
+          <p class="profile-date">28 апреля 2026</p>
+        </div>
+
+        <!-- Logout -->
+        <button class="profile-logout" onclick="window.location.href='login.html'">Выйти</button>
+
+      </div>
+
+      <!-- Course card -->
+      <div class="course-card">
+        <div class="course-card__header">
+          <span class="course-card__label">Ваш курс</span>
+          <span class="course-card__expiry">До 28 мая 2026</span>
+        </div>
+        <p class="course-card__name">Essential</p>
+
+        <!-- Статусы -->
+        <div class="status-row">
+          <div class="status-item">
+            <span class="status-item__label">Доступ к курсу</span>
+            <span class="status-badge status-badge--active">Активен</span>
+          </div>
+          <div class="status-item">
+            <span class="status-item__label">Подписка «Сотрудничество»</span>
+            <span class="status-badge status-badge--none">Нет подписки</span>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="course-progress">
+          <div class="progress-step progress-step--done">
+            <div class="progress-step__circle progress-step__circle--done">
+              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
+            </div>
+            <span class="progress-step__label">1 занятие</span>
+          </div>
+          <div class="progress-step progress-step--done">
+            <div class="progress-step__circle progress-step__circle--done">
+              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
+            </div>
+            <span class="progress-step__label">2 занятие</span>
+          </div>
+          <div class="progress-step progress-step--done">
+            <div class="progress-step__circle progress-step__circle--done">
+              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
+            </div>
+            <span class="progress-step__label">3 занятие</span>
+          </div>
+          <div class="progress-step">
+            <div class="progress-step__circle progress-step__circle--todo"></div>
+            <span class="progress-step__label">4 занятие</span>
+          </div>
+          <div class="progress-step">
+            <div class="progress-step__circle progress-step__circle--todo"></div>
+            <span class="progress-step__label">5 занятие</span>
+          </div>
+          <div class="progress-step">
+            <div class="progress-step__circle progress-step__circle--todo"></div>
+            <span class="progress-step__label">6 занятие</span>
+          </div>
+        </div>
+
+        <a href="course.html" class="course-card__btn">Продолжить обучение</a>
+      </div>
+
+    </div>
+
+    <!-- 4. ORDER HISTORY -->
+    <section class="orders">
+      <h2 class="orders__title">История заказов</h2>
+      <div class="orders__list">
+
+        <!-- Order with promo -->
+        <div class="order-row">
+          <span class="order-price">1&nbsp;499&nbsp;₽</span>
+          <span class="order-old-price">1&nbsp;499&nbsp;₽</span>
+          <div class="order-plan-promo">
+            <span class="order-plan">Essential</span>
+            <span class="order-promo">HappyNewYear</span>
+          </div>
+          <span class="order-date">28 апреля 2026</span>
+        </div>
+
+        <!-- Order without promo -->
+        <div class="order-row">
+          <span class="order-price">1&nbsp;499&nbsp;₽</span>
+          <span class="order-old-price" style="visibility:hidden">—</span>
+          <div class="order-plan-promo">
+            <span class="order-plan">Essential</span>
+          </div>
+          <span class="order-date">28 апреля 2026</span>
+        </div>
+
+        <div class="order-row">
+          <span class="order-price">1&nbsp;499&nbsp;₽</span>
+          <span class="order-old-price" style="visibility:hidden">—</span>
+          <div class="order-plan-promo">
+            <span class="order-plan">Essential</span>
+          </div>
+          <span class="order-date">28 апреля 2026</span>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav" aria-label="Навигация сайта">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#partnership">Партнёрка</a>
+      </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon" aria-hidden="true">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* Nav scroll shadow */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 8);
+}, { passive: true });
+
+/* Burger */
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v;
+  burger.classList.toggle('open', v);
+  drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v));
+  document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => {
+  a.addEventListener('click', () => setDrawer(false));
+});
+
+/* ── Inline edit ── */
+function startEdit(fieldId, valId, inputId) {
+  const field = document.getElementById(fieldId);
+  const input = document.getElementById(inputId);
+  field.classList.add('editing');
+  input.focus();
+  input.select();
+}
+function saveEdit(fieldId, valId, inputId) {
+  const field = document.getElementById(fieldId);
+  const val   = document.getElementById(valId);
+  const input = document.getElementById(inputId);
+  const newVal = input.value.trim();
+  if (newVal) {
+    val.textContent = newVal;
+    /* Update greeting if name changed */
+    if (inputId === 'input-name') {
+      const greeting = document.getElementById('js-greeting');
+      if (greeting) greeting.textContent = 'Здравствуйте, ' + newVal;
+    }
+  } else {
+    input.value = val.textContent;
+  }
+  field.classList.remove('editing');
+}
+function cancelEdit(fieldId, valId, inputId) {
+  const field = document.getElementById(fieldId);
+  const val   = document.getElementById(valId);
+  const input = document.getElementById(inputId);
+  input.value = val.textContent;
+  field.classList.remove('editing');
+}
+</script>
+</body>
+</html>

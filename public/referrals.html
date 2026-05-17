@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Рефералы — UEFN с нуля</title>
+  <meta name="description" content="Реферальные промокоды — UEFN с нуля." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer { position: fixed; inset: var(--nav-h) 0 0; z-index: 190; background: rgba(15,19,23,.97); backdrop-filter: blur(24px); display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px; transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
+    .nav__drawer a:hover { color: #fff; }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; } .nav__auth { display: none; }
+      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
+
+    /* ── PAGE ── */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
+
+    /* ── TAB NAV ── */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
+
+    /* ── CARD ── */
+    .card { background: var(--c-surf2); border: 1px solid var(--c-border); border-radius: clamp(18px,1.8vw,26px); padding: clamp(18px,2.2vw,28px); }
+
+    /* ── CREATE CARD ── */
+    .create-card {
+      display: flex; align-items: center;
+      gap: clamp(12px,1.5vw,20px); flex-wrap: wrap;
+    }
+    .create-card__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,1vw,16px); font-weight: 600; color: #fff;
+      white-space: nowrap; flex-shrink: 0;
+      min-width: clamp(130px, 14vw, 200px);
+    }
+    .create-card__input {
+      flex: 1; min-width: clamp(160px, 20vw, 320px);
+      height: clamp(44px,4vw,52px);
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--c-border-mid);
+      border-radius: 100px;
+      padding: 0 clamp(16px,1.5vw,22px);
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,1vw,15px); font-weight: 500;
+      color: #fff; outline: none;
+      transition: border-color .2s;
+    }
+    .create-card__input::placeholder { color: var(--c-dim); }
+    .create-card__input:focus { border-color: rgba(59,207,254,.5); }
+    .create-card__btn {
+      height: clamp(44px,4vw,52px);
+      padding: 0 clamp(20px,2vw,32px);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px,1vw,15px); font-weight: 600;
+      color: #fff; background: rgba(255,255,255,.09);
+      border: 1px solid var(--c-border-mid);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background .2s, border-color .2s;
+    }
+    .create-card__btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+    .create-card__btn:active { background: rgba(59,207,254,.12); border-color: rgba(59,207,254,.4); }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.4vw,22px); font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: clamp(14px,1.8vw,22px); }
+
+    /* ── PROMO LIST ── */
+    .promo-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
+
+    .promo-row {
+      display: grid;
+      grid-template-columns: 2fr 1.3fr 1.1fr 1.3fr 1fr auto;
+      gap: clamp(10px,1.5vw,20px);
+      align-items: center;
+      transition: opacity .25s;
+    }
+    .promo-row--disabled { opacity: .45; }
+
+    .promo-field__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(9px,.7vw,11px); font-weight: 400;
+      color: var(--c-muted); margin-bottom: 4px; white-space: nowrap;
+    }
+    .promo-field__value {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.95vw,15px); font-weight: 700; color: #fff;
+      line-height: 1.3; letter-spacing: .01em;
+    }
+    .promo-field__value--muted {
+      font-weight: 500; color: var(--c-muted);
+    }
+
+    /* copy button on code */
+    .promo-code-wrap { display: flex; align-items: center; gap: 8px; }
+    .promo-copy-btn {
+      width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.06); border: 1px solid var(--c-border);
+      color: var(--c-dim); cursor: pointer; transition: background .2s, color .2s;
+    }
+    .promo-copy-btn:hover { background: rgba(255,255,255,.11); color: #fff; }
+    .promo-copy-btn svg { width: 12px; height: 12px; }
+
+    /* status badge */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px 3px 7px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(10px,.75vw,12px); font-weight: 600; line-height: 1.4;
+    }
+    .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .status-badge--active  { background: rgba(34,197,94,.12);  color: #22C55E; }
+    .status-badge--active::before  { background: #22C55E; }
+    .status-badge--expired { background: rgba(255,255,255,.07); color: var(--c-muted); }
+    .status-badge--expired::before { background: rgba(255,255,255,.35); }
+    .status-badge--disabled { background: rgba(239,68,68,.10); color: #EF4444; }
+    .status-badge--disabled::before { background: #EF4444; }
+
+    /* action buttons */
+    .promo-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .promo-action-btn {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--c-border); color: var(--c-dim);
+      cursor: pointer; flex-shrink: 0;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    .promo-action-btn svg { width: 14px; height: 14px; pointer-events: none; }
+    .promo-action-btn--toggle { background: rgba(255,255,255,.04); }
+    .promo-action-btn--toggle:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); color: #fff; }
+    .promo-action-btn--toggle.is-disabled { background: rgba(59,207,254,.08); border-color: rgba(59,207,254,.3); color: var(--c-cyan); }
+    .promo-action-btn--delete { background: rgba(255,255,255,.04); }
+    .promo-action-btn--delete:hover { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: #EF4444; }
+
+    /* confirm delete */
+    .promo-row--confirm-delete .promo-action-btn--delete { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.5); color: #EF4444; }
+
+    /* slide-out animation on delete */
+    @keyframes slide-out {
+      to { opacity: 0; transform: translateX(24px); max-height: 0; margin: 0; padding: 0; }
+    }
+    .promo-row--removing {
+      animation: slide-out .28s cubic-bezier(.4,0,.2,1) forwards;
+      overflow: hidden;
+    }
+
+    @media (max-width: 960px) {
+      .promo-row { grid-template-columns: 2fr 1fr 1fr auto; }
+      .promo-row .promo-field:nth-child(3),
+      .promo-row .promo-field:nth-child(4) { display: none; }
+    }
+    @media (max-width: 600px) {
+      .promo-row { grid-template-columns: 1fr 1fr auto; }
+      .promo-row .promo-field:nth-child(2) { display: none; }
+    }
+    @media (max-width: 400px) {
+      .promo-row { grid-template-columns: 1fr auto; }
+      .promo-row .promo-field:nth-child(5) { display: none; }
+    }
+
+    /* empty state */
+    .empty-state {
+      text-align: center; padding: clamp(32px,5vw,60px) 20px;
+      color: var(--c-muted);
+      font-family: 'Golos Text', sans-serif; font-size: 14px;
+    }
+    .empty-state svg { margin: 0 auto 14px; opacity: .25; }
+
+    /* toast */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(16px);
+      background: rgba(15,19,23,.95); border: 1px solid rgba(255,255,255,.13);
+      border-radius: 100px; padding: 10px 20px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; color: #fff;
+      white-space: nowrap; z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s, transform .2s;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── FOOTER ── */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); transition: background .2s, border-color .2s; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__user-name">Татьяна</span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <img src="фотографии/avatar.png" alt="Татьяна"
+             onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <a href="profile.html">Профиль</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="page-wrap">
+
+    <h1 class="page-title">Панель управления</h1>
+
+    <!-- TAB NAV -->
+    <nav class="tab-nav">
+      <a class="tab-btn" href="dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="sales.html">Продажи</a>
+      <a class="tab-btn" href="subscriptions.html">Подписки</a>
+      <a class="tab-btn active" href="referrals.html">Рефералы</a>
+      <a class="tab-btn" href="partner-applications.html">Заявки</a>
+      <a class="tab-btn" href="content.html">Контент</a>
+    </nav>
+
+    <!-- CREATE PROMO -->
+    <div class="dash-section">
+      <div class="card create-card">
+        <span class="create-card__label">Новый промокод</span>
+        <input
+          class="create-card__input"
+          id="js-promo-input"
+          type="text"
+          placeholder="HappyNewYear"
+          maxlength="32"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="create-card__btn" id="js-promo-create">Создать</button>
+      </div>
+    </div>
+
+    <!-- PROMO LIST -->
+    <div class="dash-section">
+      <h2 class="section-title">Список промокодов</h2>
+      <div class="promo-list" id="js-promo-list"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Toast -->
+<div class="toast" id="js-toast"></div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="partner.html">Партнёрка</a>
+      </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v;
+  burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v));
+  document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ── Toast ── */
+const toastEl = document.getElementById('js-toast');
+let toastTimer;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+
+/* ════════════════════════════════════
+   DATA
+════════════════════════════════════ */
+function addDays(base, days) {
+  const d = new Date(base); d.setDate(d.getDate() + days); return d;
+}
+function fmtDate(d) {
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+const now = new Date();
+
+let promos = [
+  { id: 1, code: 'HappyNewYear', created: new Date('2026-01-01'), expires: addDays(new Date('2026-01-01'), 90),  uses: 8,  paid: 11992, disabled: false },
+  { id: 2, code: 'SPRING25',     created: new Date('2026-03-01'), expires: addDays(new Date('2026-03-01'), 60),  uses: 5,  paid:  7475, disabled: false },
+  { id: 3, code: 'LAUNCH10',     created: new Date('2026-02-15'), expires: addDays(new Date('2026-02-15'), 30),  uses: 3,  paid:  4497, disabled: false },
+  { id: 4, code: 'VIP30',        created: new Date('2026-02-01'), expires: addDays(new Date('2026-02-01'), 45),  uses: 12, paid: 17988, disabled: true  },
+  { id: 5, code: 'FRIEND15',     created: new Date('2026-03-10'), expires: addDays(new Date('2026-03-10'), 120), uses: 2,  paid:  2998, disabled: false },
+];
+
+/* ── Render ── */
+function getStatus(p) {
+  if (p.disabled) return 'disabled';
+  if (p.expires < now) return 'expired';
+  return 'active';
+}
+const statusLabels = { active: 'Активен', expired: 'Истёк', disabled: 'Отключён' };
+
+const ICON_PAUSE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+const ICON_PLAY  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+const ICON_DEL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+const ICON_COPY  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+
+function renderPromos() {
+  const listEl = document.getElementById('js-promo-list');
+  listEl.innerHTML = '';
+
+  if (promos.length === 0) {
+    listEl.innerHTML = `
+      <div class="card empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        Промокодов пока нет. Создайте первый!
+      </div>`;
+    return;
+  }
+
+  promos.forEach(p => {
+    const status = getStatus(p);
+    const isDisabled = p.disabled;
+    const row = document.createElement('div');
+    row.className = 'card promo-row' + (isDisabled ? ' promo-row--disabled' : '');
+    row.dataset.id = p.id;
+
+    row.innerHTML = `
+      <div class="promo-field">
+        <p class="promo-field__label">Промокод</p>
+        <div class="promo-code-wrap">
+          <span class="promo-field__value">${p.code}</span>
+          <button class="promo-copy-btn" data-copy="${p.code}" title="Скопировать">${ICON_COPY}</button>
+        </div>
+      </div>
+      <div class="promo-field">
+        <p class="promo-field__label">Создан</p>
+        <p class="promo-field__value promo-field__value--muted">${fmtDate(p.created)}</p>
+      </div>
+      <div class="promo-field">
+        <p class="promo-field__label">Срок действия</p>
+        <p class="promo-field__value promo-field__value--muted">${fmtDate(p.expires)}</p>
+      </div>
+      <div class="promo-field">
+        <p class="promo-field__label">Выплачено</p>
+        <p class="promo-field__value">${p.paid.toLocaleString('ru-RU')} ₽ <span style="font-size:11px;font-weight:400;color:var(--c-muted)">(${p.uses} исп.)</span></p>
+      </div>
+      <div class="promo-field">
+        <p class="promo-field__label">Состояние</p>
+        <p class="promo-field__value"><span class="status-badge status-badge--${status}">${statusLabels[status]}</span></p>
+      </div>
+      <div class="promo-actions">
+        <button class="promo-action-btn promo-action-btn--toggle ${isDisabled ? 'is-disabled' : ''}" data-toggle="${p.id}" title="${isDisabled ? 'Включить' : 'Отключить'}">
+          ${isDisabled ? ICON_PLAY : ICON_PAUSE}
+        </button>
+        <button class="promo-action-btn promo-action-btn--delete" data-delete="${p.id}" title="Удалить">
+          ${ICON_DEL}
+        </button>
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+
+  /* ── Copy buttons ── */
+  listEl.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(btn.dataset.copy).then(() => showToast('Промокод скопирован'));
+    });
+  });
+
+  /* ── Toggle (disable / enable) ── */
+  listEl.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.toggle, 10);
+      const promo = promos.find(p => p.id === id);
+      if (!promo) return;
+      promo.disabled = !promo.disabled;
+      showToast(promo.disabled ? `«${promo.code}» отключён` : `«${promo.code}» включён`);
+      renderPromos();
+    });
+  });
+
+  /* ── Delete (two-tap confirm) ── */
+  let pendingDelete = null;
+  let pendingTimer = null;
+
+  listEl.querySelectorAll('[data-delete]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.delete, 10);
+
+      if (pendingDelete === id) {
+        /* confirmed — animate out */
+        clearTimeout(pendingTimer);
+        pendingDelete = null;
+        const row = listEl.querySelector(`.promo-row[data-id="${id}"]`);
+        if (row) {
+          row.classList.add('promo-row--removing');
+          row.addEventListener('animationend', () => {
+            promos = promos.filter(p => p.id !== id);
+            renderPromos();
+            showToast('Промокод удалён');
+          }, {once: true});
+        }
+      } else {
+        /* first tap — highlight, wait */
+        if (pendingDelete !== null) {
+          const old = listEl.querySelector(`.promo-row[data-id="${pendingDelete}"]`);
+          if (old) old.classList.remove('promo-row--confirm-delete');
+        }
+        clearTimeout(pendingTimer);
+        pendingDelete = id;
+        const row = listEl.querySelector(`.promo-row[data-id="${id}"]`);
+        if (row) row.classList.add('promo-row--confirm-delete');
+        showToast('Нажмите ещё раз для подтверждения удаления');
+        pendingTimer = setTimeout(() => {
+          if (row) row.classList.remove('promo-row--confirm-delete');
+          pendingDelete = null;
+        }, 3000);
+      }
+    });
+  });
+}
+
+renderPromos();
+
+/* ════════════════════════════════════
+   CREATE PROMO
+════════════════════════════════════ */
+const input  = document.getElementById('js-promo-input');
+const createBtn = document.getElementById('js-promo-create');
+
+function createPromo() {
+  const raw = input.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+  if (!raw) { showToast('Введите название промокода'); input.focus(); return; }
+  if (promos.some(p => p.code === raw)) { showToast('Такой промокод уже существует'); input.focus(); return; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  promos.unshift({
+    id: Date.now(),
+    code: raw,
+    created: today,
+    expires: addDays(today, 30),
+    uses: 0,
+    paid: 0,
+    disabled: false,
+  });
+  input.value = '';
+  renderPromos();
+  showToast(`Промокод «${raw}» создан`);
+}
+
+createBtn.addEventListener('click', createPromo);
+input.addEventListener('keydown', e => { if (e.key === 'Enter') createPromo(); });
+</script>
+</body>
+</html>

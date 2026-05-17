@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Подтверждение почты — UEFN с нуля</title>
+  <meta name="description" content="Подтвердите электронную почту для доступа к курсу UEFN с нуля." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    /* ═══════════════════════════════════
+       TOKENS
+    ═══════════════════════════════════ */
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-cyan:       #3BCFFE;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --r-sm:         8px;
+      --nav-h:        80px;
+      --wrap:         1280px;
+      --px:           clamp(16px, 3.125vw, 40px);
+    }
+
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ═══════════════════════════════════
+       NAV
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%; overflow: hidden;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; line-height: 1; color: #fff; white-space: nowrap;
+    }
+    .nav__links {
+      display: flex; align-items: center;
+      gap: clamp(12px,1.8vw,26px); margin-inline: auto;
+    }
+    .nav__links a {
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 400;
+      color: #fff; white-space: nowrap; transition: opacity .2s;
+    }
+    .nav__links a:hover { opacity: 0.65; }
+    .nav__actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__btn-dark {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      color: #fff; background: rgba(255,255,255,0.12); border: none;
+      border-radius: 100px; padding: 10px 22px; cursor: pointer;
+      white-space: nowrap; transition: background .2s; text-decoration: none;
+    }
+    .nav__btn-dark:hover { background: rgba(255,255,255,0.18); }
+    .nav__btn-login {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      color: #fff; background: transparent; border: 1.5px solid var(--c-cyan);
+      border-radius: 100px; padding: 9px 22px; cursor: pointer;
+      white-space: nowrap; transition: background .2s; text-decoration: none;
+    }
+    .nav__btn-login:hover { background: rgba(59,207,254,0.1); }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: var(--r-sm);
+      margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__login-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px); display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 600; color: var(--c-muted);
+      padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a,
+    .nav__drawer .drawer-btns button {
+      width: 100%; padding: 14px; font-size: 15px;
+      box-sizing: border-box; text-align: center; justify-content: center;
+    }
+    @media (max-width: 1100px) {
+      .nav__links, .nav__actions { display: none; }
+      .nav__burger { display: flex; }
+      .nav__login-mobile { display: inline-flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) {
+      .nav__logo-text { font-size: 11px; }
+      .nav__btn-login.nav__login-mobile { padding: 7px 14px; font-size: 12px; }
+      .nav__burger { width: 36px; height: 36px; }
+    }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main {
+      flex: 1; display: flex; align-items: center;
+      padding-top: calc(var(--nav-h) + clamp(32px, 5vw, 72px));
+      padding-bottom: clamp(48px, 6vw, 80px);
+    }
+
+    /* ═══════════════════════════════════
+       VERIFY SECTION
+    ═══════════════════════════════════ */
+    .verify {
+      width: 100%; max-width: var(--wrap);
+      margin-inline: auto; padding-inline: var(--px);
+      display: grid;
+      grid-template-columns: 5fr 7fr;
+      gap: clamp(40px, 6vw, 96px);
+      align-items: center;
+    }
+
+    /* ── Left ── */
+    .verify__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(28px, 3.8vw, 56px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: clamp(18px, 2.5vw, 28px);
+    }
+
+    .verify__sub {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(13px, 1.05vw, 16px);
+      font-weight: 400;
+      line-height: 1.65;
+      color: #fff;
+      max-width: 340px;
+      margin-bottom: clamp(10px, 1.5vw, 16px);
+    }
+
+    /* Email badge — куда отправлен код */
+    .verify__email-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59,207,254,.08);
+      border: 1px solid rgba(59,207,254,.2);
+      border-radius: 100px;
+      padding: 6px 14px 6px 10px;
+      margin-bottom: clamp(28px, 3.5vw, 48px);
+    }
+    .verify__email-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--c-cyan);
+      flex-shrink: 0;
+    }
+    .verify__email-text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 500;
+      color: var(--c-cyan);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: clamp(160px, 20vw, 280px);
+    }
+
+    /* Back link */
+    .verify__back-link {
+      display: inline-flex; align-items: center;
+      gap: 14px; cursor: pointer; text-decoration: none;
+    }
+    .verify__back-arrow {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--c-border-mid);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: border-color .2s, background .2s;
+    }
+    .verify__back-arrow svg {
+      width: 16px; height: 16px; stroke: var(--c-muted);
+      fill: none; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s;
+    }
+    .verify__back-link:hover .verify__back-arrow {
+      border-color: var(--c-cyan); background: rgba(59,207,254,.08);
+    }
+    .verify__back-link:hover .verify__back-arrow svg { stroke: var(--c-cyan); }
+    .verify__back-text { display: flex; flex-direction: column; gap: 3px; }
+    .verify__back-hint {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px); font-weight: 400;
+      color: #fff; line-height: 1.3;
+    }
+    .verify__back-cta {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1vw, 16px); font-weight: 600;
+      color: #fff; line-height: 1.2;
+    }
+
+    /* ── Right: form ── */
+    .verify__form {
+      display: flex; flex-direction: column;
+      gap: clamp(20px, 2.5vw, 28px);
+    }
+
+    /* OTP label */
+    .verify__otp-label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 400;
+      color: var(--c-dim);
+      margin-bottom: clamp(10px, 1.2vw, 14px);
+    }
+
+    /* OTP digits row */
+    .verify__otp {
+      display: flex;
+      gap: clamp(8px, 1.2vw, 14px);
+    }
+    .verify__otp-digit {
+      width: clamp(48px, 6.25vw, 80px);
+      height: clamp(56px, 7vw, 88px);
+      background: rgba(255,255,255,.045);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: clamp(14px, 1.5vw, 20px);
+      text-align: center;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(20px, 2.2vw, 32px);
+      font-weight: 700;
+      color: #fff;
+      outline: none;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      caret-color: var(--c-cyan);
+      /* prevent native number spinners */
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+    .verify__otp-digit::-webkit-outer-spin-button,
+    .verify__otp-digit::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .verify__otp-digit:focus {
+      border-color: var(--c-cyan);
+      background: rgba(59,207,254,.06);
+      box-shadow: 0 0 0 3px rgba(59,207,254,.12);
+    }
+    .verify__otp-digit.filled {
+      border-color: rgba(59,207,254,.35);
+    }
+
+    /* Resend row */
+    .verify__resend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .verify__resend-text {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 400;
+      color: var(--c-muted);
+    }
+    .verify__resend-btn {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 600;
+      color: var(--c-cyan);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity .2s;
+      white-space: nowrap;
+    }
+    .verify__resend-btn:hover { opacity: .75; }
+    .verify__resend-btn:disabled {
+      color: var(--c-dim);
+      cursor: default;
+      opacity: 1;
+    }
+    .verify__timer {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px, .9vw, 14px);
+      font-weight: 400;
+      color: var(--c-dim);
+    }
+
+    /* Submit */
+    .verify__submit {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: fit-content;
+      min-width: clamp(160px, 18vw, 220px);
+      padding: clamp(14px, 1.4vw, 18px) clamp(40px, 5vw, 72px);
+      background: var(--g-accent); border: none; border-radius: 100px;
+      color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1.1vw, 17px); font-weight: 600;
+      cursor: pointer; transition: opacity .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .verify__submit:hover  { opacity: .88; transform: translateY(-1px); }
+    .verify__submit:active { transform: translateY(0); }
+    .verify__submit:disabled { opacity: .4; cursor: default; transform: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .verify { grid-template-columns: 1fr; gap: clamp(36px, 6vw, 56px); }
+      .verify__title { font-size: clamp(28px, 7vw, 44px); }
+      .verify__sub { max-width: 100%; }
+    }
+    @media (max-width: 480px) {
+      .verify__submit { width: 100%; min-width: unset; }
+      .verify__otp { gap: 8px; }
+    }
+    @media (max-width: 400px) {
+      .verify__otp-digit {
+        width: calc((100% - 8px * 5) / 6);
+        height: clamp(48px, 13vw, 64px);
+        font-size: clamp(18px, 5.5vw, 26px);
+        border-radius: 12px;
+      }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px, 6vw, 80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px, 2.5vw, 32px); }
+    .footer__grid {
+      display: grid; grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto; column-gap: clamp(32px, 5vw, 80px); row-gap: 0; align-items: start;
+    }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav {
+      grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px clamp(24px, 3vw, 48px); align-content: center; align-self: center; justify-self: center;
+    }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule {
+      grid-column: 3; grid-row: 1 / 3; align-self: center;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: clamp(16px, 2vw, 32px); padding: clamp(14px, 2.3vw, 26px) clamp(16px, 1.8vw, 28px);
+      width: clamp(200px, 16.25vw, 303px); height: clamp(64px, 5.75vw, 96px);
+      background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid);
+      border-radius: clamp(22px, 2.4vw, 46px); text-decoration: none;
+      transition: background .2s, border-color .2s; cursor: pointer;
+    }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px, 3vw, 40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; }
+      .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px, 8vw, 48px); justify-self: stretch; align-self: auto; margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; grid-column: unset; grid-row: unset; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+      .footer__legal a { font-size: 12px; }
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+      <a href="index.html#partnership">Партнёрка</a>
+    </nav>
+    <div class="nav__actions">
+      <a href="index.html#pricing" class="nav__btn-dark">Выбрать тариф</a>
+      <a href="login.html" class="nav__btn-login">Войти</a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="login.html" class="nav__btn-login nav__login-mobile">Войти</a>
+  </div>
+</header>
+
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <a href="index.html#partnership">Партнёрка</a>
+  <div class="drawer-btns">
+    <a href="index.html#pricing" class="nav__btn-dark">Выбрать тариф</a>
+    <a href="login.html" class="nav__btn-login">Войти</a>
+  </div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+  <div class="verify">
+
+    <!-- Left: info -->
+    <div class="verify__info">
+      <h1 class="verify__title">Подтверждение<br>почты</h1>
+      <p class="verify__sub">Мы отправили 6-значный код на вашу электронную почту. Введите его ниже — и аккаунт будет готов.</p>
+
+      <!-- Email badge -->
+      <div class="verify__email-badge" id="js-email-badge">
+        <span class="verify__email-dot"></span>
+        <span class="verify__email-text" id="js-email-display">example@mail.ru</span>
+      </div>
+
+      <a href="register.html" class="verify__back-link">
+        <div class="verify__back-arrow">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <polyline points="5 3 11 8 5 13"/>
+          </svg>
+        </div>
+        <div class="verify__back-text">
+          <span class="verify__back-hint">Неверная почта?</span>
+          <span class="verify__back-cta">Вернуться к регистрации</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Right: form -->
+    <form class="verify__form" id="js-verify-form" novalidate>
+
+      <div>
+        <p class="verify__otp-label">Код из письма</p>
+        <div class="verify__otp" role="group" aria-label="Код подтверждения">
+          <input class="verify__otp-digit" type="text" name="otp_1" inputmode="numeric" pattern="[0-9]" maxlength="1" autocomplete="one-time-code" aria-label="Цифра 1" />
+          <input class="verify__otp-digit" type="text" name="otp_2" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 2" />
+          <input class="verify__otp-digit" type="text" name="otp_3" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 3" />
+          <input class="verify__otp-digit" type="text" name="otp_4" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 4" />
+          <input class="verify__otp-digit" type="text" name="otp_5" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 5" />
+          <input class="verify__otp-digit" type="text" name="otp_6" inputmode="numeric" pattern="[0-9]" maxlength="1" aria-label="Цифра 6" />
+        </div>
+      </div>
+
+      <!-- Resend row -->
+      <div class="verify__resend">
+        <span class="verify__resend-text">Не пришло письмо?</span>
+        <button type="button" class="verify__resend-btn" id="js-resend" disabled>
+          Отправить повторно
+        </button>
+        <span class="verify__timer" id="js-timer">через 59 сек</span>
+      </div>
+
+      <button type="submit" class="verify__submit" id="js-submit" disabled>
+        Подтвердить
+      </button>
+
+    </form>
+  </div>
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+
+      <div class="footer__legal">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+
+      <nav class="footer__nav" aria-label="Навигация сайта">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#partnership">Партнёрка</a>
+      </nav>
+
+      <a href="#" class="footer__tg-capsule" aria-label="Вступить в Telegram-группу">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon" aria-hidden="true">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+
+    </div>
+  </div>
+</footer>
+
+<script src="api.js"></script>
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 8);
+}, { passive: true });
+
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v;
+  burger.classList.toggle('open', v);
+  drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v));
+  document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => {
+  a.addEventListener('click', () => setDrawer(false));
+});
+
+/* ── Show email from sessionStorage ── */
+const savedEmail = window.Auth ? window.Auth.getPendingEmail() : (sessionStorage.getItem('pending_email') || sessionStorage.getItem('reg_email') || '');
+if (savedEmail) {
+  document.getElementById('js-email-display').textContent = savedEmail;
+}
+
+/* ── OTP inputs: auto-advance, backspace, paste ── */
+const digits = Array.from(document.querySelectorAll('.verify__otp-digit'));
+const submitBtn = document.getElementById('js-submit');
+
+function updateSubmit() {
+  const filled = digits.every(d => d.value.length === 1);
+  submitBtn.disabled = !filled;
+}
+
+digits.forEach((input, i) => {
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Backspace') {
+      if (input.value === '' && i > 0) {
+        digits[i - 1].value = '';
+        digits[i - 1].classList.remove('filled');
+        digits[i - 1].focus();
+      } else {
+        input.value = '';
+        input.classList.remove('filled');
+      }
+      updateSubmit();
+      e.preventDefault();
+    } else if (e.key === 'ArrowLeft' && i > 0) {
+      digits[i - 1].focus();
+    } else if (e.key === 'ArrowRight' && i < digits.length - 1) {
+      digits[i + 1].focus();
+    }
+  });
+
+  input.addEventListener('input', e => {
+    /* keep only last digit if multiple pasted via input event */
+    const val = input.value.replace(/\D/g, '').slice(-1);
+    input.value = val;
+    input.classList.toggle('filled', val !== '');
+    if (val && i < digits.length - 1) {
+      digits[i + 1].focus();
+    }
+    updateSubmit();
+  });
+
+  /* Allow only numeric keys */
+  input.addEventListener('keypress', e => {
+    if (!/[0-9]/.test(e.key)) e.preventDefault();
+  });
+
+  /* Select all on focus */
+  input.addEventListener('focus', () => input.select());
+});
+
+/* Paste full code */
+digits[0].addEventListener('paste', e => {
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+  text.split('').forEach((ch, i) => {
+    if (digits[i]) {
+      digits[i].value = ch;
+      digits[i].classList.add('filled');
+    }
+  });
+  const next = Math.min(text.length, digits.length - 1);
+  digits[next].focus();
+  updateSubmit();
+});
+
+/* ── Resend timer: 59 → 0 ── */
+const resendBtn = document.getElementById('js-resend');
+const timerEl  = document.getElementById('js-timer');
+let timeLeft = 59;
+
+function tick() {
+  if (timeLeft <= 0) {
+    timerEl.textContent = '';
+    resendBtn.disabled = false;
+    return;
+  }
+  timerEl.textContent = `через ${timeLeft} сек`;
+  timeLeft--;
+  setTimeout(tick, 1000);
+}
+tick();
+
+resendBtn.addEventListener('click', async () => {
+  resendBtn.disabled = true;
+  timeLeft = 59;
+  tick();
+
+  const email   = window.Auth ? window.Auth.getPendingEmail() : (sessionStorage.getItem('pending_email') || '');
+  const purpose = sessionStorage.getItem('otp_purpose') || 'verify_email';
+
+  if (!email) return;
+
+  try {
+    await fetch(`${window.API_BASE}/api/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, purpose }),
+    });
+  } catch { /* игнорируем — таймер уже запущен */ }
+});
+
+/* ── Отправка формы OTP ── */
+const verifyForm = document.getElementById('js-verify-form');
+const verifyErrEl = (() => {
+  const el = document.createElement('p');
+  el.id = 'js-verify-error';
+  el.style.cssText = 'display:none;color:#f87171;font-size:14px;margin:0 0 8px;text-align:center';
+  submitBtn.before(el);
+  return el;
+})();
+
+verifyForm.addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const email   = window.Auth ? window.Auth.getPendingEmail() : (sessionStorage.getItem('pending_email') || '');
+  const purpose = sessionStorage.getItem('otp_purpose') || 'verify_email';
+  const code    = digits.map(d => d.value).join('');
+
+  verifyErrEl.style.display = 'none';
+  submitBtn.disabled   = true;
+  submitBtn.textContent = 'Проверяем...';
+
+  try {
+    const res  = await fetch(`${window.API_BASE}/api/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, code, purpose }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      verifyErrEl.textContent   = data.error || 'Неверный код.';
+      verifyErrEl.style.display = '';
+      // Сбросить поля
+      digits.forEach(d => { d.value = ''; d.classList.remove('filled'); });
+      digits[0].focus();
+      submitBtn.disabled    = true;
+      submitBtn.textContent = 'Подтвердить';
+      return;
+    }
+
+    // Успех — редирект
+    if (purpose === 'reset_password') {
+      // Пришли со страницы forgot → показываем шаг с новым паролем
+      sessionStorage.setItem('otp_code_verified', '1');
+      window.location.href = 'forgot.html?step=new-password';
+    } else {
+      // Обычная регистрация/верификация
+      const user = window.Auth ? window.Auth.getUser() : null;
+      const role = (data.user || user)?.role || 'user';
+      window.Auth && window.Auth.clearPendingEmail();
+      sessionStorage.removeItem('otp_purpose');
+
+      if (role === 'admin')   return window.location.href = 'dashboard.html';
+      if (role === 'partner') return window.location.href = 'partner-dashboard.html';
+      window.location.href = 'course.html';
+    }
+  } catch {
+    verifyErrEl.textContent   = 'Нет соединения с сервером.';
+    verifyErrEl.style.display = '';
+    submitBtn.disabled    = false;
+    submitBtn.textContent = 'Подтвердить';
+  }
+});
+</script>
+</body>
+</html>
