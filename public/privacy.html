@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Политика конфиденциальности — UEFN с нуля</title>
+  <meta name="description" content="Политика конфиденциальности проекта «UEFN с нуля». Узнайте, какие данные мы собираем и как их защищаем." />
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════
+       RESET
+    ═══════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg);
+      color: var(--c-text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+    html, body { max-width: 100%; }
+
+    /* ═══════════════════════════════════
+       TOKENS
+    ═══════════════════════════════════ */
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-blue:       #0166C3;
+      --c-cyan:       #3BCFFE;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
+
+      --r-sm:  8px;
+      --r-md:  12px;
+      --r-lg:  16px;
+
+      --nav-h: 80px;
+      --wrap:  1280px;
+      --px:    clamp(16px, 3.125vw, 40px);
+    }
+
+    .wrap {
+      max-width: var(--wrap);
+      margin-inline: auto;
+      padding-inline: var(--px);
+    }
+
+    /* ═══════════════════════════════════
+       NAV
+    ═══════════════════════════════════ */
+    .nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 200;
+      height: var(--nav-h);
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80);
+      transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap);
+      width: 100%;
+      margin-inline: auto;
+      padding-inline: var(--px);
+      display: flex;
+      align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; line-height: 1;
+      color: #fff; white-space: nowrap;
+    }
+    .nav__links {
+      display: flex; align-items: center;
+      gap: clamp(12px,1.8vw,26px);
+      margin-inline: auto;
+    }
+    .nav__links a {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 400;
+      color: #fff; white-space: nowrap;
+      transition: opacity .2s;
+    }
+    .nav__links a:hover { opacity: 0.65; }
+    .nav__actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__btn-dark {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: #fff;
+      background: rgba(255,255,255,0.12);
+      border: none; border-radius: 100px;
+      padding: 10px 22px;
+      cursor: pointer; white-space: nowrap;
+      transition: background .2s; text-decoration: none;
+    }
+    .nav__btn-dark:hover { background: rgba(255,255,255,0.18); }
+    .nav__btn-login {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: #fff;
+      background: transparent;
+      border: 1.5px solid var(--c-cyan);
+      border-radius: 100px;
+      padding: 9px 22px;
+      cursor: pointer; white-space: nowrap;
+      transition: background .2s; text-decoration: none;
+    }
+    .nav__btn-login:hover { background: rgba(59,207,254,0.1); }
+    .nav__burger {
+      display: none;
+      flex-direction: column; justify-content: center;
+      gap: 5px;
+      width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid);
+      border-radius: var(--r-sm);
+      margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__login-mobile { display: none; flex-shrink: 0; }
+    .nav__drawer {
+      position: fixed;
+      inset: var(--nav-h) 0 0;
+      z-index: 190;
+      background: rgba(15,19,23,.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px;
+      gap: 4px;
+      transform: translateX(100%);
+      transition: transform .32s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a {
+      display: block;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 600;
+      color: var(--c-muted);
+      padding: 13px 0;
+      border-bottom: 1px solid var(--c-border);
+      transition: color .2s;
+    }
+    .nav__drawer a:hover { color: #fff; }
+    .nav__drawer .drawer-btns { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .nav__drawer .drawer-btns a,
+    .nav__drawer .drawer-btns button {
+      width: 100%; padding: 14px; font-size: 15px;
+      box-sizing: border-box; text-align: center; justify-content: center;
+    }
+    @media (max-width: 1100px) {
+      .nav__links, .nav__actions { display: none; }
+      .nav__burger { display: flex; }
+      .nav__login-mobile { display: inline-flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+    @media (max-width: 480px) {
+      .nav__logo-text { font-size: 11px; }
+      .nav__btn-login.nav__login-mobile { padding: 7px 14px; font-size: 12px; }
+      .nav__burger { width: 36px; height: 36px; }
+    }
+
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main {
+      flex: 1;
+      padding-top: calc(var(--nav-h) + clamp(40px, 5vw, 80px));
+      padding-bottom: clamp(64px, 8vw, 120px);
+    }
+
+    /* ═══════════════════════════════════
+       HERO
+    ═══════════════════════════════════ */
+    .doc-hero {
+      max-width: var(--wrap);
+      margin-inline: auto;
+      padding-inline: var(--px);
+      margin-bottom: clamp(48px, 6vw, 80px);
+    }
+    .doc-hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(59,207,254,.08);
+      border: 1px solid rgba(59,207,254,.2);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--c-cyan);
+      margin-bottom: clamp(20px, 2.5vw, 28px);
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    .doc-hero__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(28px, 4vw, 60px);
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: clamp(16px, 2vw, 24px);
+    }
+    .doc-hero__meta {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .doc-hero__meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--c-muted);
+    }
+    .doc-hero__meta-item svg {
+      width: 14px; height: 14px;
+      stroke: var(--c-cyan);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════
+       LAYOUT: TOC + CONTENT
+    ═══════════════════════════════════ */
+    .doc-layout {
+      max-width: var(--wrap);
+      margin-inline: auto;
+      padding-inline: var(--px);
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: clamp(32px, 4vw, 64px);
+      align-items: start;
+    }
+
+    /* ── TOC ── */
+    .doc-toc {
+      position: sticky;
+      top: calc(var(--nav-h) + 24px);
+    }
+    .doc-toc__title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-dim);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 14px;
+    }
+    .doc-toc__list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .doc-toc__list a {
+      display: block;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--c-muted);
+      padding: 7px 12px;
+      border-radius: var(--r-sm);
+      border-left: 2px solid transparent;
+      transition: color .2s, background .2s, border-color .2s;
+      line-height: 1.4;
+    }
+    .doc-toc__list a:hover {
+      color: #fff;
+      background: rgba(255,255,255,.04);
+      border-left-color: rgba(59,207,254,.4);
+    }
+    .doc-toc__list a.active {
+      color: var(--c-cyan);
+      background: rgba(59,207,254,.06);
+      border-left-color: var(--c-cyan);
+    }
+
+    /* ── CONTENT ── */
+    .doc-content {}
+
+    .doc-section {
+      margin-bottom: clamp(40px, 5vw, 64px);
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+
+    .doc-section__num {
+      display: inline-block;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--c-cyan);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .doc-section__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(16px, 1.6vw, 22px);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin-bottom: clamp(16px, 2vw, 24px);
+    }
+
+    .doc-section__body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .doc-section__body p {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1vw, 16px);
+      font-weight: 400;
+      color: rgba(255,255,255,.75);
+      line-height: 1.75;
+    }
+
+    .doc-section__body ul {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-left: 0;
+    }
+
+    .doc-section__body ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1vw, 16px);
+      font-weight: 400;
+      color: rgba(255,255,255,.75);
+      line-height: 1.65;
+    }
+
+    .doc-section__body ul li::before {
+      content: '';
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--c-cyan);
+      flex-shrink: 0;
+      margin-top: 9px;
+    }
+
+    .doc-section__card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--c-border-mid);
+      border-radius: var(--r-lg);
+      padding: clamp(18px, 2vw, 28px) clamp(20px, 2.2vw, 32px);
+    }
+
+    .doc-section__card p {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1vw, 16px);
+      font-weight: 400;
+      color: rgba(255,255,255,.75);
+      line-height: 1.75;
+    }
+
+    .doc-section__card ul {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .doc-section__card ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(14px, 1vw, 16px);
+      color: rgba(255,255,255,.75);
+      line-height: 1.65;
+    }
+    .doc-section__card ul li::before {
+      content: '';
+      display: block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--c-cyan);
+      flex-shrink: 0;
+      margin-top: 9px;
+    }
+
+    /* Divider between sections */
+    .doc-divider {
+      border: none;
+      border-top: 1px solid var(--c-border);
+      margin-bottom: clamp(40px, 5vw, 64px);
+    }
+
+    /* Terms link capsule */
+    .doc-also {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: clamp(16px, 1.8vw, 22px) clamp(20px, 2.2vw, 28px);
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--c-border-mid);
+      border-radius: clamp(16px, 1.8vw, 24px);
+      text-decoration: none;
+      transition: background .2s, border-color .2s;
+      margin-top: clamp(32px, 4vw, 48px);
+    }
+    .doc-also:hover {
+      background: rgba(59,207,254,.05);
+      border-color: rgba(59,207,254,.25);
+    }
+    .doc-also__icon {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(59,207,254,.1);
+      border: 1px solid rgba(59,207,254,.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .doc-also__icon svg {
+      width: 18px; height: 18px;
+      stroke: var(--c-cyan);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .doc-also__text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .doc-also__hint {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 12px;
+      color: var(--c-dim);
+    }
+    .doc-also__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* ═══════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════ */
+    @media (max-width: 900px) {
+      .doc-layout {
+        grid-template-columns: 1fr;
+      }
+      .doc-toc {
+        position: static;
+        background: rgba(255,255,255,.03);
+        border: 1px solid var(--c-border-mid);
+        border-radius: var(--r-lg);
+        padding: 20px;
+      }
+      .doc-toc__list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .doc-toc__list a {
+        border-left: none;
+        border: 1px solid var(--c-border-mid);
+        border-radius: 100px;
+        padding: 5px 14px;
+        font-size: 12px;
+      }
+      .doc-toc__list a:hover,
+      .doc-toc__list a.active {
+        border-color: rgba(59,207,254,.4);
+        background: rgba(59,207,254,.06);
+      }
+    }
+    @media (max-width: 540px) {
+      .doc-hero__title { font-size: clamp(24px, 8vw, 36px); }
+      .doc-section__title { font-size: clamp(15px, 4.5vw, 19px); }
+      .doc-also { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
+    .footer { padding-bottom: clamp(48px, 6vw, 80px); }
+    .footer__rule {
+      border: none;
+      border-top: 1px solid var(--c-border);
+      margin: 0;
+      margin-bottom: clamp(20px, 2.5vw, 32px);
+    }
+    .footer__grid {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: clamp(32px, 5vw, 80px);
+      row-gap: 0;
+      align-items: start;
+    }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__legal a.active-page { color: var(--c-cyan); }
+    .footer__nav {
+      grid-column: 2; grid-row: 1 / 3;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px clamp(24px, 3vw, 48px);
+      align-content: center; align-self: center; justify-self: center;
+    }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule {
+      grid-column: 3; grid-row: 1 / 3;
+      align-self: center;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: clamp(16px, 2vw, 32px);
+      padding: clamp(14px, 2.3vw, 26px) clamp(16px, 1.8vw, 28px);
+      width: clamp(200px, 16.25vw, 303px);
+      height: clamp(64px, 5.75vw, 96px);
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--c-border-mid);
+      border-radius: clamp(22px, 2.4vw, 46px);
+      text-decoration: none;
+      transition: background .2s, border-color .2s; cursor: pointer;
+    }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px, 3vw, 40px); }
+      .footer__brand      { grid-column: 1; grid-row: 1; }
+      .footer__legal      { grid-column: 1; grid-row: 2; }
+      .footer__nav        { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .footer__brand    { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__copy     { margin-bottom: 10px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
+      .footer__nav      { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px, 8vw, 48px); justify-self: stretch; align-self: auto; margin-bottom: 28px; }
+      .footer__nav a    { font-size: 15px; }
+      .footer__legal    { order: 4; grid-column: unset; grid-row: unset; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+      .footer__legal a  { font-size: 12px; }
+    }
+
+    /* ═══════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════ */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ██████ NAV ██████ -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <a href="index.html" class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </a>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+      <a href="index.html#partnership">Партнёрка</a>
+    </nav>
+    <div class="nav__actions">
+      <a href="index.html#pricing" class="nav__btn-dark">Выбрать тариф</a>
+      <a href="login.html" class="nav__btn-login">Войти</a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="login.html" class="nav__btn-login nav__login-mobile">Войти</a>
+  </div>
+</header>
+
+<nav class="nav__drawer" id="js-drawer">
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
+  <a href="index.html#partnership">Партнёрка</a>
+  <div class="drawer-btns">
+    <a href="index.html#pricing" class="nav__btn-dark">Выбрать тариф</a>
+    <a href="login.html" class="nav__btn-login">Войти</a>
+  </div>
+</nav>
+
+<!-- ██████ MAIN ██████ -->
+<main>
+
+  <!-- Hero -->
+  <div class="doc-hero">
+    <span class="doc-hero__badge">Документ</span>
+    <h1 class="doc-hero__title">Политика<br>конфиденциальности</h1>
+    <div class="doc-hero__meta">
+      <span class="doc-hero__meta-item">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 3V2a1 1 0 0 1 2 0v1M9 3V2a1 1 0 0 1 2 0v1"/></svg>
+        Редакция 2025 года
+      </span>
+      <span class="doc-hero__meta-item">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+        Вступает в силу с момента публикации
+      </span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="doc-layout">
+
+    <!-- TOC -->
+    <aside class="doc-toc" aria-label="Содержание">
+      <p class="doc-toc__title">Содержание</p>
+      <nav class="doc-toc__list">
+        <a href="#s1">Общие положения</a>
+        <a href="#s2">Какие данные мы собираем</a>
+        <a href="#s3">Цели обработки</a>
+        <a href="#s4">Правовые основания</a>
+        <a href="#s5">Как мы обрабатываем данные</a>
+        <a href="#s6">Передача третьим лицам</a>
+        <a href="#s7">Cookies</a>
+        <a href="#s8">Хранение данных</a>
+        <a href="#s9">Защита данных</a>
+        <a href="#s10">Права пользователя</a>
+        <a href="#s11">Изменение политики</a>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <article class="doc-content">
+
+      <!-- 1 -->
+      <section class="doc-section" id="s1">
+        <span class="doc-section__num">01</span>
+        <h2 class="doc-section__title">Общие положения</h2>
+        <div class="doc-section__body">
+          <p>Настоящая Политика конфиденциальности описывает, какие персональные данные собирает и обрабатывает проект «UEFN с нуля», для каких целей они используются, как защищаются и каким образом пользователь может реализовать свои права.</p>
+          <p>Политика применяется ко всем страницам сайта, личному кабинету, форме регистрации, форме входа, восстановлению пароля, оплате курса, подписке сотрудничества, партнёрской программе, реферальным промокодам, заявкам партнёров и обращениям в поддержку.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 2 -->
+      <section class="doc-section" id="s2">
+        <span class="doc-section__num">02</span>
+        <h2 class="doc-section__title">Какие данные мы собираем</h2>
+        <div class="doc-section__body">
+          <p>Мы можем обрабатывать следующие данные:</p>
+          <div class="doc-section__card">
+            <ul>
+              <li><strong style="color:#fff;margin-right:4px">При регистрации:</strong> имя или никнейм, адрес электронной почты, пароль и подтверждение пароля. На странице регистрации также фиксируется согласие с правилами ресурса и политикой конфиденциальности.</li>
+              <li><strong style="color:#fff;margin-right:4px">При входе в аккаунт:</strong> email, пароль, отметка «Запомнить меня».</li>
+              <li><strong style="color:#fff;margin-right:4px">При восстановлении пароля:</strong> email, на который отправляется одноразовый код для восстановления доступа.</li>
+              <li><strong style="color:#fff;margin-right:4px">При оформлении заказа:</strong> выбранный тариф, промокод, дополнительные услуги, сумма заказа и технические данные оплаты.</li>
+              <li><strong style="color:#fff;margin-right:4px">При подаче заявки на партнёрство:</strong> имя или никнейм, email, Telegram, тип сотрудничества, информация о себе, опыт, соцсети / каналы / портфолио, мотивация и дополнительный комментарий.</li>
+              <li><strong style="color:#fff;margin-right:4px">В партнёрской программе:</strong> данные о промокодах, покупках по промокоду, начислениях, выплатах и статусах заявок.</li>
+            </ul>
+          </div>
+          <p>Также могут автоматически собираться технические данные: IP-адрес, cookies, данные браузера, дата и время посещения, страницы перехода, события в личном кабинете, сведения об устройстве и операционной системе.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 3 -->
+      <section class="doc-section" id="s3">
+        <span class="doc-section__num">03</span>
+        <h2 class="doc-section__title">Цели обработки данных</h2>
+        <div class="doc-section__body">
+          <p>Мы обрабатываем данные, чтобы:</p>
+          <ul>
+            <li>предоставлять доступ к курсу, личному кабинету и материалам;</li>
+            <li>создавать и обслуживать аккаунт пользователя;</li>
+            <li>принимать оплату и применять промокоды;</li>
+            <li>предоставлять доступ к тарифам Essential, Extra и Deluxe, а также дополнительным услугам;</li>
+            <li>восстанавливать доступ к аккаунту;</li>
+            <li>рассматривать партнёрские заявки и вести партнёрскую программу;</li>
+            <li>отвечать на обращения и отправлять сервисные уведомления;</li>
+            <li>предотвращать мошенничество и нарушения правил;</li>
+            <li>исполнять требования законодательства.</li>
+          </ul>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 4 -->
+      <section class="doc-section" id="s4">
+        <span class="doc-section__num">04</span>
+        <h2 class="doc-section__title">Правовые основания обработки</h2>
+        <div class="doc-section__body">
+          <p>Основаниями обработки персональных данных являются:</p>
+          <ul>
+            <li>согласие пользователя;</li>
+            <li>заключение и исполнение пользовательского соглашения или публичной оферты;</li>
+            <li>исполнение обязательств по оплате, доступу и поддержке;</li>
+            <li>выполнение требований законодательства;</li>
+            <li>законный интерес проекта в защите сервиса от злоупотреблений.</li>
+          </ul>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 5 -->
+      <section class="doc-section" id="s5">
+        <span class="doc-section__num">05</span>
+        <h2 class="doc-section__title">Как мы обрабатываем данные</h2>
+        <div class="doc-section__body">
+          <p>Мы можем совершать с данными следующие действия: сбор, запись, систематизация, хранение, уточнение, использование, передача, обезличивание, блокирование, удаление и уничтожение.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 6 -->
+      <section class="doc-section" id="s6">
+        <span class="doc-section__num">06</span>
+        <h2 class="doc-section__title">Передача третьим лицам</h2>
+        <div class="doc-section__body">
+          <p>Мы передаём данные третьим лицам только если это необходимо для работы проекта:</p>
+          <ul>
+            <li>платёжному провайдеру (FreeKassa и другие) для обработки оплаты через карты, СБП и иные способы;</li>
+            <li>сервису рассылок или почтовому серверу для отправки писем;</li>
+            <li>хостинг-провайдеру;</li>
+            <li>сервисам аналитики;</li>
+            <li>подрядчикам поддержки;</li>
+            <li>государственным органам при наличии законного основания.</li>
+          </ul>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 7 -->
+      <section class="doc-section" id="s7">
+        <span class="doc-section__num">07</span>
+        <h2 class="doc-section__title">Cookies и технические данные</h2>
+        <div class="doc-section__body">
+          <p>Сайт использует cookies и похожие технологии для авторизации, сохранения сессии, работы личного кабинета, запоминания пользователя, аналитики и защиты от злоупотреблений.</p>
+          <p>Пользователь может ограничить cookies в настройках браузера, однако часть функций сайта при этом может работать некорректно.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 8 -->
+      <section class="doc-section" id="s8">
+        <span class="doc-section__num">08</span>
+        <h2 class="doc-section__title">Хранение данных</h2>
+        <div class="doc-section__body">
+          <p>Данные хранятся столько, сколько необходимо для целей обработки. Ориентировочные сроки:</p>
+          <div class="doc-section__card">
+            <ul>
+              <li><strong style="color:#fff;margin-right:4px">Данные аккаунта</strong> — пока аккаунт активен;</li>
+              <li><strong style="color:#fff;margin-right:4px">Данные заказов</strong> — в течение срока, необходимого для бухгалтерского и налогового учёта;</li>
+              <li><strong style="color:#fff;margin-right:4px">Данные партнёрских заявок</strong> — до 3 лет;</li>
+              <li><strong style="color:#fff;margin-right:4px">Технические логи</strong> — до 12 месяцев;</li>
+              <li><strong style="color:#fff;margin-right:4px">Данные рассылок</strong> — до отписки или отзыва согласия.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 9 -->
+      <section class="doc-section" id="s9">
+        <span class="doc-section__num">09</span>
+        <h2 class="doc-section__title">Защита данных</h2>
+        <div class="doc-section__body">
+          <p>Мы принимаем организационные и технические меры защиты: ограничение доступа, пароли, контроль прав пользователей, защищённое хранение, резервное копирование, проверку подрядчиков и удаление данных при достижении целей обработки.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 10 -->
+      <section class="doc-section" id="s10">
+        <span class="doc-section__num">10</span>
+        <h2 class="doc-section__title">Права пользователя</h2>
+        <div class="doc-section__body">
+          <p>Пользователь вправе запросить:</p>
+          <ul>
+            <li>доступ к своим данным;</li>
+            <li>уточнение данных;</li>
+            <li>удаление данных;</li>
+            <li>отзыв согласия на обработку;</li>
+            <li>ограничение обработки;</li>
+            <li>информацию о целях и способах обработки;</li>
+            <li>прекращение рекламных сообщений.</li>
+          </ul>
+          <p>Запрос можно отправить на email поддержки, указанный в разделе контактов на сайте.</p>
+        </div>
+      </section>
+      <hr class="doc-divider" />
+
+      <!-- 11 -->
+      <section class="doc-section" id="s11">
+        <span class="doc-section__num">11</span>
+        <h2 class="doc-section__title">Изменение политики</h2>
+        <div class="doc-section__body">
+          <p>Мы можем обновлять настоящую Политику. Новая версия вступает в силу с момента публикации на сайте, если не указано иное. Рекомендуем периодически проверять актуальную версию на этой странице.</p>
+        </div>
+      </section>
+
+      <!-- Also see -->
+      <a href="terms.html" class="doc-also">
+        <span class="doc-also__icon">
+          <svg viewBox="0 0 18 18" aria-hidden="true">
+            <path d="M4 4h10v10H4zM7 4V2M11 4V2M4 8h10"/>
+          </svg>
+        </span>
+        <span class="doc-also__text">
+          <span class="doc-also__hint">Также на сайте</span>
+          <span class="doc-also__label">Пользовательское соглашение и условия программы →</span>
+        </span>
+      </a>
+
+    </article>
+  </div>
+
+</main>
+
+<!-- ██████ FOOTER ██████ -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+
+      <div class="footer__legal">
+        <a href="privacy.html" class="active-page">Политика конфиденциальности</a>
+        <a href="terms.html">Пользовательское соглашение</a>
+      </div>
+
+      <nav class="footer__nav" aria-label="Навигация сайта">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#partnership">Партнёрка</a>
+      </nav>
+
+      <a href="#" class="footer__tg-capsule" aria-label="Вступить в Telegram-группу">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon" aria-hidden="true">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
+
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+/* Nav scroll */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('scrolled', window.scrollY > 8);
+}, { passive: true });
+
+/* Burger */
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+let open = false;
+function setDrawer(v) {
+  open = v;
+  burger.classList.toggle('open', v);
+  drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v));
+  document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!open));
+document.querySelectorAll('.nav__drawer a').forEach(a => {
+  a.addEventListener('click', () => setDrawer(false));
+});
+
+/* Active TOC highlight on scroll */
+const sections = document.querySelectorAll('.doc-section[id]');
+const tocLinks  = document.querySelectorAll('.doc-toc__list a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(a => a.classList.remove('active'));
+      const active = document.querySelector(`.doc-toc__list a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

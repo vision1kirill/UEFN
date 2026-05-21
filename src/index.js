@@ -31,6 +31,10 @@ app.use(cors({
   credentials: true,
 }));
 
+// ── Trust proxy (Railway / любой reverse-proxy) ──────────────────────────────
+// Без этого express-rate-limit падает с ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+app.set('trust proxy', 1);
+
 // ── Body / Cookie parsers ─────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
