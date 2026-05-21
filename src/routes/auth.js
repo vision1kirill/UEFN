@@ -188,6 +188,19 @@ router.post('/login', authLimiter, async (req, res, next) => {
       return res.status(401).json({ error: 'Неверный email или пароль.' });
     }
 
+    // Блокируем вход если email не подтверждён
+    if (!user.email_verified) {
+      // Отправляем новый OTP чтобы пользователь мог подтвердить
+      const code = await createOtp(normalizedEmail, 'verify_email');
+      sendOtpEmail(normalizedEmail, code, 'verify_email').catch(console.error);
+
+      return res.status(403).json({
+        error: 'Email не подтверждён. Мы выслали новый код на вашу почту.',
+        code: 'EMAIL_NOT_VERIFIED',
+        email: normalizedEmail,
+      });
+    }
+
     const result = await issueTokens(res, user);
     res.json(result);
   } catch (err) {

@@ -722,6 +722,12 @@ loginForm.addEventListener('submit', async e => {
     const data = await res.json();
 
     if (!res.ok) {
+      // Email не подтверждён — отправляем на verify.html
+      if (data.code === 'EMAIL_NOT_VERIFIED') {
+        window.Auth.saveEmail(data.email || email);
+        sessionStorage.setItem('pending_purpose', 'verify_email');
+        return window.location.href = 'verify.html';
+      }
       loginErrEl.textContent   = data.error || 'Ошибка входа.';
       loginErrEl.style.display = '';
       loginBtn.disabled    = false;
