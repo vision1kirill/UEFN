@@ -35,26 +35,103 @@ async function sendOtpEmail(email, code, purpose) {
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <style>
-    body { font-family: sans-serif; background:#0F1317; color:#E5EAF0; margin:0; padding:0; }
-    .wrap { max-width:520px; margin:40px auto; background:#181D23; border-radius:16px; overflow:hidden; }
-    .top  { background:linear-gradient(135deg,#3BCFFE,#6C6FFF); padding:32px; text-align:center; }
-    .top h1 { color:#fff; font-size:22px; margin:0; }
-    .body { padding:32px; }
-    .code { font-size:40px; font-weight:700; letter-spacing:12px; color:#3BCFFE;
-            background:#0F1317; border-radius:12px; text-align:center; padding:20px; margin:24px 0; }
-    .note { color:#8A96A3; font-size:13px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
 </head>
-<body>
-  <div class="wrap">
-    <div class="top"><h1>UEFN с нуля</h1></div>
-    <div class="body">
-      <p>Ваш код подтверждения:</p>
-      <div class="code">${code}</div>
-      <p class="note">Код действителен ${process.env.OTP_EXPIRES_MINUTES || 10} минут. Не передавайте его никому.</p>
-    </div>
-  </div>
+<body style="margin:0;padding:0;background:#0F1317;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1317;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+          <!-- LOGO -->
+          <tr>
+            <td align="center" style="padding-bottom:24px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#131920;border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:10px 22px;">
+                    <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.01em;color:#ffffff;white-space:nowrap;">UEFN с нуля</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CARD -->
+          <tr>
+            <td style="background:#131920;border:1px solid rgba(255,255,255,0.08);border-radius:24px;overflow:hidden;">
+
+              <!-- TOP GRADIENT BAR -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#0166C3 0%,#3BCFFE 100%);height:4px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <!-- BODY -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:40px 40px 16px;">
+                    <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;">Код подтверждения</p>
+                    <p style="margin:0;font-size:24px;font-weight:700;color:#ffffff;line-height:1.2;">${subject}</p>
+                  </td>
+                </tr>
+
+                <!-- CODE BLOCK -->
+                <tr>
+                  <td style="padding:8px 40px 32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background:#0F1317;border:1px solid rgba(59,207,254,0.2);border-radius:16px;padding:28px 20px;text-align:center;">
+                          <span style="font-family:'Courier New',Courier,monospace;font-size:48px;font-weight:700;letter-spacing:16px;color:#3BCFFE;display:block;line-height:1;">${code}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- DIVIDER -->
+                <tr>
+                  <td style="padding:0 40px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr><td style="border-top:1px solid rgba(255,255,255,0.06);font-size:0;line-height:0;">&nbsp;</td></tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- NOTE -->
+                <tr>
+                  <td style="padding:24px 40px 40px;">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px 20px;">
+                          <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">
+                            ⏱ Код действителен <strong style="color:rgba(255,255,255,0.7);">${process.env.OTP_EXPIRES_MINUTES || 10} минут</strong>.<br>
+                            Не передавайте его никому — команда проекта никогда не запрашивает коды.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:28px 0 0;text-align:center;">
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);line-height:1.6;">
+                © 2025–2026 UEFN с нуля &nbsp;·&nbsp; Это автоматическое письмо, не отвечайте на него
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
@@ -73,27 +150,98 @@ async function sendWelcomeEmail(email, name) {
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <style>
-    body { font-family: sans-serif; background:#0F1317; color:#E5EAF0; margin:0; }
-    .wrap { max-width:520px; margin:40px auto; background:#181D23; border-radius:16px; overflow:hidden; }
-    .top  { background:linear-gradient(135deg,#3BCFFE,#6C6FFF); padding:32px; text-align:center; }
-    .top h1 { color:#fff; font-size:22px; margin:0; }
-    .body { padding:32px; }
-    .btn  { display:inline-block; background:linear-gradient(135deg,#3BCFFE,#6C6FFF);
-            color:#fff; text-decoration:none; padding:14px 32px; border-radius:10px;
-            font-weight:600; margin-top:16px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Добро пожаловать в UEFN с нуля!</title>
 </head>
-<body>
-  <div class="wrap">
-    <div class="top"><h1>Добро пожаловать!</h1></div>
-    <div class="body">
-      <p>Привет, ${name || 'друг'}! 👋</p>
-      <p>Ваш аккаунт на платформе <strong>UEFN с нуля</strong> успешно создан.</p>
-      <p>Начните своё путешествие в мир разработки игр на Fortnite прямо сейчас.</p>
-      <a href="${process.env.FRONTEND_URL || 'https://uefn-s-nulya.ru'}/course.html" class="btn">Перейти к курсу →</a>
-    </div>
-  </div>
+<body style="margin:0;padding:0;background:#0F1317;font-family:'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0F1317;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%;">
+
+          <!-- LOGO -->
+          <tr>
+            <td align="center" style="padding-bottom:24px;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#131920;border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:10px 22px;">
+                    <span style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.01em;color:#ffffff;white-space:nowrap;">UEFN с нуля</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CARD -->
+          <tr>
+            <td style="background:#131920;border:1px solid rgba(255,255,255,0.08);border-radius:24px;overflow:hidden;">
+
+              <!-- TOP GRADIENT BAR -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#0166C3 0%,#3BCFFE 100%);height:4px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <!-- HERO -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:40px 40px 32px;">
+                    <p style="margin:0 0 16px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;">Аккаунт создан</p>
+                    <p style="margin:0 0 12px;font-size:26px;font-weight:700;color:#ffffff;line-height:1.2;">Привет, ${name || 'друг'}!</p>
+                    <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;">
+                      Твой аккаунт на платформе <strong style="color:#ffffff;">UEFN с нуля</strong> успешно создан. Добро пожаловать — начинаем разбираться в разработке карт для Fortnite.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- DIVIDER -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:0 40px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr><td style="border-top:1px solid rgba(255,255,255,0.06);font-size:0;line-height:0;">&nbsp;</td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:32px 40px 40px;">
+                    <p style="margin:0 0 20px;font-size:14px;color:rgba(255,255,255,0.45);">Твои материалы и уроки ждут в личном кабинете:</p>
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background:linear-gradient(135deg,#0166C3 0%,#3BCFFE 100%);border-radius:100px;">
+                          <a href="${process.env.FRONTEND_URL || 'https://uefn-s-nulya.ru'}/course.html"
+                             style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;white-space:nowrap;">
+                            Перейти к курсу →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:28px 0 0;text-align:center;">
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.2);line-height:1.6;">
+                © 2025–2026 UEFN с нуля &nbsp;·&nbsp; Это автоматическое письмо, не отвечайте на него
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
