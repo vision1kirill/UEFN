@@ -89,13 +89,11 @@ async function sendOtpEmail(email, code, purpose) {
           <td class="card" bgcolor="#131920"
               style="background-color:#131920;border:1px solid #1e2730;border-radius:24px;overflow:hidden;">
 
-            <!-- GRADIENT TOP LINE — solid colors for email compat -->
+            <!-- GRADIENT TOP LINE -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="50%" height="4" bgcolor="#0166C3"
-                    style="background-color:#0166C3;font-size:0;line-height:0;">&nbsp;</td>
-                <td width="50%" height="4" bgcolor="#3BCFFE"
-                    style="background-color:#3BCFFE;font-size:0;line-height:0;">&nbsp;</td>
+                <td height="4" bgcolor="#0166C3"
+                    style="background:linear-gradient(90deg,#0166C3 0%,#3BCFFE 100%);background-color:#0166C3;font-size:0;line-height:0;">&nbsp;</td>
               </tr>
             </table>
 
@@ -268,10 +266,8 @@ async function sendWelcomeEmail(email, name) {
             <!-- GRADIENT TOP LINE -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td width="50%" height="4" bgcolor="#0166C3"
-                    style="background-color:#0166C3;font-size:0;line-height:0;">&nbsp;</td>
-                <td width="50%" height="4" bgcolor="#3BCFFE"
-                    style="background-color:#3BCFFE;font-size:0;line-height:0;">&nbsp;</td>
+                <td height="4" bgcolor="#0166C3"
+                    style="background:linear-gradient(90deg,#0166C3 0%,#3BCFFE 100%);background-color:#0166C3;font-size:0;line-height:0;">&nbsp;</td>
               </tr>
             </table>
 
