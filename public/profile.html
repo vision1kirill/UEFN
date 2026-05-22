@@ -95,6 +95,12 @@
       padding: 10px 22px;
       white-space: nowrap;
       cursor: default;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    .nav__plan-badge--none {
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.12);
+      color: rgba(255,255,255,.55);
     }
     .nav__avatar {
       width: 40px; height: 40px; border-radius: 50%;
@@ -718,7 +724,7 @@
         <!-- Progress -->
         <div class="course-progress" id="js-progress-steps"></div>
 
-        <a href="course.html" class="course-card__btn">Продолжить обучение</a>
+        <a href="course.html" class="course-card__btn" id="js-course-btn">Продолжить обучение</a>
       </div>
 
     </div>
@@ -918,28 +924,30 @@ async function loadOrders() {
     // Nav plan badges
     const navBadge    = document.getElementById('js-nav-plan');
     const drawerBadge = document.getElementById('js-drawer-plan');
-    if (navBadge)    navBadge.textContent    = planName || 'Без тарифа';
-    if (drawerBadge) drawerBadge.textContent = planName || 'Без тарифа';
+    if (paidOrder) {
+      if (navBadge)    { navBadge.textContent    = planName; navBadge.classList.remove('nav__plan-badge--none'); }
+      if (drawerBadge) { drawerBadge.textContent = planName; drawerBadge.classList.remove('nav__plan-badge--none'); }
+    } else {
+      if (navBadge)    { navBadge.textContent    = 'Без курса'; navBadge.classList.add('nav__plan-badge--none'); }
+      if (drawerBadge) { drawerBadge.textContent = 'Без курса'; drawerBadge.classList.add('nav__plan-badge--none'); }
+    }
 
     // Course card
     const courseNameEl   = document.getElementById('js-course-name');
     const courseExpiryEl = document.getElementById('js-course-expiry');
     const accessBadgeEl  = document.getElementById('js-access-badge');
+    const courseBtnEl    = document.getElementById('js-course-btn');
 
     if (paidOrder) {
       if (courseNameEl)   courseNameEl.textContent   = planName;
-      if (courseExpiryEl) courseExpiryEl.textContent = '';  // no expiry in current schema
-      if (accessBadgeEl) {
-        accessBadgeEl.textContent = 'Активен';
-        accessBadgeEl.className   = 'status-badge status-badge--active';
-      }
-    } else {
-      if (courseNameEl)   courseNameEl.textContent   = 'Нет доступа';
       if (courseExpiryEl) courseExpiryEl.textContent = '';
-      if (accessBadgeEl) {
-        accessBadgeEl.textContent = 'Нет доступа';
-        accessBadgeEl.className   = 'status-badge status-badge--none';
-      }
+      if (accessBadgeEl)  { accessBadgeEl.textContent = 'Активен'; accessBadgeEl.className = 'status-badge status-badge--active'; }
+      if (courseBtnEl)    { courseBtnEl.textContent = 'Продолжить обучение'; courseBtnEl.href = 'course.html'; }
+    } else {
+      if (courseNameEl)   courseNameEl.textContent   = '—';
+      if (courseExpiryEl) courseExpiryEl.textContent = '';
+      if (accessBadgeEl)  { accessBadgeEl.textContent = 'Нет доступа'; accessBadgeEl.className = 'status-badge status-badge--none'; }
+      if (courseBtnEl)    { courseBtnEl.textContent = 'Купить курс'; courseBtnEl.href = 'index.html#pricing'; }
     }
 
     if (!orders.length) {
