@@ -103,101 +103,102 @@
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* PERIOD BAR */
-    .period-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: clamp(20px,2.5vw,32px); }
-    .period-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; }
-    .date-input-wrap {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
-      border-radius: 100px; padding: 9px 16px; transition: border-color .2s;
+    /* METRIC CARDS */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(12px, 1.5vw, 20px);
+      margin-bottom: clamp(24px, 3vw, 40px);
     }
-    .date-input-wrap:focus-within { border-color: rgba(59,207,254,.4); }
-    .date-input-wrap svg { width: 14px; height: 14px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
-    .date-input-wrap input[type="date"] {
-      background: none; border: none; outline: none; color: #fff;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; width: 110px;
+    @media (max-width: 900px) { .metrics-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .metrics-grid { grid-template-columns: 1fr; } }
+    .metric-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(18px, 1.8vw, 26px);
+      padding: clamp(18px, 2.2vw, 28px);
+      display: flex; flex-direction: column; gap: 14px;
     }
-    .date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.5); cursor: pointer; }
-    .period-sep { font-size: 13px; color: var(--c-dim); }
-    .preset-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .preset-btn {
-      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
+    .metric-icon-wrap {
+      width: 46px; height: 46px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .metric-icon-wrap svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .metric-label { font-size: 13px; color: var(--c-muted); margin-bottom: 6px; }
+    .metric-value { font-family: 'Unbounded', sans-serif; font-size: clamp(22px, 2.2vw, 34px); font-weight: 800; letter-spacing: -0.03em; color: #fff; line-height: 1; }
+    .metric-sub { font-size: 12px; color: #22C55E; margin-top: 6px; }
+    .metric-sub--muted { color: var(--c-muted); }
+
+    /* STATUS FILTER */
+    .status-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: clamp(20px, 2.5vw, 32px);
+    }
+    .status-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; }
+    .status-pill {
+      padding: 9px 20px; border-radius: 100px; font-size: 13px; font-weight: 500;
       color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
       cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
-    .preset-btn:hover { color: #fff; }
-    .preset-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
-
-    /* DASH SECTION */
-    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
-
-    /* CARD */
-    .card { background: var(--c-surf2); border: 1px solid var(--c-border); border-radius: clamp(18px,1.8vw,26px); padding: clamp(18px,2.2vw,28px); }
-
-    /* CHART */
-    .chart-card { padding-bottom: clamp(14px,1.8vw,22px); }
-    .chart-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: clamp(16px,2vw,24px); }
-    .chart-title { font-size: clamp(15px,1.2vw,18px); font-weight: 700; color: #fff; }
-    .chart-legend { display: flex; align-items: center; gap: clamp(14px,1.8vw,24px); }
-    .legend-item { display: flex; align-items: center; gap: 7px; font-size: clamp(11px,.85vw,13px); color: var(--c-muted); }
-    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .chart-wrap { position: relative; }
-    .chart-svg-wrap { width: 100%; overflow: hidden; margin-bottom: clamp(6px,.8vw,10px); }
-    .chart-svg { width: 100%; height: auto; display: block; }
-    .chart-xaxis { position: relative; height: 16px; }
-    .chart-xaxis span { position: absolute; font-size: clamp(9px,.65vw,11px); color: var(--c-dim); white-space: nowrap; }
-    .chart-tooltip {
-      position: absolute; top: 0; pointer-events: none; display: none;
-      background: rgba(15,19,23,.96); border: 1px solid rgba(255,255,255,.13);
-      border-radius: 12px; padding: 10px 14px; white-space: nowrap; z-index: 10;
-      box-shadow: 0 8px 32px rgba(0,0,0,.5);
-    }
-    .chart-tooltip__date { font-size: 11px; color: var(--c-dim); margin-bottom: 8px; }
-    .chart-tooltip__row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 4px; }
-    .chart-tooltip__row:last-child { margin-bottom: 0; }
-    .chart-tooltip__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .chart-tooltip__val { margin-left: auto; padding-left: 14px; font-weight: 600; }
+    .status-pill:hover { color: #fff; }
+    .status-pill.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
     /* SECTION TITLE */
     .section-title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.4vw,22px); font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: clamp(14px,1.8vw,22px); }
 
-    /* TOOLBAR */
-    .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: clamp(14px,1.8vw,22px); }
-    .search-wrap { position: relative; flex: 1; min-width: 200px; }
-    .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--c-dim); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
-    .search-input {
-      width: 100%; padding: 10px 14px 10px 40px;
-      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
-      border-radius: 100px; color: #fff; font-family: 'Golos Text', sans-serif; font-size: 14px; outline: none; transition: border-color .2s;
+    /* SUBSCRIPTION ROWS */
+    .subs-list { display: flex; flex-direction: column; gap: clamp(8px, 1vw, 12px); }
+    .sub-row {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(14px, 1.4vw, 20px); padding: clamp(16px, 2vw, 22px) clamp(18px, 2.2vw, 28px);
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1.5fr;
+      gap: clamp(8px, 1.5vw, 20px); align-items: center;
     }
-    .search-input::placeholder { color: var(--c-dim); }
-    .search-input:focus { border-color: rgba(59,207,254,.4); }
-    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
-      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    @media (max-width: 1000px) { .sub-row { grid-template-columns: 2fr 1fr 1fr 1fr; } .sub-col--dates, .sub-col--progress { display: none; } }
+    @media (max-width: 640px) { .sub-row { grid-template-columns: 1fr 1fr; } .sub-col--status, .sub-col--tariff { display: none; } }
+
+    .sub-participant { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .sub-avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff; letter-spacing: .02em;
     }
-    .filter-btn:hover { color: #fff; }
-    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .sub-info { min-width: 0; }
+    .sub-name { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub-email { font-size: 12px; color: var(--c-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ORDER ROWS */
-    .orders-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
-    .order-row { display: grid; grid-template-columns: repeat(5,1fr); gap: clamp(10px,1.5vw,20px); align-items: start; }
-    .order-field__label { font-size: clamp(9px,.7vw,11px); font-weight: 400; color: var(--c-muted); margin-bottom: 4px; white-space: nowrap; }
-    .order-field__value { font-size: clamp(11px,.9vw,14px); font-weight: 600; color: #fff; line-height: 1.3; }
-    .order-field__value--muted { color: var(--c-muted); font-weight: 400; }
+    .sub-field { }
+    .sub-field__label { font-size: 11px; color: var(--c-muted); margin-bottom: 5px; white-space: nowrap; }
+    .sub-field__value { font-size: 13px; font-weight: 600; color: #fff; }
 
-    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
-    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; }
-    .status-pill--paid    { background:rgba(34,197,94,.10);  border:1px solid rgba(34,197,94,.22);  color:#22C55E; }
-    .status-pill--paid::before    { background:#22C55E; }
-    .status-pill--pending { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
-    .status-pill--pending::before { background:#FBBF24; }
-    .status-pill--refunded { background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.22); color:#EF4444; }
-    .status-pill--refunded::before { background:#EF4444; }
+    /* TARIFF BADGE */
+    .tariff-badge {
+      display: inline-flex; align-items: center;
+      padding: 4px 14px; border-radius: 100px;
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .tariff-essential { background: rgba(1,102,195,.15); color: #5B9EE8; border: 1px solid rgba(1,102,195,.30); }
+    .tariff-extra     { background: rgba(59,207,254,.12); color: #3BCFFE; border: 1px solid rgba(59,207,254,.28); }
+    .tariff-deluxe    { background: rgba(245,158,11,.12); color: #F59E0B; border: 1px solid rgba(245,158,11,.28); }
+    .tariff-other     { background: rgba(255,255,255,.08); color: var(--c-muted); border: 1px solid var(--c-border-mid); }
 
-    .orders-empty { font-size: 14px; color: var(--c-dim); padding: 8px 0; }
+    /* STATUS DOT */
+    .sub-status { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+    .sub-status__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sub-status--paid    .sub-status__dot { background: #22C55E; }
+    .sub-status--paid    { color: #fff; }
+    .sub-status--pending .sub-status__dot { background: #FBBF24; }
+    .sub-status--pending { color: #fff; }
+    .sub-status--refunded .sub-status__dot { background: var(--c-muted); }
+    .sub-status--refunded { color: var(--c-muted); }
+
+    /* PROGRESS */
+    .progress-col { display: flex; flex-direction: column; gap: 7px; }
+    .progress-bar-bg { height: 5px; border-radius: 100px; background: rgba(255,255,255,.08); overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 100px; background: var(--c-cyan); }
+    .progress-pct { font-size: 11px; color: var(--c-muted); }
+
+    .subs-empty { font-size: 14px; color: var(--c-dim); padding: 8px 0; }
 
     /* PAGINATION */
     .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap; }
@@ -222,8 +223,6 @@
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
 
-    @media (max-width: 700px) { .order-row { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 420px) { .order-row { grid-template-columns: 1fr; gap: 8px; } }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
@@ -264,6 +263,7 @@
 
     <h1 class="page-title">Панель управления</h1>
 
+    <!-- TABS -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
       <a class="tab-btn" href="admin-users.html">Пользователи</a>
@@ -274,79 +274,64 @@
       <a class="tab-btn" href="content.html">Контент</a>
     </nav>
 
-    <!-- PERIOD -->
-    <div class="period-bar">
-      <span class="period-label">Период:</span>
-      <div class="date-input-wrap">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <input type="date" id="js-from" />
+    <!-- METRIC CARDS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon-wrap" style="background:rgba(59,207,254,.12)">
+          <svg viewBox="0 0 24 24" stroke="#3BCFFE"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <p class="metric-label">Всего подписок</p>
+          <p class="metric-value" id="js-m-total">—</p>
+          <p class="metric-sub" id="js-m-last30"></p>
+        </div>
       </div>
-      <span class="period-sep">—</span>
-      <div class="date-input-wrap">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-        <input type="date" id="js-to" />
+      <div class="metric-card">
+        <div class="metric-icon-wrap" style="background:rgba(34,197,94,.12)">
+          <svg viewBox="0 0 24 24" stroke="#22C55E"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <p class="metric-label">Активные</p>
+          <p class="metric-value" id="js-m-active">—</p>
+          <p class="metric-sub" id="js-m-active-pct"></p>
+        </div>
       </div>
-      <div class="preset-group">
-        <button class="preset-btn" data-days="7">7 дней</button>
-        <button class="preset-btn active" data-days="30">30 дней</button>
-        <button class="preset-btn" data-days="90">3 месяца</button>
-        <button class="preset-btn" data-days="365">Год</button>
+      <div class="metric-card">
+        <div class="metric-icon-wrap" style="background:rgba(255,255,255,.06)">
+          <svg viewBox="0 0 24 24" stroke="rgba(255,255,255,.5)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <p class="metric-label">Завершённые</p>
+          <p class="metric-value" id="js-m-completed">—</p>
+          <p class="metric-sub metric-sub--muted" id="js-m-completed-pct"></p>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon-wrap" style="background:rgba(245,158,11,.12)">
+          <svg viewBox="0 0 24 24" stroke="#F59E0B"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <div>
+          <p class="metric-label">Выручка</p>
+          <p class="metric-value" id="js-m-revenue">—</p>
+        </div>
       </div>
     </div>
 
-    <!-- CHART -->
-    <div class="dash-section">
-      <div class="card chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Подписки сотрудничества</span>
-          <div class="chart-legend">
-            <div class="legend-item"><span class="legend-dot" style="background:#3BCFFE"></span>Partnership</div>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <div class="chart-svg-wrap">
-            <svg class="chart-svg" id="js-chart-main" viewBox="0 0 900 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
-              <line x1="0" y1="40"  x2="900" y2="40"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="90"  x2="900" y2="90"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="140" x2="900" y2="140" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="190" x2="900" y2="190" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <g id="js-chart-lines"></g>
-              <g id="js-chart-ind" style="display:none; pointer-events:none">
-                <line id="js-ind-line" x1="0" y1="0" x2="0" y2="200" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="5,3"/>
-                <circle id="js-ind-dot" r="5" fill="#3BCFFE" stroke="#0F1317" stroke-width="2"/>
-              </g>
-              <rect id="js-chart-overlay" x="0" y="0" width="900" height="200" fill="transparent"/>
-            </svg>
-          </div>
-          <div class="chart-xaxis" id="js-xaxis"></div>
-          <div class="chart-tooltip" id="js-chart-tip"></div>
-        </div>
-      </div>
+    <!-- STATUS FILTER -->
+    <div class="status-bar">
+      <span class="status-label">Статус:</span>
+      <button class="status-pill active" data-status="">Все</button>
+      <button class="status-pill" data-status="paid">Активные</button>
+      <button class="status-pill" data-status="refunded">Завершённые</button>
+      <button class="status-pill" data-status="pending">На паузе</button>
     </div>
 
     <!-- LIST -->
-    <div class="dash-section">
-      <h2 class="section-title">Подписки</h2>
-
-      <div class="toolbar">
-        <div class="search-wrap">
-          <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
-          <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени или email…" autocomplete="off" />
-        </div>
-        <div class="filter-group">
-          <button class="filter-btn active" data-status="">Все</button>
-          <button class="filter-btn" data-status="paid">Оплачено</button>
-          <button class="filter-btn" data-status="pending">Ожидание</button>
-          <button class="filter-btn" data-status="refunded">Возврат</button>
-        </div>
-      </div>
-
-      <div class="orders-list" id="js-orders">
-        <p class="orders-empty">Загрузка…</p>
-      </div>
-
-      <div class="pagination" id="js-pagination"></div>
+    <h2 class="section-title">Подписки</h2>
+    <div class="subs-list" id="js-subs">
+      <p class="subs-empty">Загрузка…</p>
     </div>
+    <div class="pagination" id="js-pagination"></div>
 
   </div>
 </main>
@@ -392,266 +377,201 @@ burger.addEventListener('click', () => {
   burger.setAttribute('aria-expanded', String(open));
 });
 
-/* Helpers */
+/* ── Helpers ─────────────────────────────────────────── */
 function fmtPrice(n)  { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
-}
-function fmtDateShort(iso) {
-  if (!iso) return '';
   const d = new Date(iso);
-  return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0');
+  return d.getDate().toString().padStart(2,'0') + '.' +
+         (d.getMonth()+1).toString().padStart(2,'0') + '.' + d.getFullYear();
 }
 
-const STATUS_LABELS = { paid:'Оплачено', pending:'В ожидании', refunded:'Возврат' };
-const STATUS_CLS    = { paid:'status-pill--paid', pending:'status-pill--pending', refunded:'status-pill--refunded' };
-const VW = 900, VH = 200, COLOR = '#3BCFFE';
-
-/* State */
-let fromDate='', toDate='';
-let currentStatus='', searchQuery='', searchTimer=null;
-let currentPage=1;
-const PAGE_SIZE=20;
-
-/* Period */
-function setPreset(days) {
-  const to=new Date(), from=new Date();
-  from.setDate(from.getDate()-(days-1));
-  fromDate=from.toISOString().slice(0,10);
-  toDate=to.toISOString().slice(0,10);
-  document.getElementById('js-from').value=fromDate;
-  document.getElementById('js-to').value=toDate;
-  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.toggle('active',+b.dataset.days===days));
+/* Avatar */
+const AVATAR_COLORS = ['#0166C3','#3BCFFE','#8B5CF6','#EC4899','#F59E0B','#10B981','#EF4444','#6366F1'];
+function avatarColor(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
 }
-
-function buildDates(from, to) {
-  const dates=[], cur=new Date(from), end=new Date(to);
-  while (cur<=end) { dates.push(cur.toISOString().slice(0,10)); cur.setDate(cur.getDate()+1); }
-  return dates;
-}
-
-function smoothPath(pts, tension=0.35, minY=-Infinity, maxY=Infinity) {
-  if (pts.length<2) return '';
-  let d=`M ${pts[0][0]} ${pts[0][1]}`;
-  for (let i=0;i<pts.length-1;i++) {
-    const p0=pts[Math.max(i-1,0)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(i+2,pts.length-1)];
-    const cp1x=p1[0]+(p2[0]-p0[0])*tension;
-    const cp1y=Math.max(minY,Math.min(maxY,p1[1]+(p2[1]-p0[1])*tension));
-    const cp2x=p2[0]-(p3[0]-p1[0])*tension;
-    const cp2y=Math.max(minY,Math.min(maxY,p2[1]-(p3[1]-p1[1])*tension));
-    d+=` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+function avatarInitials(name, email) {
+  if (name) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0,2).toUpperCase();
   }
+  return email.slice(0,2).toUpperCase();
+}
+
+/* Tariff */
+const TARIFF_CLS   = { Essential:'tariff-essential', Extra:'tariff-extra', Deluxe:'tariff-deluxe' };
+const PRODUCT_DAYS = { Essential:30, Extra:90, Deluxe:365 };
+
+function getEndDate(product, startIso) {
+  const days = PRODUCT_DAYS[product];
+  if (!days) return null;
+  const d = new Date(startIso);
+  d.setDate(d.getDate() + days);
   return d;
 }
 
-/* Render chart */
-function renderChart(chartRows) {
-  const dates=buildDates(fromDate, toDate);
-  const N=dates.length;
-  if (!N) return;
-
-  const map={};
-  chartRows.forEach(r=>{ map[r.day.slice(0,10)]=+r.count; });
-  const counts=dates.map(d=>map[d]||0);
-  const xs=dates.map((_,i)=>N===1?VW/2:Math.round(i*VW/(N-1)));
-  const maxVal=Math.max(...counts,1);
-  const PAD=14, minY=PAD, maxY=VH-PAD;
-  const toY=v=>VH-PAD-(v/maxVal)*(VH-PAD*2);
-  const pts=xs.map((x,i)=>[x,toY(counts[i])]);
-
-  /* Line */
-  const linesEl=document.getElementById('js-chart-lines');
-  linesEl.innerHTML='';
-  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-  path.setAttribute('d',smoothPath(pts,0.35,minY,maxY));
-  path.setAttribute('fill','none'); path.setAttribute('stroke',COLOR);
-  path.setAttribute('stroke-width','2.5'); path.setAttribute('stroke-linecap','round');
-  linesEl.appendChild(path);
-
-  /* X-axis */
-  const xaxisEl=document.getElementById('js-xaxis');
-  xaxisEl.innerHTML='';
-  const step=Math.max(1,Math.ceil(N/7));
-  dates.forEach((d,i)=>{
-    if (i%step!==0) return;
-    const pct=N===1?50:(xs[i]/VW)*100;
-    const span=document.createElement('span');
-    span.textContent=fmtDateShort(d);
-    span.style.cssText=`left:${pct}%;transform:translateX(${i===0?'0%':'-50%'})`;
-    xaxisEl.appendChild(span);
-  });
-
-  /* Hover */
-  const svg=document.getElementById('js-chart-main');
-  const overlay=document.getElementById('js-chart-overlay');
-  const indG=document.getElementById('js-chart-ind');
-  const indLine=document.getElementById('js-ind-line');
-  const indDot=document.getElementById('js-ind-dot');
-  const tipEl=document.getElementById('js-chart-tip');
-
-  function getIdx(cx) {
-    const r=svg.getBoundingClientRect();
-    return Math.round(Math.max(0,Math.min(1,(cx-r.left)/r.width))*(N-1));
-  }
-  function showTip(cx) {
-    const idx=getIdx(cx), svgX=xs[idx];
-    indLine.setAttribute('x1',svgX); indLine.setAttribute('x2',svgX);
-    indDot.setAttribute('cx',svgX); indDot.setAttribute('cy',toY(counts[idx]));
-    indG.style.display='';
-    tipEl.innerHTML=`
-      <div class="chart-tooltip__date">${fmtDateShort(dates[idx])}</div>
-      <div class="chart-tooltip__row">
-        <span class="chart-tooltip__dot" style="background:${COLOR}"></span>
-        Подписки
-        <span class="chart-tooltip__val">${counts[idx]} шт.</span>
-      </div>`;
-    const r=svg.getBoundingClientRect(), screenX=(svgX/VW)*r.width, tipW=tipEl.offsetWidth||160;
-    tipEl.style.left=(screenX+14+tipW>r.width?screenX-tipW-10:screenX+14)+'px';
-    tipEl.style.display='block';
-  }
-  function hideTip() { indG.style.display='none'; tipEl.style.display='none'; }
-  overlay.addEventListener('mousemove',e=>showTip(e.clientX));
-  overlay.addEventListener('mouseleave',hideTip);
-  overlay.addEventListener('touchstart',e=>{e.preventDefault();showTip(e.touches[0].clientX);},{passive:false});
-  overlay.addEventListener('touchmove',e=>{e.preventDefault();showTip(e.touches[0].clientX);},{passive:false});
-  overlay.addEventListener('touchend',hideTip);
+function getProgress(product, startIso, status) {
+  if (status === 'refunded') return 100;
+  if (status === 'pending')  return 0;
+  const days = PRODUCT_DAYS[product];
+  if (!days) return 100;
+  const start = new Date(startIso).getTime();
+  const end   = start + days * 86400000;
+  const now   = Date.now();
+  return Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100)));
 }
 
-/* Render rows */
-function renderOrders(sales) {
-  const el=document.getElementById('js-orders');
-  if (!sales.length) { el.innerHTML='<p class="orders-empty">Подписок не найдено.</p>'; return; }
-  el.innerHTML='';
-  sales.forEach(o=>{
-    const statusLabel=STATUS_LABELS[o.status]||o.status;
-    const statusCls=STATUS_CLS[o.status]||'status-pill--pending';
-    const amountHtml=+o.amount>0
-      ? `<span>${fmtPrice(o.amount)}</span>`
-      : `<span style="color:var(--c-dim)">Бесплатно</span>`;
-    el.insertAdjacentHTML('beforeend',`
-      <div class="card order-row">
-        <div class="order-field">
-          <p class="order-field__label">Покупатель</p>
-          <p class="order-field__value">${o.buyer_name||'—'}</p>
-          <p class="order-field__value order-field__value--muted" style="font-size:12px;margin-top:2px">${o.buyer_email}</p>
-        </div>
-        <div class="order-field">
-          <p class="order-field__label">Стоимость</p>
-          <p class="order-field__value">${amountHtml}</p>
-        </div>
-        <div class="order-field">
-          <p class="order-field__label">Статус</p>
-          <p class="order-field__value"><span class="status-pill ${statusCls}">${statusLabel}</span></p>
-        </div>
-        <div class="order-field">
-          <p class="order-field__label">Промокод</p>
-          <p class="order-field__value ${o.promo_code?'':'order-field__value--muted'}">${o.promo_code||'—'}</p>
-        </div>
-        <div class="order-field">
-          <p class="order-field__label">Дата</p>
-          <p class="order-field__value">${fmtDate(o.created_at)}</p>
-        </div>
-      </div>`);
-  });
-}
+/* Status */
+const STATUS_LABELS = { paid:'Активна', pending:'На паузе', refunded:'Завершена' };
 
-/* Pagination */
-function renderPagination(total) {
-  const wrap=document.getElementById('js-pagination');
-  const pages=Math.ceil(total/PAGE_SIZE);
-  if (pages<=1) { wrap.innerHTML=''; return; }
-  let html=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>← Назад</button>`;
-  const range=[];
-  for (let i=1;i<=pages;i++) {
-    if(i===1||i===pages||Math.abs(i-currentPage)<=1) range.push(i);
-    else if(range[range.length-1]!=='…') range.push('…');
-  }
-  range.forEach(p=>{
-    if(p==='…') html+=`<span class="page-btn" style="cursor:default">…</span>`;
-    else html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
-  });
-  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
-  wrap.innerHTML=html;
-}
-function goPage(p) { currentPage=p; loadSales(); }
+/* ── State ───────────────────────────────────────────── */
+let currentStatus = '';
+let currentPage   = 1;
+const PAGE_SIZE   = 20;
 
-/* Build URL — всегда product=Partnership */
-function buildUrl(page) {
-  const p=new URLSearchParams({page, limit:PAGE_SIZE, product:'Partnership'});
-  if (currentStatus) p.set('status',currentStatus);
-  if (fromDate)      p.set('from',fromDate);
-  if (toDate)        p.set('to',toDate);
-  if (searchQuery)   p.set('search',searchQuery);
-  return `/api/admin/sales?${p}`;
-}
-
-async function loadSales() {
-  document.getElementById('js-orders').innerHTML='<p class="orders-empty">Загрузка…</p>';
+/* ── Stats ───────────────────────────────────────────── */
+async function loadStats() {
   try {
-    const res=await apiFetch(buildUrl(currentPage));
-    const data=res.ok?await res.json():{sales:[],total:0};
-    renderOrders(data.sales||[]);
-    renderPagination(data.total||0);
-  } catch(e) {
-    console.error(e);
-    document.getElementById('js-orders').innerHTML='<p class="orders-empty">Ошибка загрузки.</p>';
-  }
-}
+    const res = await apiFetch('/api/admin/subscriptions/stats');
+    if (!res.ok) return;
+    const s = await res.json();
+    const total = s.total || 0;
 
-async function loadChart() {
-  const p=new URLSearchParams({from:fromDate, to:toDate, product:'Partnership'});
-  try {
-    const res=await apiFetch(`/api/admin/chart?${p}`);
-    if (res.ok) renderChart((await res.json()).chart||[]);
+    document.getElementById('js-m-total').textContent    = total;
+    document.getElementById('js-m-last30').textContent   = s.last30d > 0 ? `+${s.last30d} за месяц` : 'Нет новых за месяц';
+    document.getElementById('js-m-active').textContent   = s.active || 0;
+    document.getElementById('js-m-completed').textContent= s.completed || 0;
+    document.getElementById('js-m-revenue').textContent  = fmtPrice(s.revenue || 0);
+
+    const activePct    = total ? Math.round((s.active    / total) * 100) : 0;
+    const completedPct = total ? Math.round((s.completed / total) * 100) : 0;
+    document.getElementById('js-m-active-pct').textContent    = activePct    + '% от всех';
+    document.getElementById('js-m-completed-pct').textContent = completedPct + '% от всех';
   } catch(e) { console.error(e); }
 }
 
-async function loadAll() {
-  await Promise.all([loadChart(), loadSales()]);
+/* ── List ────────────────────────────────────────────── */
+function renderSubs(items) {
+  const el = document.getElementById('js-subs');
+  if (!items.length) { el.innerHTML = '<p class="subs-empty">Подписок не найдено.</p>'; return; }
+  el.innerHTML = '';
+  items.forEach(o => {
+    const initials = avatarInitials(o.buyer_name, o.buyer_email);
+    const color    = avatarColor(o.buyer_email);
+    const tariffCls = TARIFF_CLS[o.product] || 'tariff-other';
+    const startDate = o.paid_at || o.created_at;
+    const endDate   = getEndDate(o.product, startDate);
+    const progress  = getProgress(o.product, startDate, o.status);
+    const statusLabel = STATUS_LABELS[o.status] || o.status;
+
+    const row = document.createElement('div');
+    row.className = 'sub-row';
+    row.innerHTML = `
+      <!-- Участник -->
+      <div class="sub-participant">
+        <div class="sub-avatar" style="background:${color}">${initials}</div>
+        <div class="sub-info">
+          <p class="sub-name">${o.buyer_name || '—'}</p>
+          <p class="sub-email">${o.buyer_email}</p>
+        </div>
+      </div>
+      <!-- Тариф -->
+      <div class="sub-field">
+        <p class="sub-field__label">Тариф</p>
+        <span class="tariff-badge ${tariffCls}">${o.product}</span>
+      </div>
+      <!-- Начало -->
+      <div class="sub-field sub-col--dates">
+        <p class="sub-field__label">Начало</p>
+        <p class="sub-field__value">${fmtDate(startDate)}</p>
+      </div>
+      <!-- Конец -->
+      <div class="sub-field sub-col--dates">
+        <p class="sub-field__label">Конец</p>
+        <p class="sub-field__value">${endDate ? fmtDate(endDate.toISOString()) : 'Безлимит'}</p>
+      </div>
+      <!-- Состояние -->
+      <div class="sub-field sub-col--status">
+        <p class="sub-field__label">Состояние</p>
+        <div class="sub-status sub-status--${o.status}">
+          <span class="sub-status__dot"></span>${statusLabel}
+        </div>
+      </div>
+      <!-- Прогресс -->
+      <div class="progress-col sub-col--progress">
+        <p class="sub-field__label">Прогресс</p>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${progress}%"></div>
+        </div>
+        <p class="progress-pct">${progress}% пройдено</p>
+      </div>`;
+    el.appendChild(row);
+  });
 }
 
-/* Init */
-async function init() {
-  if (!window.Auth?.isLoggedIn()) { window.location.href='login.html'; return; }
-  let canShow=false;
+function renderPagination(total) {
+  const wrap  = document.getElementById('js-pagination');
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if (pages <= 1) { wrap.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>← Назад</button>`;
+  const range = [];
+  for (let i = 1; i <= pages; i++) {
+    if (i===1||i===pages||Math.abs(i-currentPage)<=1) range.push(i);
+    else if (range[range.length-1] !== '…') range.push('…');
+  }
+  range.forEach(p => {
+    if (p==='…') html += `<span class="page-btn" style="cursor:default">…</span>`;
+    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
+  wrap.innerHTML = html;
+}
+function goPage(p) { currentPage = p; loadList(); }
+
+async function loadList() {
+  document.getElementById('js-subs').innerHTML = '<p class="subs-empty">Загрузка…</p>';
   try {
-    const res=await apiFetch('/api/auth/me');
+    const p = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (currentStatus) p.set('status', currentStatus);
+    const res = await apiFetch(`/api/admin/subscriptions?${p}`);
+    const data = res.ok ? await res.json() : { subscriptions: [], total: 0 };
+    renderSubs(data.subscriptions || []);
+    renderPagination(data.total || 0);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('js-subs').innerHTML = '<p class="subs-empty">Ошибка загрузки.</p>';
+  }
+}
+
+/* ── Init ────────────────────────────────────────────── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+  let canShow = false;
+  try {
+    const res = await apiFetch('/api/auth/me');
     if (!res.ok) { window.Auth.logout(); return; }
-    const user=await res.json();
-    if (user.role!=='admin') { window.location.href='profile.html'; return; }
-    canShow=true;
-    document.getElementById('js-nav-name').textContent=user.name||'Админ';
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    canShow = true;
+    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
 
-    setPreset(30);
-    await loadAll();
+    await Promise.all([loadStats(), loadList()]);
 
-    document.querySelectorAll('.preset-btn').forEach(b=>{
-      b.addEventListener('click',()=>{ setPreset(+b.dataset.days); currentPage=1; loadAll(); });
-    });
-    document.getElementById('js-from').addEventListener('change',e=>{
-      fromDate=e.target.value;
-      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
-      currentPage=1; loadAll();
-    });
-    document.getElementById('js-to').addEventListener('change',e=>{
-      toDate=e.target.value;
-      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
-      currentPage=1; loadAll();
-    });
-    document.querySelectorAll('[data-status]').forEach(b=>{
-      b.addEventListener('click',()=>{
-        document.querySelectorAll('[data-status]').forEach(x=>x.classList.remove('active'));
-        b.classList.add('active'); currentStatus=b.dataset.status; currentPage=1; loadSales();
+    document.querySelectorAll('[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStatus = btn.dataset.status;
+        currentPage   = 1;
+        loadList();
       });
     });
-    document.getElementById('js-search').addEventListener('input',e=>{
-      clearTimeout(searchTimer);
-      searchTimer=setTimeout(()=>{ searchQuery=e.target.value.trim(); currentPage=1; loadSales(); },350);
-    });
-
-  } catch(e) { console.error(e); canShow=true; }
-  finally { if (canShow) document.body.style.opacity='1'; }
+  } catch(e) { console.error(e); canShow = true; }
+  finally { if (canShow) document.body.style.opacity = '1'; }
 }
 
 init();

@@ -490,4 +490,82 @@ router.patch('/users/:id/role', async (req, res, next) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/admin/subscriptions/stats
+//  Aggregate stats for course subscriptions (excludes Partnership)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/subscriptions/stats', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT
+         COUNT(*)                                                               AS total,
+         COUNT(*) FILTER (WHERE status = 'paid')                               AS active,
+         COUNT(*) FILTER (WHERE status = 'refunded')                           AS completed,
+         COUNT(*) FILTER (WHERE status = 'pending')                            AS on_pause,
+         COALESCE(SUM(amount) FILTER (WHERE status = 'paid'), 0)               AS revenue,
+         COUNT(*) FILTER (WHERE status = 'paid'
+                          AND created_at > NOW() - INTERVAL '30 days')         AS last30d
+       FROM orders
+       WHERE product != 'Partnership'`,
+    );
+    res.json({
+      total:     parseInt(rows[0].total, 10),
+      active:    parseInt(rows[0].active, 10),
+      completed: parseInt(rows[0].completed, 10),
+      onPause:   parseInt(rows[0].on_pause, 10),
+      revenue:   parseFloat(rows[0].revenue),
+      last30d:   parseInt(rows[0].last30d, 10),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/admin/subscriptions
+//  Course subscriptions list (excludes Partnership)
+//  Query: ?status=paid|pending|refunded&search=text&page=1&limit=20
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/subscriptions', async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20, status, search } = req.query;
+    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const params = [];
+    const conds  = [`o.product != 'Partnership'`];
+
+    if (status) { params.push(status);        conds.push(`o.status = $${params.length}`); }
+    if (search) { params.push(`%${search}%`); conds.push(`(u.email ILIKE $${params.length} OR u.name ILIKE $${params.length})`); }
+
+    const where = `WHERE ${conds.join(' AND ')}`;
+
+    const { rows: countRows } = await query(
+      `SELECT COUNT(*) AS total FROM orders o JOIN users u ON u.id = o.user_id ${where}`,
+      params,
+    );
+
+    params.push(parseInt(limit, 10));
+    params.push(offset);
+
+    const { rows } = await query(
+      `SELECT o.id, o.product, o.amount, o.promo_code, o.status, o.created_at, o.paid_at,
+              u.email AS buyer_email, u.name AS buyer_name
+       FROM orders o
+       JOIN users u ON u.id = o.user_id
+       ${where}
+       ORDER BY o.created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params,
+    );
+
+    res.json({
+      subscriptions: rows,
+      total: parseInt(countRows[0].total, 10),
+      page:  parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
