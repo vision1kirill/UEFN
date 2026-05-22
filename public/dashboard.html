@@ -22,6 +22,7 @@
       background: var(--c-bg); color: var(--c-text);
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
       display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
     }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
@@ -596,8 +597,25 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
+
+/* ── Admin guard ── */
+(async function guardAdmin() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+  let canShow = false;
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    const nameEl = document.querySelector('.nav__user-name');
+    if (nameEl) nameEl.textContent = user.name || 'Админ';
+    canShow = true;
+  } catch { canShow = true; }
+  finally { if (canShow) document.body.style.opacity = '1'; }
+})();
 
 /* ── Nav ── */
 const navEl = document.getElementById('js-nav');

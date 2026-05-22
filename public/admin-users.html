@@ -887,15 +887,20 @@ async function confirmDelete() {
 async function init() {
   if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
 
+  let canShow = false;
   try {
     const res = await apiFetch('/api/auth/me');
     if (!res.ok) { window.Auth.logout(); return; }
     const user = await res.json();
     if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    canShow = true;
     document.getElementById('js-nav-name').textContent = user.name || 'Админ';
     await loadUsers();
+  } catch (e) {
+    console.error(e);
+    canShow = true;
   } finally {
-    document.body.style.opacity = '1';
+    if (canShow) document.body.style.opacity = '1';
   }
 }
 
