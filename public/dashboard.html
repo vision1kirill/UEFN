@@ -664,7 +664,9 @@ function renderMainChart(chartRows) {
   const products = [...new Set([...ALL_PRODUCTS, ...apiProducts])];
 
   const map = {};
-  chartRows.forEach(r => { map[r.day.slice(0,10) + '|' + r.product] = { count: +r.count, revenue: +r.revenue }; });
+  chartRows
+    .filter(r => r.product !== 'Partnership')
+    .forEach(r => { map[r.day.slice(0,10) + '|' + r.product] = { count: +r.count, revenue: +r.revenue }; });
 
   const series = products.map(prod => ({
     product: prod,
