@@ -621,7 +621,7 @@
     </nav>
     <!-- Auth zone: plan badge + avatar -->
     <div class="nav__auth">
-      <span class="nav__plan-badge" id="js-nav-plan"></span>
+      <span class="nav__plan-badge nav__plan-badge--none" id="js-nav-plan">Без курса</span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -646,7 +646,7 @@
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
   <div class="drawer-btns">
-    <a href="profile.html" class="nav__plan-badge" id="js-drawer-plan" style="display:flex;align-items:center;justify-content:center;"></a>
+    <a href="profile.html" class="nav__plan-badge nav__plan-badge--none" id="js-drawer-plan" style="display:flex;align-items:center;justify-content:center;">Без курса</a>
   </div>
 </nav>
 
@@ -919,7 +919,7 @@ async function loadOrders() {
 
     // Update course card from latest paid order
     const paidOrder = orders.find(o => o.status === 'paid');
-    const planName  = paidOrder ? (paidOrder.plan || 'Курс') : null;
+    const planName  = paidOrder ? (paidOrder.product || 'Курс') : null;
 
     // Nav plan badges
     const navBadge    = document.getElementById('js-nav-plan');
@@ -958,15 +958,11 @@ async function loadOrders() {
 
     list.innerHTML = '';
     orders.forEach(o => {
-      const hasDiscount = o.original_amount && Number(o.original_amount) !== Number(o.amount);
       list.insertAdjacentHTML('beforeend', `
         <div class="order-row">
           <span class="order-price">${formatPrice(o.amount)}</span>
-          <span class="order-old-price" style="${hasDiscount ? '' : 'visibility:hidden'}">
-            ${hasDiscount ? formatPrice(o.original_amount) : '—'}
-          </span>
           <div class="order-plan-promo">
-            <span class="order-plan">${o.plan || '—'}</span>
+            <span class="order-plan">${o.product || '—'}</span>
             ${o.promo_code ? `<span class="order-promo">${o.promo_code}</span>` : ''}
           </div>
           <span class="order-date">${formatDate(o.created_at)}</span>

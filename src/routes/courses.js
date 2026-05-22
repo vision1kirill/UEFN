@@ -169,7 +169,7 @@ router.delete('/progress', async (req, res, next) => {
 router.get('/orders', async (req, res, next) => {
   try {
     const { rows } = await query(
-      `SELECT id, plan, amount, original_amount, promo_code, status, created_at
+      `SELECT id, product, amount, promo_code, status, created_at
        FROM orders
        WHERE user_id = $1
        ORDER BY created_at DESC`,
