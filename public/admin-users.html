@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Пользователи — Панель управления</title>
+
+  <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+    ul, ol { list-style: none; }
+
+    :root {
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
+    }
+    .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200;
+      height: var(--nav-h); width: 100%;
+      display: flex; align-items: center;
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
+    .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center;
+      gap: clamp(16px,2.2vw,28px);
+    }
+    .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
+    .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a:hover { opacity: .65; }
+    .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .2s;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0;
+    }
+    .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
+    .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav__burger.open span:nth-child(2) { opacity: 0; }
+    .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
+    }
+    .nav__drawer.open { transform: translateX(0); }
+    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
+    .nav__drawer a:hover { color: #fff; }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; } .nav__auth { display: none; }
+      .nav__burger { display: flex; }
+      .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
+
+    /* ── LAYOUT ── */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
+    .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+
+    .page-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(22px,3vw,44px); font-weight: 800;
+      letter-spacing: -0.03em; color: #fff;
+      margin-bottom: clamp(20px,2.5vw,32px);
+    }
+
+    /* ── TABS ── */
+    .tab-nav {
+      display: flex; align-items: center; gap: clamp(6px,1vw,10px);
+      margin-bottom: clamp(24px,3vw,40px);
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
+      border-radius: 100px; font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted);
+      background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: clamp(16px,2vw,24px);
+    }
+    .search-wrap {
+      position: relative; flex: 1; min-width: 200px;
+    }
+    .search-wrap svg {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; stroke: var(--c-dim); fill: none;
+      stroke-width: 2; stroke-linecap: round; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s;
+    }
+    .search-input::placeholder { color: var(--c-dim); }
+    .search-input:focus { border-color: rgba(59,207,254,.4); }
+
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 9px 18px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05);
+      border: 1.5px solid transparent; cursor: pointer;
+      transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    }
+    .filter-btn:hover { color: #fff; }
+    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: flex; gap: clamp(10px,1.5vw,16px); flex-wrap: wrap;
+      margin-bottom: clamp(16px,2vw,24px);
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 100px;
+      background: rgba(255,255,255,.04); border: 1px solid var(--c-border);
+      font-family: 'Golos Text', sans-serif; font-size: 13px; color: var(--c-muted);
+    }
+    .stat-chip strong { color: #fff; font-weight: 700; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(16px,1.6vw,24px); overflow: hidden;
+    }
+    .table-head {
+      display: grid;
+      grid-template-columns: 2fr 2.5fr 1fr 1fr 1.2fr 120px;
+      gap: 12px; align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--c-border);
+      background: rgba(255,255,255,.02);
+    }
+    .th {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600; color: var(--c-dim);
+      text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+    }
+    .th--right { text-align: right; }
+
+    .table-body { display: flex; flex-direction: column; }
+
+    .user-row {
+      display: grid;
+      grid-template-columns: 2fr 2.5fr 1fr 1fr 1.2fr 120px;
+      gap: 12px; align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--c-border);
+      transition: background .15s;
+    }
+    .user-row:last-child { border-bottom: none; }
+    .user-row:hover { background: rgba(255,255,255,.025); }
+
+    .user-name {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; font-weight: 600; color: #fff;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-name--empty { color: var(--c-dim); font-weight: 400; font-style: italic; }
+    .user-email {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; color: var(--c-muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-date {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; color: var(--c-dim); white-space: nowrap;
+    }
+
+    /* Role badge */
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .role-badge--user    { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: var(--c-muted); }
+    .role-badge--partner { background: rgba(251,191,36,.10); border: 1px solid rgba(251,191,36,.25); color: #FBBF24; }
+    .role-badge--admin   { background: rgba(59,207,254,.10); border: 1px solid rgba(59,207,254,.25); color: var(--c-cyan); }
+
+    /* Access badge */
+    .access-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .access-badge::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .access-badge--yes { background: rgba(34,197,94,.10); border: 1px solid rgba(34,197,94,.22); color: #22C55E; }
+    .access-badge--yes::before { background: #22C55E; }
+    .access-badge--no  { background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10); color: var(--c-dim); }
+    .access-badge--no::before  { background: rgba(255,255,255,.25); }
+
+    /* Actions */
+    .row-actions {
+      display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    }
+    .action-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid transparent; cursor: pointer;
+      transition: background .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .action-btn svg { width: 15px; height: 15px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .action-btn:hover svg { stroke: #fff; }
+    .action-btn--edit:hover   { background: rgba(59,207,254,.10); border-color: rgba(59,207,254,.25); }
+    .action-btn--access:hover { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.22); }
+    .action-btn--delete:hover { background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.22); }
+    .action-btn--delete:hover svg { stroke: #F87171; }
+
+    /* ── EMPTY / LOADING ── */
+    .table-empty {
+      padding: 48px 24px; text-align: center;
+      font-family: 'Golos Text', sans-serif; font-size: 15px; color: var(--c-dim);
+    }
+
+    /* ── PAGINATION ── */
+    .pagination {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap;
+    }
+    .page-btn {
+      padding: 8px 16px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05);
+      border: 1px solid transparent; cursor: pointer; transition: all .2s;
+    }
+    .page-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .page-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.08); }
+    .page-btn:disabled { opacity: .35; cursor: default; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #131920; border: 1px solid rgba(255,255,255,.10);
+      border-radius: 24px; padding: clamp(24px,3.5vw,40px);
+      width: 100%; max-width: 420px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .modal__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(15px,1.4vw,18px); font-weight: 700; color: #fff;
+    }
+    .modal__sub { font-family: 'Golos Text', sans-serif; font-size: 14px; color: var(--c-muted); line-height: 1.6; margin-top: -8px; }
+    .modal__user-info {
+      background: rgba(255,255,255,.04); border: 1px solid var(--c-border);
+      border-radius: 14px; padding: 14px 18px;
+    }
+    .modal__user-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .modal__user-email { font-size: 13px; color: var(--c-muted); }
+
+    .modal__label { font-size: 12px; color: var(--c-dim); margin-bottom: 8px; }
+    .role-select {
+      width: 100%; padding: 11px 16px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 12px; color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: 14px; outline: none; cursor: pointer;
+      transition: border-color .2s; appearance: none;
+    }
+    .role-select:focus { border-color: rgba(59,207,254,.4); }
+    .role-select option { background: #131920; }
+
+    .modal__error { font-size: 13px; color: #f87171; display: none; }
+
+    .modal__actions { display: flex; gap: 10px; }
+    .btn-primary {
+      flex: 1; padding: 12px 24px; background: var(--g-accent);
+      border: none; border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-primary:disabled { opacity: .45; cursor: default; }
+    .btn-danger {
+      flex: 1; padding: 12px 24px;
+      background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3);
+      border-radius: 100px; color: #F87171;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.25); }
+    .btn-danger:disabled { opacity: .45; cursor: default; }
+    .btn-cancel {
+      padding: 12px 20px; background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,.12); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+      z-index: 999; background: #131920; border: 1px solid rgba(255,255,255,.12);
+      border-radius: 100px; padding: 12px 24px;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 500; color: #fff;
+      white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
+      opacity: 0; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast--success { border-color: rgba(34,197,94,.35); color: #22C55E; }
+    .toast--error   { border-color: rgba(239,68,68,.35);  color: #F87171; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .table-head { grid-template-columns: 2fr 2.5fr 1fr 100px; }
+      .table-head .th:nth-child(4),
+      .table-head .th:nth-child(5) { display: none; }
+      .user-row { grid-template-columns: 2fr 2.5fr 1fr 100px; }
+      .user-row > *:nth-child(4),
+      .user-row > *:nth-child(5) { display: none; }
+    }
+    @media (max-width: 600px) {
+      .table-head { display: none; }
+      .user-row { grid-template-columns: 1fr auto; gap: 8px; padding: 14px 16px; }
+      .user-row > *:nth-child(3),
+      .user-row > *:nth-child(4),
+      .user-row > *:nth-child(5) { display: none; }
+      .user-name { font-size: 13px; }
+      .user-email { font-size: 12px; }
+    }
+
+    /* ── FOOTER ── */
+    .footer { padding-bottom: clamp(48px,6vw,80px); }
+    .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
+    .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
+    .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+    .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
+    .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
+    .footer__legal a:hover { color: var(--c-muted); }
+    .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
+    .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
+    .footer__nav a:hover { color: #fff; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="js-nav">
+  <div class="nav__inner">
+    <div class="nav__logo">
+      <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+      <span class="nav__logo-text">UEFN с нуля</span>
+    </div>
+    <nav class="nav__links">
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#faq">Ответы на вопросы</a>
+    </nav>
+    <div class="nav__auth">
+      <span class="nav__user-name" id="js-nav-name"></span>
+      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </a>
+    </div>
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<nav class="nav__drawer" id="js-drawer">
+  <a href="dashboard.html">Дашборд</a>
+  <a href="profile.html">Профиль</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+  <div class="page-wrap">
+
+    <h1 class="page-title">Панель управления</h1>
+
+    <!-- TABS -->
+    <nav class="tab-nav">
+      <a class="tab-btn" href="dashboard.html">Дашборд</a>
+      <a class="tab-btn active" href="admin-users.html">Пользователи</a>
+      <a class="tab-btn" href="sales.html">Продажи</a>
+      <a class="tab-btn" href="subscriptions.html">Подписки</a>
+      <a class="tab-btn" href="referrals.html">Рефералы</a>
+      <a class="tab-btn" href="partner-applications.html">Заявки</a>
+      <a class="tab-btn" href="content.html">Контент</a>
+    </nav>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени или email…" autocomplete="off" />
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" data-role="">Все</button>
+        <button class="filter-btn" data-role="user">Пользователи</button>
+        <button class="filter-btn" data-role="partner">Партнёры</button>
+        <button class="filter-btn" data-role="admin">Админы</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row" id="js-stats-row">
+      <div class="stat-chip">Всего: <strong id="js-stat-total">—</strong></div>
+      <div class="stat-chip">С доступом: <strong id="js-stat-access">—</strong></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="th">Имя</span>
+        <span class="th">Email</span>
+        <span class="th">Роль</span>
+        <span class="th">Доступ</span>
+        <span class="th">Регистрация</span>
+        <span class="th th--right">Действия</span>
+      </div>
+      <div class="table-body" id="js-table-body">
+        <div class="table-empty">Загрузка…</div>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="js-pagination"></div>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <hr class="footer__rule" />
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="privacy.html">Политика конфиденциальности</a>
+        <a href="terms.html">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL: Change Role -->
+<div class="modal-overlay" id="js-modal-role">
+  <div class="modal">
+    <p class="modal__title">Изменить роль</p>
+    <div class="modal__user-info">
+      <p class="modal__user-name" id="js-role-user-name"></p>
+      <p class="modal__user-email" id="js-role-user-email"></p>
+    </div>
+    <div>
+      <p class="modal__label">Новая роль</p>
+      <select class="role-select" id="js-role-select">
+        <option value="user">Пользователь</option>
+        <option value="partner">Партнёр</option>
+        <option value="admin">Администратор</option>
+      </select>
+    </div>
+    <p class="modal__error" id="js-role-error"></p>
+    <div class="modal__actions">
+      <button class="btn-primary" id="js-role-save-btn" onclick="saveRole()">Сохранить</button>
+      <button class="btn-cancel" onclick="closeModal('js-modal-role')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Grant / Revoke Access -->
+<div class="modal-overlay" id="js-modal-access">
+  <div class="modal">
+    <p class="modal__title" id="js-access-title">Управление доступом</p>
+    <p class="modal__sub" id="js-access-sub"></p>
+    <div class="modal__user-info">
+      <p class="modal__user-name" id="js-access-user-name"></p>
+      <p class="modal__user-email" id="js-access-user-email"></p>
+    </div>
+    <p class="modal__error" id="js-access-error"></p>
+    <div class="modal__actions">
+      <button class="btn-primary" id="js-access-btn" onclick="confirmAccess()">Подтвердить</button>
+      <button class="btn-cancel" onclick="closeModal('js-modal-access')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Delete User -->
+<div class="modal-overlay" id="js-modal-delete">
+  <div class="modal">
+    <p class="modal__title">Удалить пользователя?</p>
+    <p class="modal__sub">Это действие необратимо. Все данные пользователя, прогресс и заказы будут удалены.</p>
+    <div class="modal__user-info">
+      <p class="modal__user-name" id="js-delete-user-name"></p>
+      <p class="modal__user-email" id="js-delete-user-email"></p>
+    </div>
+    <p class="modal__error" id="js-delete-error"></p>
+    <div class="modal__actions">
+      <button class="btn-danger" id="js-delete-btn" onclick="confirmDelete()">Удалить</button>
+      <button class="btn-cancel" onclick="closeModal('js-modal-delete')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="js-toast"></div>
+
+<script src="api.js"></script>
+<script>
+'use strict';
+
+/* ── Nav ── */
+const navEl = document.getElementById('js-nav');
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+burger.addEventListener('click', () => {
+  const open = drawer.classList.toggle('open');
+  burger.classList.toggle('open', open);
+  burger.setAttribute('aria-expanded', String(open));
+});
+
+/* ── State ── */
+let currentPage   = 1;
+const PAGE_SIZE   = 20;
+let currentRole   = '';
+let currentSearch = '';
+let totalUsers    = 0;
+let allUsers      = [];   // current page users
+
+let activeUserId   = null;
+let activeUserHasAccess = false;
+
+/* ── Helpers ── */
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('js-toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' toast--' + type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ── Role badge HTML ── */
+function roleBadge(role) {
+  const labels = { user: 'Пользователь', partner: 'Партнёр', admin: 'Админ' };
+  return `<span class="role-badge role-badge--${role}">${labels[role] || role}</span>`;
+}
+
+/* ── Access badge HTML ── */
+function accessBadge(hasAccess) {
+  return hasAccess
+    ? `<span class="access-badge access-badge--yes">Есть</span>`
+    : `<span class="access-badge access-badge--no">Нет</span>`;
+}
+
+/* ── Load users ── */
+async function loadUsers() {
+  const body = document.getElementById('js-table-body');
+  body.innerHTML = '<div class="table-empty">Загрузка…</div>';
+
+  const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+  if (currentRole)   params.set('role', currentRole);
+  if (currentSearch) params.set('search', currentSearch);
+
+  try {
+    // Load users + their orders to check access
+    const [usersRes, ordersRes] = await Promise.all([
+      apiFetch('/api/admin/users?' + params),
+      apiFetch('/api/admin/sales?limit=1000'),
+    ]);
+
+    if (!usersRes.ok) { body.innerHTML = '<div class="table-empty">Ошибка загрузки.</div>'; return; }
+
+    const { users } = await usersRes.json();
+    allUsers = users;
+
+    // Build set of user IDs with paid orders
+    let paidUserIds = new Set();
+    if (ordersRes.ok) {
+      const { sales } = await ordersRes.json();
+      sales.filter(s => s.status === 'paid').forEach(s => {
+        // We need buyer email → id match; let's match by email
+        const u = users.find(u => u.email === s.buyer_email);
+        if (u) paidUserIds.add(u.id);
+      });
+    }
+
+    // Stats
+    document.getElementById('js-stat-total').textContent  = users.length;
+    document.getElementById('js-stat-access').textContent = paidUserIds.size;
+
+    if (!users.length) {
+      body.innerHTML = '<div class="table-empty">Пользователи не найдены.</div>';
+      document.getElementById('js-pagination').innerHTML = '';
+      return;
+    }
+
+    body.innerHTML = '';
+    users.forEach(u => {
+      const hasAccess = paidUserIds.has(u.id);
+      u._hasAccess = hasAccess; // store for modals
+
+      const row = document.createElement('div');
+      row.className = 'user-row';
+      row.innerHTML = `
+        <span class="user-name ${u.name ? '' : 'user-name--empty'}">${u.name || 'Без имени'}</span>
+        <span class="user-email">${u.email}</span>
+        ${roleBadge(u.role)}
+        ${accessBadge(hasAccess)}
+        <span class="user-date">${formatDate(u.created_at)}</span>
+        <div class="row-actions">
+          <button class="action-btn action-btn--edit"   title="Изменить роль"   onclick="openRoleModal(${u.id})">
+            <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><path d="M9 4l3 3"/></svg>
+          </button>
+          <button class="action-btn action-btn--access" title="${hasAccess ? 'Отозвать доступ' : 'Выдать доступ'}" onclick="openAccessModal(${u.id})">
+            <svg viewBox="0 0 16 16">${hasAccess
+              ? '<path d="M13 7H9m0 0V3m0 4l4-4"/><rect x="1" y="9" width="9" height="6" rx="1.5"/>'
+              : '<path d="M3 9V7a5 5 0 0 1 10 0v2"/><rect x="1" y="9" width="14" height="7" rx="2"/><circle cx="8" cy="13" r="1" fill="currentColor" stroke="none"/>'
+            }</svg>
+          </button>
+          <button class="action-btn action-btn--delete" title="Удалить"         onclick="openDeleteModal(${u.id})">
+            <svg viewBox="0 0 16 16"><polyline points="2 4 14 4"/><path d="M5 4V2h6v2"/><path d="M6 7v5m4-5v5"/><rect x="3" y="4" width="10" height="10" rx="1.5"/></svg>
+          </button>
+        </div>`;
+      body.appendChild(row);
+    });
+
+    renderPagination();
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = '<div class="table-empty">Ошибка соединения.</div>';
+  }
+}
+
+/* ── Pagination ── */
+function renderPagination() {
+  const wrap = document.getElementById('js-pagination');
+  const totalPages = Math.ceil(allUsers.length / PAGE_SIZE) || 1;
+  if (totalPages <= 1) { wrap.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Назад</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Вперёд →</button>`;
+  wrap.innerHTML = html;
+}
+function goPage(p) { currentPage = p; loadUsers(); }
+
+/* ── Search (debounced) ── */
+let searchTimer;
+document.getElementById('js-search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentSearch = e.target.value.trim();
+    currentPage = 1;
+    loadUsers();
+  }, 350);
+});
+
+/* ── Role filter ── */
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRole = btn.dataset.role;
+    currentPage = 1;
+    loadUsers();
+  });
+});
+
+/* ── MODAL: Change Role ── */
+function openRoleModal(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+  activeUserId = userId;
+  document.getElementById('js-role-user-name').textContent  = user.name || 'Без имени';
+  document.getElementById('js-role-user-email').textContent = user.email;
+  document.getElementById('js-role-select').value = user.role;
+  document.getElementById('js-role-error').style.display = 'none';
+  document.getElementById('js-role-save-btn').disabled = false;
+  document.getElementById('js-role-save-btn').textContent = 'Сохранить';
+  openModal('js-modal-role');
+}
+
+async function saveRole() {
+  const btn  = document.getElementById('js-role-save-btn');
+  const errEl = document.getElementById('js-role-error');
+  const role = document.getElementById('js-role-select').value;
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Сохраняем…';
+
+  try {
+    const res = await apiFetch(`/api/admin/users/${activeUserId}/role`, {
+      method: 'PATCH', body: JSON.stringify({ role }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Ошибка.'; errEl.style.display = ''; btn.disabled = false; btn.textContent = 'Сохранить'; return; }
+    closeModal('js-modal-role');
+    showToast('Роль обновлена', 'success');
+    loadUsers();
+  } catch {
+    errEl.textContent = 'Нет соединения.'; errEl.style.display = '';
+    btn.disabled = false; btn.textContent = 'Сохранить';
+  }
+}
+
+/* ── MODAL: Access ── */
+function openAccessModal(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+  activeUserId = userId;
+  activeUserHasAccess = user._hasAccess;
+
+  document.getElementById('js-access-user-name').textContent  = user.name || 'Без имени';
+  document.getElementById('js-access-user-email').textContent = user.email;
+  document.getElementById('js-access-error').style.display = 'none';
+
+  if (activeUserHasAccess) {
+    document.getElementById('js-access-title').textContent = 'Отозвать доступ к курсу';
+    document.getElementById('js-access-sub').textContent   = 'Пользователь потеряет доступ к курсу. Его прогресс сохранится.';
+    const btn = document.getElementById('js-access-btn');
+    btn.textContent = 'Отозвать';
+    btn.className   = 'btn-danger';
+  } else {
+    document.getElementById('js-access-title').textContent = 'Выдать доступ к курсу';
+    document.getElementById('js-access-sub').textContent   = 'Пользователь получит бесплатный доступ ко всем урокам курса.';
+    const btn = document.getElementById('js-access-btn');
+    btn.textContent = 'Выдать';
+    btn.className   = 'btn-primary';
+  }
+  document.getElementById('js-access-btn').disabled = false;
+  openModal('js-modal-access');
+}
+
+async function confirmAccess() {
+  const btn   = document.getElementById('js-access-btn');
+  const errEl = document.getElementById('js-access-error');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = activeUserHasAccess ? 'Отзываем…' : 'Выдаём…';
+
+  try {
+    const res = activeUserHasAccess
+      ? await apiFetch(`/api/admin/users/${activeUserId}/revoke-access`, { method: 'DELETE' })
+      : await apiFetch(`/api/admin/users/${activeUserId}/grant-access`,  { method: 'POST', body: JSON.stringify({ product: 'Essential' }) });
+
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Ошибка.'; errEl.style.display = '';
+      btn.disabled = false; btn.textContent = activeUserHasAccess ? 'Отозвать' : 'Выдать';
+      return;
+    }
+    closeModal('js-modal-access');
+    showToast(activeUserHasAccess ? 'Доступ отозван' : 'Доступ выдан', 'success');
+    loadUsers();
+  } catch {
+    errEl.textContent = 'Нет соединения.'; errEl.style.display = '';
+    btn.disabled = false; btn.textContent = activeUserHasAccess ? 'Отозвать' : 'Выдать';
+  }
+}
+
+/* ── MODAL: Delete ── */
+function openDeleteModal(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+  activeUserId = userId;
+  document.getElementById('js-delete-user-name').textContent  = user.name || 'Без имени';
+  document.getElementById('js-delete-user-email').textContent = user.email;
+  document.getElementById('js-delete-error').style.display = 'none';
+  document.getElementById('js-delete-btn').disabled = false;
+  document.getElementById('js-delete-btn').textContent = 'Удалить';
+  openModal('js-modal-delete');
+}
+
+async function confirmDelete() {
+  const btn   = document.getElementById('js-delete-btn');
+  const errEl = document.getElementById('js-delete-error');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Удаляем…';
+
+  try {
+    const res  = await apiFetch(`/api/admin/users/${activeUserId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Ошибка.'; errEl.style.display = '';
+      btn.disabled = false; btn.textContent = 'Удалить';
+      return;
+    }
+    closeModal('js-modal-delete');
+    showToast('Пользователь удалён', 'success');
+    loadUsers();
+  } catch {
+    errEl.textContent = 'Нет соединения.'; errEl.style.display = '';
+    btn.disabled = false; btn.textContent = 'Удалить';
+  }
+}
+
+/* ── Close modals on overlay click ── */
+['js-modal-role','js-modal-access','js-modal-delete'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal(id);
+  });
+});
+
+/* ── Init ── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
+    await loadUsers();
+  } finally {
+    document.body.style.opacity = '1';
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -347,6 +347,71 @@ router.patch('/payouts/:id', async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/admin/users/:id/grant-access
+//  Manually grant course access (create a paid order)
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/users/:id/grant-access', async (req, res, next) => {
+  try {
+    const { product = 'Essential' } = req.body;
+
+    // Check if already has access
+    const { rows: existing } = await query(
+      `SELECT id FROM orders WHERE user_id = $1 AND status = 'paid' LIMIT 1`,
+      [req.params.id],
+    );
+    if (existing.length) {
+      return res.status(400).json({ error: 'У пользователя уже есть доступ к курсу.' });
+    }
+
+    await query(
+      `INSERT INTO orders (user_id, product, amount, status, paid_at)
+       VALUES ($1, $2, 0, 'paid', NOW())`,
+      [req.params.id, product],
+    );
+
+    res.json({ message: 'Доступ выдан.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  DELETE /api/admin/users/:id/revoke-access
+//  Revoke course access (delete paid orders)
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/users/:id/revoke-access', async (req, res, next) => {
+  try {
+    await query(
+      `DELETE FROM orders WHERE user_id = $1 AND status = 'paid'`,
+      [req.params.id],
+    );
+    res.json({ message: 'Доступ отозван.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  DELETE /api/admin/users/:id
+//  Delete user completely
+// ─────────────────────────────────────────────────────────────────────────────
+router.delete('/users/:id', async (req, res, next) => {
+  try {
+    if (String(req.params.id) === String(req.user.id)) {
+      return res.status(400).json({ error: 'Нельзя удалить самого себя.' });
+    }
+    const { rows } = await query(
+      'DELETE FROM users WHERE id = $1 RETURNING id',
+      [req.params.id],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
+    res.json({ message: 'Пользователь удалён.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  PATCH /api/admin/users/:id/role
 //  Body: { role: 'user' | 'partner' | 'admin' }
 // ─────────────────────────────────────────────────────────────────────────────
