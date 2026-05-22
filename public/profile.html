@@ -183,6 +183,9 @@
       line-height: 1.08;
       letter-spacing: -0.03em;
       color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* ═══════════════════════════════════
@@ -675,6 +678,7 @@
             </button>
           </div>
           <input class="profile-field__input" id="input-name" type="text" value=""
+            maxlength="30"
             onblur="saveEdit('field-name','val-name','input-name')"
             onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelEdit('field-name','val-name','input-name')" />
         </div>

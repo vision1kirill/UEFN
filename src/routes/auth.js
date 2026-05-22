@@ -291,6 +291,7 @@ router.patch('/me', requireAuth, authLimiter, async (req, res, next) => {
     if (name !== undefined) {
       const trimmed = name.trim();
       if (!trimmed) return res.status(400).json({ error: 'Имя не может быть пустым.' });
+      if (trimmed.length > 30) return res.status(400).json({ error: 'Имя не должно превышать 30 символов.' });
       updates.push(`name = $${vals.length + 1}`);
       vals.push(trimmed);
     }
