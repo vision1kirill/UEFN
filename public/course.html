@@ -1144,6 +1144,8 @@ async function init() {
     return;
   }
 
+  let canShow = false;
+
   try {
     // Load lessons + progress in parallel
     const [lessonsRes, progressRes, ordersRes] = await Promise.all([
@@ -1156,11 +1158,13 @@ async function init() {
 
     const { lessons, hasPurchased } = await lessonsRes.json();
 
-    // If no course purchased — send to profile
+    // If no course purchased — send to profile, stay invisible
     if (!hasPurchased) {
       window.location.href = 'profile.html';
       return;
     }
+
+    canShow = true;
 
     allLessons = lessons;
 
@@ -1189,8 +1193,9 @@ async function init() {
 
   } catch (e) {
     console.error(e);
+    canShow = true;
   } finally {
-    document.body.style.opacity = '1';
+    if (canShow) document.body.style.opacity = '1';
   }
 }
 
