@@ -207,7 +207,9 @@
     }
     .nav__btn-dark:hover { background: rgba(255,255,255,0.18); }
     .nav__btn-login {
-      display: inline-flex; align-items: center; justify-content: center;
+      /* Скрыта по умолчанию — JS покажет только незалогиненным */
+      display: none;
+      align-items: center; justify-content: center;
       font-family: 'Golos Text', sans-serif;
       font-size: 14px; font-weight: 600;
       color: #ffffff;
@@ -220,6 +222,7 @@
       transition: background .2s;
       text-decoration: none;
     }
+    .nav__btn-login.visible { display: inline-flex; }
     .nav__btn-login:hover { background: rgba(59,207,254,0.1); }
 
     /* Burger */
@@ -308,7 +311,8 @@
     @media (max-width: 1100px) {
       .nav__links, .nav__actions { display: none; }
       .nav__burger { display: flex; }
-      .nav__login-mobile { display: inline-flex; }
+      /* Мобильная "Войти" — только если гость и JS добавил .visible */
+      .nav__login-mobile.visible { display: inline-flex; }
       /* На мобиле десктопный аватар убирается вместе с nav__actions,
          мобильный — показываем если есть .visible */
       .nav__avatar--mobile.visible { display: inline-flex !important; }
@@ -2492,12 +2496,15 @@
   const profileDraw = document.getElementById('js-profile-drawer');
 
   if (loggedIn) {
-    if (loginBtn)    loginBtn.style.display    = 'none';
-    if (loginMobile) loginMobile.style.display = 'none';
-    if (loginDrawer) loginDrawer.style.display = 'none';
+    // Авторизован — показываем аватар, кнопки "Войти" остаются скрытыми
     if (avatarBtn)   avatarBtn.classList.add('visible');
     if (avatarMob)   avatarMob.classList.add('visible');
     if (profileDraw) profileDraw.style.display = '';
+  } else {
+    // Гость — показываем кнопки "Войти"
+    if (loginBtn)    loginBtn.classList.add('visible');
+    if (loginMobile) loginMobile.classList.add('visible');
+    if (loginDrawer) loginDrawer.style.display = '';
   }
 })();
 
