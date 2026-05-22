@@ -414,17 +414,6 @@ function getEndDate(product, startIso) {
   return d;
 }
 
-function getProgress(product, startIso, status) {
-  if (status === 'refunded') return 100;
-  if (status === 'pending')  return 0;
-  const days = PRODUCT_DAYS[product];
-  if (!days) return 100;
-  const start = new Date(startIso).getTime();
-  const end   = start + days * 86400000;
-  const now   = Date.now();
-  return Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100)));
-}
-
 /* Status */
 const STATUS_LABELS = { paid:'Активна', pending:'На паузе', refunded:'Завершена' };
 
@@ -455,6 +444,8 @@ async function loadStats() {
 }
 
 /* ── List ────────────────────────────────────────────── */
+let _totalLessons = 0;
+
 function renderSubs(items) {
   const el = document.getElementById('js-subs');
   if (!items.length) { el.innerHTML = '<p class="subs-empty">Подписок не найдено.</p>'; return; }
@@ -465,7 +456,8 @@ function renderSubs(items) {
     const tariffCls = TARIFF_CLS[o.product] || 'tariff-other';
     const startDate = o.paid_at || o.created_at;
     const endDate   = getEndDate(o.product, startDate);
-    const progress  = getProgress(o.product, startDate, o.status);
+    const completed = parseInt(o.completed_lessons, 10) || 0;
+    const progress  = _totalLessons > 0 ? Math.round((completed / _totalLessons) * 100) : 0;
     const statusLabel = STATUS_LABELS[o.status] || o.status;
 
     const row = document.createElement('div');
@@ -507,7 +499,7 @@ function renderSubs(items) {
         <div class="progress-bar-bg">
           <div class="progress-bar-fill" style="width:${progress}%"></div>
         </div>
-        <p class="progress-pct">${progress}% пройдено</p>
+        <p class="progress-pct">${completed} из ${_totalLessons} уроков · ${progress}%</p>
       </div>`;
     el.appendChild(row);
   });
@@ -539,6 +531,7 @@ async function loadList() {
     if (currentStatus) p.set('status', currentStatus);
     const res = await apiFetch(`/api/admin/subscriptions?${p}`);
     const data = res.ok ? await res.json() : { subscriptions: [], total: 0 };
+    _totalLessons = data.totalLessons || 0;
     renderSubs(data.subscriptions || []);
     renderPagination(data.total || 0);
   } catch(e) {

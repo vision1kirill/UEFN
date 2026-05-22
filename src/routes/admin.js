@@ -543,14 +543,24 @@ router.get('/subscriptions', async (req, res, next) => {
       params,
     );
 
+    // Total lessons (for progress %)
+    const { rows: lessonTotal } = await query('SELECT COUNT(*) AS cnt FROM lessons');
+    const totalLessons = parseInt(lessonTotal[0]?.cnt ?? 0, 10);
+
     params.push(parseInt(limit, 10));
     params.push(offset);
 
     const { rows } = await query(
       `SELECT o.id, o.product, o.amount, o.promo_code, o.status, o.created_at, o.paid_at,
-              u.email AS buyer_email, u.name AS buyer_name
+              u.email AS buyer_email, u.name AS buyer_name, u.id AS user_id,
+              COALESCE(cp.completed_count, 0) AS completed_lessons
        FROM orders o
        JOIN users u ON u.id = o.user_id
+       LEFT JOIN (
+         SELECT user_id, COUNT(*) FILTER (WHERE completed = true) AS completed_count
+         FROM course_progress
+         GROUP BY user_id
+       ) cp ON cp.user_id = o.user_id
        ${where}
        ORDER BY o.created_at DESC
        LIMIT $${params.length - 1} OFFSET $${params.length}`,
@@ -559,9 +569,10 @@ router.get('/subscriptions', async (req, res, next) => {
 
     res.json({
       subscriptions: rows,
-      total: parseInt(countRows[0].total, 10),
-      page:  parseInt(page, 10),
-      limit: parseInt(limit, 10),
+      total:         parseInt(countRows[0].total, 10),
+      totalLessons,
+      page:          parseInt(page, 10),
+      limit:         parseInt(limit, 10),
     });
   } catch (err) {
     next(err);
