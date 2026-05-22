@@ -579,4 +579,62 @@ router.get('/subscriptions', async (req, res, next) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  PROMO CODES
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/promo-codes
+router.get('/promo-codes', async (req, res, next) => {
+  try {
+    const { rows } = await query(`
+      SELECT pc.*,
+             COUNT(o.id)                                                    AS use_count,
+             COALESCE(SUM(o.amount) FILTER (WHERE o.status = 'paid'), 0)   AS revenue
+      FROM promo_codes pc
+      LEFT JOIN orders o ON o.promo_code = pc.code
+      GROUP BY pc.id
+      ORDER BY pc.created_at DESC
+    `);
+    res.json({ codes: rows });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/promo-codes
+router.post('/promo-codes', async (req, res, next) => {
+  try {
+    const { code, discount = 10, expiresAt } = req.body;
+    if (!code?.trim()) return res.status(400).json({ error: 'code обязателен' });
+    const { rows } = await query(
+      `INSERT INTO promo_codes (code, discount_percent, expires_at)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [code.trim().toUpperCase(), parseInt(discount, 10), expiresAt || null],
+    );
+    res.json({ code: rows[0] });
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Промокод уже существует' });
+    next(err);
+  }
+});
+
+// PATCH /api/admin/promo-codes/:id  — toggle is_active
+router.patch('/promo-codes/:id', async (req, res, next) => {
+  try {
+    const { is_active } = req.body;
+    const { rows } = await query(
+      `UPDATE promo_codes SET is_active = $1 WHERE id = $2 RETURNING *`,
+      [Boolean(is_active), req.params.id],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Не найден' });
+    res.json({ code: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/promo-codes/:id
+router.delete('/promo-codes/:id', async (req, res, next) => {
+  try {
+    await query('DELETE FROM promo_codes WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

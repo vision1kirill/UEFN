@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Рефералы — UEFN с нуля</title>
-  <meta name="description" content="Реферальные промокоды — UEFN с нуля." />
+  <title>Рефералы — Панель управления</title>
 
   <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,6 +18,7 @@
       background: var(--c-bg); color: var(--c-text);
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
       display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
     }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
@@ -26,27 +26,18 @@
     ul, ol { list-style: none; }
 
     :root {
-      --c-bg:         #0F1317;
-      --c-surf:       #131920;
-      --c-surf2:      #161d24;
-      --c-cyan:       #3BCFFE;
-      --c-blue:       #0166C3;
-      --c-text:       #FFFFFF;
-      --c-muted:      rgba(255,255,255,.55);
-      --c-dim:        rgba(255,255,255,.30);
-      --c-border:     rgba(255,255,255,.08);
-      --c-border-mid: rgba(255,255,255,.13);
-      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
-      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
-      --nav-h: 80px; --wrap: 1280px;
-      --px: clamp(16px, 3.125vw, 40px);
+      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
+      --c-cyan: #3BCFFE; --c-blue: #0166C3;
+      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
+      --c-dim: rgba(255,255,255,.30);
+      --c-border: rgba(255,255,255,.08); --c-border-mid: rgba(255,255,255,.13);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px,3.125vw,40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* ── NAV ── */
+    /* NAV */
     .nav {
-      position: fixed; inset: 0 0 auto; z-index: 200;
-      height: var(--nav-h); width: 100%;
+      position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h); width: 100%;
       display: flex; align-items: center;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       background: rgba(15,19,23,.80); transition: box-shadow .3s;
@@ -54,8 +45,7 @@
     .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
     .nav__inner {
       max-width: var(--wrap); width: 100%; margin-inline: auto;
-      padding-inline: var(--px); display: flex; align-items: center;
-      gap: clamp(16px,2.2vw,28px);
+      padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px);
     }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
@@ -64,201 +54,173 @@
     .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__user-name { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s;
+    }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center;
+      gap: 5px; width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0;
+    }
     .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .nav__burger.open span:nth-child(2) { opacity: 0; }
     .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-    .nav__avatar-mobile { display: none; flex-shrink: 0; }
-    .nav__drawer { position: fixed; inset: var(--nav-h) 0 0; z-index: 190; background: rgba(15,19,23,.97); backdrop-filter: blur(24px); display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px; transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
+    }
     .nav__drawer.open { transform: translateX(0); }
     .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
     .nav__drawer a:hover { color: #fff; }
     @media (max-width: 1100px) {
       .nav__links { display: none; } .nav__auth { display: none; }
-      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
-      .nav__inner { gap: 8px; padding-inline: 16px; }
+      .nav__burger { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; }
     }
-    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
 
-    /* ── PAGE ── */
+    /* LAYOUT */
     main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
     .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
 
-    /* ── TAB NAV ── */
-    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    /* TAB NAV */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; scrollbar-width: none; }
     .tab-nav::-webkit-scrollbar { display: none; }
-    .tab-btn { flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
+    .tab-btn {
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
+    /* CREATE CARD */
+    .card { background: var(--c-surf2); border: 1px solid var(--c-border); border-radius: clamp(18px,1.8vw,26px); }
+    .create-card { padding: clamp(20px,2.2vw,28px); margin-bottom: clamp(24px,3vw,40px); }
+    .create-form { display: flex; align-items: center; gap: clamp(10px,1.2vw,16px); flex-wrap: wrap; }
+    .create-label { font-size: 15px; font-weight: 600; color: #fff; white-space: nowrap; flex-shrink: 0; }
+    .create-input {
+      flex: 1; min-width: 160px;
+      padding: 12px 20px; border-radius: 100px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      color: #fff; font-family: 'Golos Text', sans-serif; font-size: 15px; font-weight: 500;
+      outline: none; transition: border-color .2s;
+    }
+    .create-input::placeholder { color: var(--c-dim); }
+    .create-input:focus { border-color: rgba(59,207,254,.4); }
+    .create-discount-wrap {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; padding: 12px 16px; transition: border-color .2s; flex-shrink: 0;
+    }
+    .create-discount-wrap:focus-within { border-color: rgba(59,207,254,.4); }
+    .create-discount-wrap input {
+      width: 44px; background: none; border: none; outline: none;
+      color: #fff; font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      text-align: center;
+    }
+    .create-discount-wrap span { font-size: 14px; color: var(--c-muted); }
+    .create-date-wrap {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; padding: 12px 16px; transition: border-color .2s; flex-shrink: 0;
+    }
+    .create-date-wrap:focus-within { border-color: rgba(59,207,254,.4); }
+    .create-date-wrap svg { width: 14px; height: 14px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
+    .create-date-wrap input[type="date"] {
+      background: none; border: none; outline: none; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; width: 110px;
+    }
+    .create-date-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.5); cursor: pointer; }
+    .create-btn {
+      flex-shrink: 0; padding: 12px 28px; border-radius: 100px;
+      background: #fff; color: #0F1317;
+      font-size: 14px; font-weight: 700; transition: opacity .2s;
+    }
+    .create-btn:hover { opacity: .85; }
+    .create-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .create-error { font-size: 12px; color: #EF4444; margin-top: 10px; display: none; }
 
-    /* ── CARD ── */
-    .card { background: var(--c-surf2); border: 1px solid var(--c-border); border-radius: clamp(18px,1.8vw,26px); padding: clamp(18px,2.2vw,28px); }
-
-    /* ── CREATE CARD ── */
-    .create-card {
-      display: flex; align-items: center;
-      gap: clamp(12px,1.5vw,20px); flex-wrap: wrap;
-    }
-    .create-card__label {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(13px,1vw,16px); font-weight: 600; color: #fff;
-      white-space: nowrap; flex-shrink: 0;
-      min-width: clamp(130px, 14vw, 200px);
-    }
-    .create-card__input {
-      flex: 1; min-width: clamp(160px, 20vw, 320px);
-      height: clamp(44px,4vw,52px);
-      background: rgba(255,255,255,.05);
-      border: 1px solid var(--c-border-mid);
-      border-radius: 100px;
-      padding: 0 clamp(16px,1.5vw,22px);
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(13px,1vw,15px); font-weight: 500;
-      color: #fff; outline: none;
-      transition: border-color .2s;
-    }
-    .create-card__input::placeholder { color: var(--c-dim); }
-    .create-card__input:focus { border-color: rgba(59,207,254,.5); }
-    .create-card__btn {
-      height: clamp(44px,4vw,52px);
-      padding: 0 clamp(20px,2vw,32px);
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(13px,1vw,15px); font-weight: 600;
-      color: #fff; background: rgba(255,255,255,.09);
-      border: 1px solid var(--c-border-mid);
-      cursor: pointer; white-space: nowrap; flex-shrink: 0;
-      transition: background .2s, border-color .2s;
-    }
-    .create-card__btn:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
-    .create-card__btn:active { background: rgba(59,207,254,.12); border-color: rgba(59,207,254,.4); }
-
-    /* ── SECTION TITLE ── */
+    /* SECTION TITLE */
     .section-title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.4vw,22px); font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: clamp(14px,1.8vw,22px); }
 
-    /* ── PROMO LIST ── */
+    /* PROMO LIST */
     .promo-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
-
     .promo-row {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(14px,1.4vw,20px);
+      padding: clamp(16px,2vw,22px) clamp(18px,2.2vw,28px);
       display: grid;
-      grid-template-columns: 2fr 1.3fr 1.1fr 1.3fr 1fr auto;
-      gap: clamp(10px,1.5vw,20px);
-      align-items: center;
-      transition: opacity .25s;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr auto;
+      gap: clamp(8px,1.5vw,20px); align-items: center;
+      transition: border-color .2s;
     }
-    .promo-row--disabled { opacity: .45; }
+    .promo-row:hover { border-color: var(--c-border-mid); }
 
-    .promo-field__label {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(9px,.7vw,11px); font-weight: 400;
-      color: var(--c-muted); margin-bottom: 4px; white-space: nowrap;
-    }
-    .promo-field__value {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.95vw,15px); font-weight: 700; color: #fff;
-      line-height: 1.3; letter-spacing: .01em;
-    }
-    .promo-field__value--muted {
-      font-weight: 500; color: var(--c-muted);
-    }
+    .promo-field__label { font-size: 11px; color: var(--c-muted); margin-bottom: 5px; white-space: nowrap; }
+    .promo-field__value { font-size: 14px; font-weight: 600; color: #fff; }
+    .promo-field__sub   { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
 
-    /* copy button on code */
+    /* CODE + copy */
     .promo-code-wrap { display: flex; align-items: center; gap: 8px; }
-    .promo-copy-btn {
-      width: 26px; height: 26px; border-radius: 6px; flex-shrink: 0;
+    .promo-code-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .04em; }
+    .copy-btn {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid);
+      display: flex; align-items: center; justify-content: center; transition: background .2s, border-color .2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.12); }
+    .copy-btn svg { width: 13px; height: 13px; stroke: var(--c-muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .copy-btn.copied { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.25); }
+    .copy-btn.copied svg { stroke: #22C55E; }
+
+    /* STATUS PILL */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    }
+    .status-pill__dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .status-active   { background: rgba(34,197,94,.10);  border: 1px solid rgba(34,197,94,.22);  color: #22C55E; }
+    .status-active   .status-pill__dot { background: #22C55E; }
+    .status-disabled { background: rgba(239,68,68,.10);  border: 1px solid rgba(239,68,68,.22);  color: #EF4444; }
+    .status-disabled .status-pill__dot { background: #EF4444; }
+    .status-expired  { background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid); color: var(--c-muted); }
+    .status-expired  .status-pill__dot { background: var(--c-muted); }
+
+    /* ACTION BUTTONS */
+    .promo-actions { display: flex; align-items: center; gap: 8px; }
+    .action-btn {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,.06); border: 1px solid var(--c-border);
-      color: var(--c-dim); cursor: pointer; transition: background .2s, color .2s;
+      transition: background .2s, border-color .2s;
     }
-    .promo-copy-btn:hover { background: rgba(255,255,255,.11); color: #fff; }
-    .promo-copy-btn svg { width: 12px; height: 12px; }
+    .action-btn svg { width: 15px; height: 15px; stroke: var(--c-muted); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .action-btn--toggle:hover { background: rgba(59,207,254,.10); border-color: rgba(59,207,254,.25); }
+    .action-btn--toggle:hover svg { stroke: var(--c-cyan); }
+    .action-btn--delete:hover { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.25); }
+    .action-btn--delete:hover svg { stroke: #EF4444; }
 
-    /* status badge */
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px 3px 7px; border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(10px,.75vw,12px); font-weight: 600; line-height: 1.4;
-    }
-    .status-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .status-badge--active  { background: rgba(34,197,94,.12);  color: #22C55E; }
-    .status-badge--active::before  { background: #22C55E; }
-    .status-badge--expired { background: rgba(255,255,255,.07); color: var(--c-muted); }
-    .status-badge--expired::before { background: rgba(255,255,255,.35); }
-    .status-badge--disabled { background: rgba(239,68,68,.10); color: #EF4444; }
-    .status-badge--disabled::before { background: #EF4444; }
+    .promo-empty { font-size: 14px; color: var(--c-dim); padding: 8px 0; }
 
-    /* action buttons */
-    .promo-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-    .promo-action-btn {
-      width: 34px; height: 34px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      border: 1px solid var(--c-border); color: var(--c-dim);
-      cursor: pointer; flex-shrink: 0;
-      transition: background .2s, border-color .2s, color .2s;
-    }
-    .promo-action-btn svg { width: 14px; height: 14px; pointer-events: none; }
-    .promo-action-btn--toggle { background: rgba(255,255,255,.04); }
-    .promo-action-btn--toggle:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.22); color: #fff; }
-    .promo-action-btn--toggle.is-disabled { background: rgba(59,207,254,.08); border-color: rgba(59,207,254,.3); color: var(--c-cyan); }
-    .promo-action-btn--delete { background: rgba(255,255,255,.04); }
-    .promo-action-btn--delete:hover { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: #EF4444; }
-
-    /* confirm delete */
-    .promo-row--confirm-delete .promo-action-btn--delete { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.5); color: #EF4444; }
-
-    /* slide-out animation on delete */
-    @keyframes slide-out {
-      to { opacity: 0; transform: translateX(24px); max-height: 0; margin: 0; padding: 0; }
-    }
-    .promo-row--removing {
-      animation: slide-out .28s cubic-bezier(.4,0,.2,1) forwards;
-      overflow: hidden;
-    }
-
-    @media (max-width: 960px) {
+    @media (max-width: 900px) {
       .promo-row { grid-template-columns: 2fr 1fr 1fr auto; }
-      .promo-row .promo-field:nth-child(3),
-      .promo-row .promo-field:nth-child(4) { display: none; }
+      .promo-col--revenue, .promo-col--expires { display: none; }
     }
-    @media (max-width: 600px) {
-      .promo-row { grid-template-columns: 1fr 1fr auto; }
-      .promo-row .promo-field:nth-child(2) { display: none; }
-    }
-    @media (max-width: 400px) {
+    @media (max-width: 580px) {
       .promo-row { grid-template-columns: 1fr auto; }
-      .promo-row .promo-field:nth-child(5) { display: none; }
+      .promo-col--created, .promo-col--status { display: none; }
     }
 
-    /* empty state */
-    .empty-state {
-      text-align: center; padding: clamp(32px,5vw,60px) 20px;
-      color: var(--c-muted);
-      font-family: 'Golos Text', sans-serif; font-size: 14px;
-    }
-    .empty-state svg { margin: 0 auto 14px; opacity: .25; }
-
-    /* toast */
-    .toast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(16px);
-      background: rgba(15,19,23,.95); border: 1px solid rgba(255,255,255,.13);
-      border-radius: 100px; padding: 10px 20px;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; color: #fff;
-      white-space: nowrap; z-index: 500;
-      opacity: 0; pointer-events: none;
-      transition: opacity .2s, transform .2s;
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ── FOOTER ── */
+    /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
     .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
@@ -266,34 +228,14 @@
     .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
     .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
     .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
     .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
     .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
     .footer__legal a:hover { color: var(--c-muted); }
     .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
-    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); transition: background .2s, border-color .2s; }
-    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
-    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
-    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
-    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
-    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
-    .footer__tg-icon img { width: 33px; height: 33px; }
-    @media (max-width: 900px) {
-      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
-      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
-      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
-      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
-    }
-    @media (max-width: 540px) {
-      .footer__grid { display: flex; flex-direction: column; gap: 0; }
-      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
-      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
-      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
-      .footer__nav a { font-size: 15px; }
-      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
-    }
+
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
@@ -312,30 +254,19 @@
       <a href="index.html#hero">О курсе</a>
       <a href="index.html#curriculum">Программа</a>
       <a href="index.html#pricing">Тарифы</a>
-      <a href="index.html#partnership">Подписка</a>
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
+      <span class="nav__user-name" id="js-nav-name"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
-        <img src="фотографии/avatar.png" alt="Татьяна"
-             onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
-    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
-      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    </a>
+    <button class="nav__burger" id="js-burger" aria-label="Меню"><span></span><span></span><span></span></button>
   </div>
 </header>
 <nav class="nav__drawer" id="js-drawer">
-  <a href="index.html#hero">О курсе</a>
-  <a href="index.html#curriculum">Программа</a>
-  <a href="index.html#pricing">Тарифы</a>
-  <a href="index.html#partnership">Подписка</a>
-  <a href="index.html#faq">Ответы на вопросы</a>
+  <a href="dashboard.html">Дашборд</a>
   <a href="profile.html">Профиль</a>
 </nav>
 
@@ -345,9 +276,10 @@
 
     <h1 class="page-title">Панель управления</h1>
 
-    <!-- TAB NAV -->
+    <!-- TABS -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="admin-users.html">Пользователи</a>
       <a class="tab-btn" href="sales.html">Продажи</a>
       <a class="tab-btn" href="subscriptions.html">Подписки</a>
       <a class="tab-btn active" href="referrals.html">Рефералы</a>
@@ -355,34 +287,32 @@
       <a class="tab-btn" href="content.html">Контент</a>
     </nav>
 
-    <!-- CREATE PROMO -->
-    <div class="dash-section">
-      <div class="card create-card">
-        <span class="create-card__label">Новый промокод</span>
-        <input
-          class="create-card__input"
-          id="js-promo-input"
-          type="text"
-          placeholder="HappyNewYear"
-          maxlength="32"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="create-card__btn" id="js-promo-create">Создать</button>
+    <!-- CREATE -->
+    <div class="card create-card">
+      <div class="create-form">
+        <span class="create-label">Новый промокод</span>
+        <input class="create-input" id="js-code-input" type="text" placeholder="HappyNewYear" autocomplete="off" maxlength="32" />
+        <div class="create-discount-wrap" title="Скидка %">
+          <input type="number" id="js-discount-input" min="1" max="100" value="10" />
+          <span>%</span>
+        </div>
+        <div class="create-date-wrap">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <input type="date" id="js-expires-input" title="Срок действия" />
+        </div>
+        <button class="create-btn" id="js-create-btn">Создать</button>
       </div>
+      <p class="create-error" id="js-create-error"></p>
     </div>
 
-    <!-- PROMO LIST -->
-    <div class="dash-section">
-      <h2 class="section-title">Список промокодов</h2>
-      <div class="promo-list" id="js-promo-list"></div>
+    <!-- LIST -->
+    <h2 class="section-title">Список промокодов</h2>
+    <div class="promo-list" id="js-promo-list">
+      <p class="promo-empty">Загрузка…</p>
     </div>
 
   </div>
 </main>
-
-<!-- Toast -->
-<div class="toast" id="js-toast"></div>
 
 <!-- FOOTER -->
 <footer class="footer">
@@ -402,236 +332,223 @@
       </div>
       <nav class="footer__nav">
         <a href="index.html#advantages">О курсе</a>
-        <a href="index.html#partnership">Подписка</a>
         <a href="index.html#curriculum">Программа</a>
-        <a href="index.html#faq">Ответы на вопросы</a>
         <a href="index.html#pricing">Тарифы</a>
-        <a href="partner.html">Партнёрка</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
       </nav>
-      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
-        <div class="footer__tg-capsule-text">
-          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
-          <span class="footer__tg-capsule-name">Телеграм</span>
-        </div>
-        <div class="footer__tg-icon">
-          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
-        </div>
-      </a>
     </div>
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
-/* ── Nav ── */
+/* Nav */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
-let drawerOpen = false;
-function setDrawer(v) {
-  drawerOpen = v;
-  burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
-  burger.setAttribute('aria-expanded', String(v));
-  document.body.style.overflow = v ? 'hidden' : '';
-}
-burger.addEventListener('click', () => setDrawer(!drawerOpen));
-document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+burger.addEventListener('click', () => {
+  const open = drawer.classList.toggle('open');
+  burger.classList.toggle('open', open);
+});
 
-/* ── Toast ── */
-const toastEl = document.getElementById('js-toast');
-let toastTimer;
-function showToast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+/* ── Helpers ─────────────────────────────────────────── */
+function fmtPrice(n) { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.getDate() + ' ' + ['января','февраля','марта','апреля','мая','июня',
+    'июля','августа','сентября','октября','ноября','декабря'][d.getMonth()] + ' ' + d.getFullYear();
 }
 
-/* ════════════════════════════════════
-   DATA
-════════════════════════════════════ */
-function addDays(base, days) {
-  const d = new Date(base); d.setDate(d.getDate() + days); return d;
-}
-function fmtDate(d) {
-  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-}
-
-const now = new Date();
-
-let promos = [
-  { id: 1, code: 'HappyNewYear', created: new Date('2026-01-01'), expires: addDays(new Date('2026-01-01'), 90),  uses: 8,  paid: 11992, disabled: false },
-  { id: 2, code: 'SPRING25',     created: new Date('2026-03-01'), expires: addDays(new Date('2026-03-01'), 60),  uses: 5,  paid:  7475, disabled: false },
-  { id: 3, code: 'LAUNCH10',     created: new Date('2026-02-15'), expires: addDays(new Date('2026-02-15'), 30),  uses: 3,  paid:  4497, disabled: false },
-  { id: 4, code: 'VIP30',        created: new Date('2026-02-01'), expires: addDays(new Date('2026-02-01'), 45),  uses: 12, paid: 17988, disabled: true  },
-  { id: 5, code: 'FRIEND15',     created: new Date('2026-03-10'), expires: addDays(new Date('2026-03-10'), 120), uses: 2,  paid:  2998, disabled: false },
-];
-
-/* ── Render ── */
-function getStatus(p) {
-  if (p.disabled) return 'disabled';
-  if (p.expires < now) return 'expired';
+function getCodeStatus(c) {
+  if (!c.is_active) return 'disabled';
+  if (c.expires_at && new Date(c.expires_at) < new Date()) return 'expired';
   return 'active';
 }
-const statusLabels = { active: 'Активен', expired: 'Истёк', disabled: 'Отключён' };
 
-const ICON_PAUSE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
-const ICON_PLAY  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
-const ICON_DEL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
-const ICON_COPY  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const STATUS_LABEL = { active:'Активен', disabled:'Отключён', expired:'Истёк' };
+const STATUS_CLS   = { active:'status-active', disabled:'status-disabled', expired:'status-expired' };
 
-function renderPromos() {
-  const listEl = document.getElementById('js-promo-list');
-  listEl.innerHTML = '';
+/* ── SVG Icons ───────────────────────────────────────── */
+const ICON_COPY  = `<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const ICON_PAUSE = `<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+const ICON_PLAY  = `<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+const ICON_DEL   = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
-  if (promos.length === 0) {
-    listEl.innerHTML = `
-      <div class="card empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-        Промокодов пока нет. Создайте первый!
-      </div>`;
+/* ── Render ──────────────────────────────────────────── */
+let _codes = [];
+
+function renderList() {
+  const el = document.getElementById('js-promo-list');
+  if (!_codes.length) {
+    el.innerHTML = '<p class="promo-empty">Промокодов пока нет. Создайте первый!</p>';
     return;
   }
+  el.innerHTML = '';
+  _codes.forEach(c => {
+    const status   = getCodeStatus(c);
+    const uses     = parseInt(c.use_count, 10) || 0;
+    const rev      = parseFloat(c.revenue) || 0;
+    const isActive = c.is_active;
 
-  promos.forEach(p => {
-    const status = getStatus(p);
-    const isDisabled = p.disabled;
     const row = document.createElement('div');
-    row.className = 'card promo-row' + (isDisabled ? ' promo-row--disabled' : '');
-    row.dataset.id = p.id;
-
+    row.className = 'promo-row';
+    row.dataset.id = c.id;
     row.innerHTML = `
       <div class="promo-field">
         <p class="promo-field__label">Промокод</p>
         <div class="promo-code-wrap">
-          <span class="promo-field__value">${p.code}</span>
-          <button class="promo-copy-btn" data-copy="${p.code}" title="Скопировать">${ICON_COPY}</button>
+          <span class="promo-code-text">${c.code}</span>
+          <button class="copy-btn js-copy" data-code="${c.code}" title="Копировать">${ICON_COPY}</button>
         </div>
+        <p class="promo-field__sub">Скидка ${c.discount_percent}%</p>
       </div>
-      <div class="promo-field">
+      <div class="promo-field promo-col--created">
         <p class="promo-field__label">Создан</p>
-        <p class="promo-field__value promo-field__value--muted">${fmtDate(p.created)}</p>
+        <p class="promo-field__value">${fmtDate(c.created_at)}</p>
       </div>
-      <div class="promo-field">
+      <div class="promo-field promo-col--expires">
         <p class="promo-field__label">Срок действия</p>
-        <p class="promo-field__value promo-field__value--muted">${fmtDate(p.expires)}</p>
+        <p class="promo-field__value">${fmtDate(c.expires_at)}</p>
       </div>
-      <div class="promo-field">
+      <div class="promo-field promo-col--revenue">
         <p class="promo-field__label">Выплачено</p>
-        <p class="promo-field__value">${p.paid.toLocaleString('ru-RU')} ₽ <span style="font-size:11px;font-weight:400;color:var(--c-muted)">(${p.uses} исп.)</span></p>
+        <p class="promo-field__value">${fmtPrice(rev)}</p>
+        <p class="promo-field__sub">${uses} исп.</p>
       </div>
-      <div class="promo-field">
+      <div class="promo-field promo-col--status">
         <p class="promo-field__label">Состояние</p>
-        <p class="promo-field__value"><span class="status-badge status-badge--${status}">${statusLabels[status]}</span></p>
+        <span class="status-pill ${STATUS_CLS[status]}">
+          <span class="status-pill__dot"></span>${STATUS_LABEL[status]}
+        </span>
       </div>
       <div class="promo-actions">
-        <button class="promo-action-btn promo-action-btn--toggle ${isDisabled ? 'is-disabled' : ''}" data-toggle="${p.id}" title="${isDisabled ? 'Включить' : 'Отключить'}">
-          ${isDisabled ? ICON_PLAY : ICON_PAUSE}
+        <button class="action-btn action-btn--toggle js-toggle"
+                title="${isActive ? 'Отключить' : 'Включить'}"
+                data-id="${c.id}" data-active="${isActive}">
+          ${isActive ? ICON_PAUSE : ICON_PLAY}
         </button>
-        <button class="promo-action-btn promo-action-btn--delete" data-delete="${p.id}" title="Удалить">
+        <button class="action-btn action-btn--delete js-delete"
+                title="Удалить" data-id="${c.id}" data-code="${c.code}">
           ${ICON_DEL}
         </button>
-      </div>
-    `;
-    listEl.appendChild(row);
+      </div>`;
+    el.appendChild(row);
   });
 
-  /* ── Copy buttons ── */
-  listEl.querySelectorAll('[data-copy]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      navigator.clipboard.writeText(btn.dataset.copy).then(() => showToast('Промокод скопирован'));
+  el.querySelectorAll('.js-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(btn.dataset.code).catch(() => {});
+      btn.classList.add('copied');
+      setTimeout(() => btn.classList.remove('copied'), 1500);
     });
   });
-
-  /* ── Toggle (disable / enable) ── */
-  listEl.querySelectorAll('[data-toggle]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.toggle, 10);
-      const promo = promos.find(p => p.id === id);
-      if (!promo) return;
-      promo.disabled = !promo.disabled;
-      showToast(promo.disabled ? `«${promo.code}» отключён` : `«${promo.code}» включён`);
-      renderPromos();
-    });
+  el.querySelectorAll('.js-toggle').forEach(btn => {
+    btn.addEventListener('click', () => toggleCode(+btn.dataset.id, btn.dataset.active === 'true'));
   });
-
-  /* ── Delete (two-tap confirm) ── */
-  let pendingDelete = null;
-  let pendingTimer = null;
-
-  listEl.querySelectorAll('[data-delete]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.delete, 10);
-
-      if (pendingDelete === id) {
-        /* confirmed — animate out */
-        clearTimeout(pendingTimer);
-        pendingDelete = null;
-        const row = listEl.querySelector(`.promo-row[data-id="${id}"]`);
-        if (row) {
-          row.classList.add('promo-row--removing');
-          row.addEventListener('animationend', () => {
-            promos = promos.filter(p => p.id !== id);
-            renderPromos();
-            showToast('Промокод удалён');
-          }, {once: true});
-        }
-      } else {
-        /* first tap — highlight, wait */
-        if (pendingDelete !== null) {
-          const old = listEl.querySelector(`.promo-row[data-id="${pendingDelete}"]`);
-          if (old) old.classList.remove('promo-row--confirm-delete');
-        }
-        clearTimeout(pendingTimer);
-        pendingDelete = id;
-        const row = listEl.querySelector(`.promo-row[data-id="${id}"]`);
-        if (row) row.classList.add('promo-row--confirm-delete');
-        showToast('Нажмите ещё раз для подтверждения удаления');
-        pendingTimer = setTimeout(() => {
-          if (row) row.classList.remove('promo-row--confirm-delete');
-          pendingDelete = null;
-        }, 3000);
-      }
-    });
+  el.querySelectorAll('.js-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteCode(+btn.dataset.id, btn.dataset.code));
   });
 }
 
-renderPromos();
-
-/* ════════════════════════════════════
-   CREATE PROMO
-════════════════════════════════════ */
-const input  = document.getElementById('js-promo-input');
-const createBtn = document.getElementById('js-promo-create');
-
-function createPromo() {
-  const raw = input.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
-  if (!raw) { showToast('Введите название промокода'); input.focus(); return; }
-  if (promos.some(p => p.code === raw)) { showToast('Такой промокод уже существует'); input.focus(); return; }
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  promos.unshift({
-    id: Date.now(),
-    code: raw,
-    created: today,
-    expires: addDays(today, 30),
-    uses: 0,
-    paid: 0,
-    disabled: false,
-  });
-  input.value = '';
-  renderPromos();
-  showToast(`Промокод «${raw}» создан`);
+/* ── API ─────────────────────────────────────────────── */
+async function loadCodes() {
+  try {
+    const res  = await apiFetch('/api/admin/promo-codes');
+    const data = res.ok ? await res.json() : { codes: [] };
+    _codes = data.codes || [];
+    renderList();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('js-promo-list').innerHTML = '<p class="promo-empty">Ошибка загрузки.</p>';
+  }
 }
 
-createBtn.addEventListener('click', createPromo);
-input.addEventListener('keydown', e => { if (e.key === 'Enter') createPromo(); });
+async function createCode() {
+  const codeInput     = document.getElementById('js-code-input');
+  const discountInput = document.getElementById('js-discount-input');
+  const expiresInput  = document.getElementById('js-expires-input');
+  const errEl         = document.getElementById('js-create-error');
+  const btn           = document.getElementById('js-create-btn');
+
+  const code     = codeInput.value.trim();
+  const discount = parseInt(discountInput.value, 10) || 10;
+  const expires  = expiresInput.value || null;
+
+  errEl.style.display = 'none';
+  if (!code) { errEl.textContent = 'Введите название промокода'; errEl.style.display = 'block'; return; }
+  if (discount < 1 || discount > 100) { errEl.textContent = 'Скидка должна быть от 1 до 100%'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true;
+  try {
+    const res  = await apiFetch('/api/admin/promo-codes', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ code, discount, expiresAt: expires }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Ошибка создания'; errEl.style.display = 'block'; return; }
+    codeInput.value     = '';
+    discountInput.value = '10';
+    const nd = new Date(); nd.setDate(nd.getDate() + 30);
+    expiresInput.value  = nd.toISOString().slice(0, 10);
+    await loadCodes();
+  } catch(e) {
+    errEl.textContent = 'Ошибка соединения'; errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function toggleCode(id, currentlyActive) {
+  try {
+    const res = await apiFetch(`/api/admin/promo-codes/${id}`, {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ is_active: !currentlyActive }),
+    });
+    if (res.ok) await loadCodes();
+  } catch(e) { console.error(e); }
+}
+
+async function deleteCode(id, code) {
+  if (!confirm(`Удалить промокод «${code}»?`)) return;
+  try {
+    const res = await apiFetch(`/api/admin/promo-codes/${id}`, { method: 'DELETE' });
+    if (res.ok) await loadCodes();
+  } catch(e) { console.error(e); }
+}
+
+/* ── Init ────────────────────────────────────────────── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+  let canShow = false;
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    canShow = true;
+    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
+
+    /* Default expiry — 30 дней */
+    const d = new Date(); d.setDate(d.getDate() + 30);
+    document.getElementById('js-expires-input').value = d.toISOString().slice(0, 10);
+
+    await loadCodes();
+
+    document.getElementById('js-create-btn').addEventListener('click', createCode);
+    document.getElementById('js-code-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') createCode();
+    });
+  } catch(e) { console.error(e); canShow = true; }
+  finally { if (canShow) document.body.style.opacity = '1'; }
+}
+
+init();
 </script>
 </body>
 </html>

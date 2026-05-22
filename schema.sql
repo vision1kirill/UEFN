@@ -162,3 +162,15 @@ CREATE TABLE IF NOT EXISTS partner_payouts (
 
 CREATE INDEX IF NOT EXISTS idx_payouts_partner ON partner_payouts (partner_id);
 CREATE INDEX IF NOT EXISTS idx_payouts_status  ON partner_payouts (status);
+
+-- ── Promo codes (admin-managed, general discount codes) ───────────────────────
+CREATE TABLE IF NOT EXISTS promo_codes (
+  id               SERIAL PRIMARY KEY,
+  code             VARCHAR(64) UNIQUE NOT NULL,
+  discount_percent INTEGER        NOT NULL DEFAULT 10,
+  expires_at       TIMESTAMPTZ,
+  is_active        BOOLEAN        NOT NULL DEFAULT TRUE,
+  created_at       TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_codes (code);
