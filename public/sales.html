@@ -26,26 +26,19 @@
     ul, ol { list-style: none; }
 
     :root {
-      --c-bg:         #0F1317;
-      --c-surf:       #131920;
-      --c-surf2:      #161d24;
-      --c-cyan:       #3BCFFE;
-      --c-blue:       #0166C3;
-      --c-text:       #FFFFFF;
-      --c-muted:      rgba(255,255,255,.55);
-      --c-dim:        rgba(255,255,255,.30);
-      --c-border:     rgba(255,255,255,.08);
-      --c-border-mid: rgba(255,255,255,.13);
-      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
-      --nav-h: 80px; --wrap: 1280px;
-      --px: clamp(16px, 3.125vw, 40px);
+      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
+      --c-cyan: #3BCFFE; --c-blue: #0166C3;
+      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
+      --c-dim: rgba(255,255,255,.30);
+      --c-border: rgba(255,255,255,.08); --c-border-mid: rgba(255,255,255,.13);
+      --g-accent: linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px,3.125vw,40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* ── NAV ── */
+    /* NAV */
     .nav {
-      position: fixed; inset: 0 0 auto; z-index: 200;
-      height: var(--nav-h); width: 100%;
+      position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h); width: 100%;
       display: flex; align-items: center;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       background: rgba(15,19,23,.80); transition: box-shadow .3s;
@@ -53,8 +46,7 @@
     .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
     .nav__inner {
       max-width: var(--wrap); width: 100%; margin-inline: auto;
-      padding-inline: var(--px); display: flex; align-items: center;
-      gap: clamp(16px,2.2vw,28px);
+      padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px);
     }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
@@ -63,12 +55,11 @@
     .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__user-name { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
     .nav__avatar {
-      width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
       border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: border-color .2s;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s;
     }
     .nav__avatar:hover { border-color: var(--c-cyan); }
     .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
@@ -92,42 +83,28 @@
     .nav__drawer a:hover { color: #fff; }
     @media (max-width: 1100px) {
       .nav__links { display: none; } .nav__auth { display: none; }
-      .nav__burger { display: flex; }
-      .nav__inner { gap: 8px; padding-inline: 16px; }
+      .nav__burger { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; }
     }
 
-    /* ── LAYOUT ── */
+    /* LAYOUT */
     main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
-    .page-title {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(22px,3vw,44px); font-weight: 800;
-      letter-spacing: -0.03em; color: #fff;
-      margin-bottom: clamp(20px,2.5vw,32px);
-    }
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
 
-    /* ── TABS ── */
-    .tab-nav {
-      display: flex; align-items: center; gap: clamp(6px,1vw,10px);
-      margin-bottom: clamp(24px,3vw,40px);
-      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    }
+    /* TAB NAV */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .tab-nav::-webkit-scrollbar { display: none; }
     .tab-btn {
-      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
-      border-radius: 100px; font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted);
-      background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
       cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ── PERIOD BAR ── */
-    .period-bar {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin-bottom: clamp(16px,2vw,24px);
-    }
+    /* PERIOD BAR */
+    .period-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: clamp(20px,2.5vw,32px); }
     .period-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; }
     .date-input-wrap {
       display: flex; align-items: center; gap: 8px;
@@ -138,27 +115,65 @@
     .date-input-wrap svg { width: 14px; height: 14px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
     .date-input-wrap input[type="date"] {
       background: none; border: none; outline: none; color: #fff;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
-      cursor: pointer; width: 110px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; width: 110px;
     }
     .date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.5); cursor: pointer; }
     .period-sep { font-size: 13px; color: var(--c-dim); }
-    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-btn {
-      padding: 9px 18px; border-radius: 100px;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05);
-      border: 1.5px solid transparent; cursor: pointer;
-      transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    .preset-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .preset-btn {
+      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
-    .filter-btn:hover { color: #fff; }
-    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .preset-btn:hover { color: #fff; }
+    .preset-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ── TOOLBAR ── */
-    .toolbar {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      margin-bottom: clamp(16px,2vw,24px);
+    /* DASH SECTION */
+    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
+
+    /* CARD BASE */
+    .card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(18px,1.8vw,26px); padding: clamp(18px,2.2vw,28px);
     }
+
+    /* CHART CARD */
+    .chart-card { padding-bottom: clamp(14px,1.8vw,22px); }
+    .chart-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: clamp(16px,2vw,24px); }
+    .chart-title { font-size: clamp(15px,1.2vw,18px); font-weight: 700; color: #fff; }
+    .chart-legend { display: flex; align-items: center; gap: clamp(14px,1.8vw,24px); }
+    .legend-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: clamp(11px,.85vw,13px); color: var(--c-muted);
+      cursor: pointer; user-select: none; transition: opacity .2s;
+    }
+    .legend-item:hover { color: #fff; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; transition: transform .2s; }
+    .chart-wrap { position: relative; }
+    .chart-svg-wrap { width: 100%; overflow: hidden; margin-bottom: clamp(6px,.8vw,10px); }
+    .chart-svg { width: 100%; height: auto; display: block; }
+    .chart-xaxis { position: relative; height: 16px; }
+    .chart-xaxis span { position: absolute; font-size: clamp(9px,.65vw,11px); color: var(--c-dim); white-space: nowrap; }
+    .chart-tooltip {
+      position: absolute; top: 0; pointer-events: none; display: none;
+      background: rgba(15,19,23,.96); border: 1px solid rgba(255,255,255,.13);
+      border-radius: 12px; padding: 10px 14px; white-space: nowrap; z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+    .chart-tooltip__date { font-size: 11px; color: var(--c-dim); margin-bottom: 8px; }
+    .chart-tooltip__row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+    .chart-tooltip__row:last-child { margin-bottom: 0; }
+    .chart-tooltip__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chart-tooltip__val { margin-left: auto; padding-left: 14px; font-weight: 600; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.4vw,22px); font-weight: 800;
+      letter-spacing: -0.02em; color: #fff; margin-bottom: clamp(14px,1.8vw,22px);
+    }
+
+    /* TOOLBAR */
+    .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: clamp(14px,1.8vw,22px); }
     .search-wrap { position: relative; flex: 1; min-width: 200px; }
     .search-wrap svg {
       position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
@@ -168,88 +183,36 @@
     .search-input {
       width: 100%; padding: 10px 14px 10px 40px;
       background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
-      border-radius: 100px; color: #fff;
-      font-family: 'Golos Text', sans-serif; font-size: 14px;
+      border-radius: 100px; color: #fff; font-family: 'Golos Text', sans-serif; font-size: 14px;
       outline: none; transition: border-color .2s;
     }
     .search-input::placeholder { color: var(--c-dim); }
     .search-input:focus { border-color: rgba(59,207,254,.4); }
-    .status-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    }
+    .filter-btn:hover { color: #fff; }
+    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ── STATS CHIPS ── */
-    .stats-row {
-      display: flex; gap: clamp(10px,1.5vw,16px); flex-wrap: wrap;
-      margin-bottom: clamp(16px,2vw,24px);
+    /* ORDER ROWS (same as dashboard) */
+    .orders-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
+    .order-row {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: clamp(10px,1.5vw,20px); align-items: start;
     }
-    .stat-chip {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border-radius: 100px;
-      background: rgba(255,255,255,.04); border: 1px solid var(--c-border);
-      font-family: 'Golos Text', sans-serif; font-size: 13px; color: var(--c-muted);
-    }
-    .stat-chip strong { color: #fff; font-weight: 700; }
-
-    /* ── TABLE ── */
-    .table-wrap {
-      background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(16px,1.6vw,24px); overflow: hidden;
-    }
-    .table-head {
-      display: grid;
-      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr 1.2fr;
-      gap: 12px; align-items: center;
-      padding: 12px 24px;
-      border-bottom: 1px solid var(--c-border);
-      background: rgba(255,255,255,.02);
-    }
-    .th {
-      font-family: 'Golos Text', sans-serif;
-      font-size: 11px; font-weight: 600; color: var(--c-dim);
-      text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
-    }
-    .table-body { display: flex; flex-direction: column; }
-
-    .sale-row {
-      display: grid;
-      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr 1.2fr;
-      gap: 12px; align-items: center;
-      padding: 14px 24px;
-      border-bottom: 1px solid var(--c-border);
-      transition: background .15s;
-    }
-    .sale-row:last-child { border-bottom: none; }
-    .sale-row:hover { background: rgba(255,255,255,.025); }
-
-    .buyer-name {
-      font-size: 14px; font-weight: 600; color: #fff;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .buyer-email {
-      font-size: 12px; color: var(--c-muted);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-
-    .product-badge {
-      display: inline-flex; align-items: center;
-      padding: 3px 10px; border-radius: 100px;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: var(--c-muted);
-    }
-    .product-badge--partnership { background: rgba(59,207,254,.10); border-color: rgba(59,207,254,.20); color: var(--c-cyan); }
-
-    .amount-val { font-size: 14px; font-weight: 700; color: #fff; }
-    .amount-free { font-size: 13px; color: var(--c-dim); }
-
-    .promo-val { font-size: 13px; font-family: 'Golos Text', monospace; color: var(--c-muted); }
-    .promo-empty { color: var(--c-dim); }
+    .order-field__label { font-size: clamp(9px,.7vw,11px); font-weight: 400; color: var(--c-muted); margin-bottom: 4px; white-space: nowrap; }
+    .order-field__value { font-size: clamp(11px,.9vw,14px); font-weight: 600; color: #fff; line-height: 1.3; }
+    .order-field__value--muted { color: var(--c-muted); font-weight: 400; }
+    .order-field__orig { font-size: 12px; color: var(--c-dim); text-decoration: line-through; margin-left: 6px; }
 
     .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
+      padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
     }
-    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; }
     .status-pill--paid    { background:rgba(34,197,94,.10);  border:1px solid rgba(34,197,94,.22);  color:#22C55E; }
     .status-pill--paid::before    { background:#22C55E; }
     .status-pill--pending { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
@@ -257,45 +220,20 @@
     .status-pill--refunded { background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.22);  color:#EF4444; }
     .status-pill--refunded::before { background:#EF4444; }
 
-    .sale-date { font-size: 13px; color: var(--c-dim); white-space: nowrap; }
+    .orders-empty { font-size: 14px; color: var(--c-dim); padding: 8px 0; }
 
-    /* ── EMPTY / LOADING ── */
-    .table-empty {
-      padding: 48px 24px; text-align: center;
-      font-family: 'Golos Text', sans-serif; font-size: 15px; color: var(--c-dim);
-    }
-
-    /* ── PAGINATION ── */
-    .pagination {
-      display: flex; align-items: center; justify-content: center;
-      gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap;
-    }
+    /* PAGINATION */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap; }
     .page-btn {
-      padding: 8px 16px; border-radius: 100px;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05);
-      border: 1px solid transparent; cursor: pointer; transition: all .2s;
+      padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
+      cursor: pointer; transition: all .2s;
     }
     .page-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .page-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.08); }
     .page-btn:disabled { opacity: .35; cursor: default; }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .table-head { grid-template-columns: 1.8fr 1fr 1fr 1.2fr; }
-      .table-head .th:nth-child(4),
-      .table-head .th:nth-child(5) { display: none; }
-      .sale-row { grid-template-columns: 1.8fr 1fr 1fr 1.2fr; }
-      .sale-row > *:nth-child(4),
-      .sale-row > *:nth-child(5) { display: none; }
-    }
-    @media (max-width: 600px) {
-      .table-head { display: none; }
-      .sale-row { grid-template-columns: 1fr auto; gap: 8px; padding: 14px 16px; }
-      .sale-row > *:nth-child(n+3) { display: none; }
-    }
-
-    /* ── FOOTER ── */
+    /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
     .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
@@ -311,6 +249,8 @@
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
 
+    @media (max-width: 700px) { .order-row { grid-template-columns: 1fr 1fr; gap: clamp(10px,3vw,16px); } }
+    @media (max-width: 420px) { .order-row { grid-template-columns: 1fr; gap: 8px; } }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
@@ -337,9 +277,7 @@
         <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
-    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <button class="nav__burger" id="js-burger" aria-label="Меню"><span></span><span></span><span></span></button>
   </div>
 </header>
 <nav class="nav__drawer" id="js-drawer">
@@ -353,7 +291,6 @@
 
     <h1 class="page-title">Панель управления</h1>
 
-    <!-- TABS -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
       <a class="tab-btn" href="admin-users.html">Пользователи</a>
@@ -376,52 +313,65 @@
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         <input type="date" id="js-to" />
       </div>
-      <div class="filter-group">
-        <button class="filter-btn" data-days="7">7 дней</button>
-        <button class="filter-btn active" data-days="30">30 дней</button>
-        <button class="filter-btn" data-days="90">3 месяца</button>
-        <button class="filter-btn" data-days="365">Год</button>
+      <div class="preset-group">
+        <button class="preset-btn" data-days="7">7 дней</button>
+        <button class="preset-btn active" data-days="30">30 дней</button>
+        <button class="preset-btn" data-days="90">3 месяца</button>
+        <button class="preset-btn" data-days="365">Год</button>
       </div>
     </div>
 
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <div class="search-wrap">
-        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
-        <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени или email…" autocomplete="off" />
-      </div>
-      <div class="status-group">
-        <button class="filter-btn active" data-status="">Все</button>
-        <button class="filter-btn" data-status="paid">Оплачено</button>
-        <button class="filter-btn" data-status="pending">Ожидание</button>
-        <button class="filter-btn" data-status="refunded">Возврат</button>
-      </div>
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-row">
-      <div class="stat-chip">Заказов: <strong id="js-stat-total">—</strong></div>
-      <div class="stat-chip">Выручка: <strong id="js-stat-revenue">—</strong></div>
-      <div class="stat-chip">Средний чек: <strong id="js-stat-avg">—</strong></div>
-    </div>
-
-    <!-- TABLE -->
-    <div class="table-wrap">
-      <div class="table-head">
-        <span class="th">Покупатель</span>
-        <span class="th">Продукт</span>
-        <span class="th">Сумма</span>
-        <span class="th">Промокод</span>
-        <span class="th">Статус</span>
-        <span class="th">Дата</span>
-      </div>
-      <div class="table-body" id="js-table-body">
-        <div class="table-empty">Загрузка…</div>
+    <!-- CHART -->
+    <div class="dash-section">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Продажи</span>
+          <div class="chart-legend" id="js-chart-legend"></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-svg-wrap">
+            <svg class="chart-svg" id="js-chart-main" viewBox="0 0 900 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
+              <line x1="0" y1="40"  x2="900" y2="40"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="90"  x2="900" y2="90"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="140" x2="900" y2="140" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="190" x2="900" y2="190" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <g id="js-chart-lines"></g>
+              <g id="js-chart-ind" style="display:none; pointer-events:none">
+                <line id="js-ind-line" x1="0" y1="0" x2="0" y2="200" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="5,3"/>
+                <g id="js-ind-dots"></g>
+              </g>
+              <rect id="js-chart-overlay" x="0" y="0" width="900" height="200" fill="transparent"/>
+            </svg>
+          </div>
+          <div class="chart-xaxis" id="js-xaxis"></div>
+          <div class="chart-tooltip" id="js-chart-tip"></div>
+        </div>
       </div>
     </div>
 
-    <!-- PAGINATION -->
-    <div class="pagination" id="js-pagination"></div>
+    <!-- TOOLBAR + LIST -->
+    <div class="dash-section">
+      <h2 class="section-title">Продажи</h2>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+          <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени или email…" autocomplete="off" />
+        </div>
+        <div class="filter-group">
+          <button class="filter-btn active" data-status="">Все</button>
+          <button class="filter-btn" data-status="paid">Оплачено</button>
+          <button class="filter-btn" data-status="pending">Ожидание</button>
+          <button class="filter-btn" data-status="refunded">Возврат</button>
+        </div>
+      </div>
+
+      <div class="orders-list" id="js-orders">
+        <p class="orders-empty">Загрузка…</p>
+      </div>
+
+      <div class="pagination" id="js-pagination"></div>
+    </div>
 
   </div>
 </main>
@@ -456,9 +406,9 @@
 <script>
 'use strict';
 
-/* ── Nav ── */
+/* Nav */
 const navEl = document.getElementById('js-nav');
-window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
 burger.addEventListener('click', () => {
@@ -467,180 +417,319 @@ burger.addEventListener('click', () => {
   burger.setAttribute('aria-expanded', String(open));
 });
 
-/* ── Helpers ── */
+/* Helpers */
 function fmtPrice(n) { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+}
+function fmtDateShort(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 const PRODUCT_NAMES = { Partnership: 'Подписка сотрудничество' };
 const STATUS_LABELS = { paid: 'Оплачено', pending: 'В ожидании', refunded: 'Возврат' };
 const STATUS_CLS    = { paid: 'status-pill--paid', pending: 'status-pill--pending', refunded: 'status-pill--refunded' };
+const ALL_PRODUCTS  = ['Essential', 'Extra', 'Deluxe'];
+const COLORS        = ['#F59E0B','#22C55E','#EF4444','#3BCFFE','#A78BFA'];
+const VW = 900, VH = 200;
 
-/* ── State ── */
-let currentPage   = 1;
-const PAGE_SIZE   = 20;
-let currentStatus = '';
-let searchQuery   = '';
-let fromDate      = '';
-let toDate        = '';
-let searchTimer   = null;
+/* State */
+let fromDate = '', toDate = '';
+let currentStatus = '', searchQuery = '', searchTimer = null;
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let activeProduct = null;
 
-/* ── Period preset ── */
+/* Period */
 function setPreset(days) {
-  const to   = new Date();
-  const from = new Date(); from.setDate(from.getDate() - (days - 1));
+  const to = new Date(), from = new Date();
+  from.setDate(from.getDate() - (days - 1));
   fromDate = from.toISOString().slice(0,10);
   toDate   = to.toISOString().slice(0,10);
   document.getElementById('js-from').value = fromDate;
   document.getElementById('js-to').value   = toDate;
-  document.querySelectorAll('[data-days]').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
 }
 
-/* ── Build API URL ── */
-function buildUrl(page) {
-  const p = new URLSearchParams({ page, limit: PAGE_SIZE });
-  if (currentStatus) p.set('status', currentStatus);
-  if (fromDate)      p.set('from', fromDate);
-  if (toDate)        p.set('to', toDate);
-  if (searchQuery)   p.set('search', searchQuery);
-  return `/api/admin/sales?${p}`;
+/* Build date array between from/to */
+function buildDates(from, to) {
+  const dates = [], cur = new Date(from), end = new Date(to);
+  while (cur <= end) { dates.push(cur.toISOString().slice(0,10)); cur.setDate(cur.getDate()+1); }
+  return dates;
 }
 
-/* ── Render rows ── */
-function renderRows(sales) {
-  const body = document.getElementById('js-table-body');
-  if (!sales.length) {
-    body.innerHTML = '<div class="table-empty">Заказов не найдено.</div>';
-    return;
+/* Smooth path (Catmull-Rom, clamped) */
+function smoothPath(pts, tension=0.35, minY=-Infinity, maxY=Infinity) {
+  if (pts.length < 2) return '';
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < pts.length-1; i++) {
+    const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+    const cp1x = p1[0]+(p2[0]-p0[0])*tension;
+    const cp1y = Math.max(minY, Math.min(maxY, p1[1]+(p2[1]-p0[1])*tension));
+    const cp2x = p2[0]-(p3[0]-p1[0])*tension;
+    const cp2y = Math.max(minY, Math.min(maxY, p2[1]-(p3[1]-p1[1])*tension));
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
   }
-  body.innerHTML = '';
+  return d;
+}
+
+/* Render chart */
+function renderChart(chartRows) {
+  const dates   = buildDates(fromDate, toDate);
+  const N       = dates.length;
+  if (!N) return;
+
+  const apiProducts = [...new Set(chartRows.map(r => r.product))].filter(p => p !== 'Partnership');
+  const products    = [...new Set([...ALL_PRODUCTS, ...apiProducts])];
+
+  const map = {};
+  chartRows.forEach(r => { map[r.day.slice(0,10)+'|'+r.product] = +r.count; });
+
+  const series = products.map(prod => ({
+    product: prod,
+    counts: dates.map(d => map[d+'|'+prod] || 0),
+  }));
+
+  const xs     = dates.map((_,i) => N===1 ? VW/2 : Math.round(i*VW/(N-1)));
+  const maxVal = Math.max(...series.flatMap(s => s.counts), 1);
+  const PAD=14, minY=PAD, maxY=VH-PAD;
+  const toY = v => VH - PAD - (v/maxVal)*(VH-PAD*2);
+
+  /* Legend */
+  const legendEl = document.getElementById('js-chart-legend');
+  legendEl.innerHTML = '';
+  function updateVis() {
+    series.forEach((s,si) => {
+      const p = document.getElementById(`js-line-${si}`);
+      const d = document.getElementById(`js-dot-${si}`);
+      const l = legendEl.children[si];
+      const on = !activeProduct || activeProduct===s.product;
+      if (p) p.style.opacity = on ? '1' : '0.12';
+      if (d) d.style.display = on ? '' : 'none';
+      if (l) { l.style.opacity = on ? '1' : '0.4'; l.querySelector('.legend-dot').style.transform = on ? 'scale(1.3)' : 'scale(1)'; }
+    });
+  }
+  series.forEach((s,si) => {
+    const color = COLORS[si%COLORS.length];
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<span class="legend-dot" style="background:${color}"></span>${s.product}`;
+    item.addEventListener('click', () => { activeProduct = activeProduct===s.product ? null : s.product; updateVis(); });
+    legendEl.appendChild(item);
+  });
+
+  /* Lines */
+  const linesEl = document.getElementById('js-chart-lines');
+  const dotsEl  = document.getElementById('js-ind-dots');
+  linesEl.innerHTML = ''; dotsEl.innerHTML = '';
+  series.forEach((s,si) => {
+    const color = COLORS[si%COLORS.length];
+    const pts   = xs.map((x,i) => [x, toY(s.counts[i])]);
+    const path  = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', smoothPath(pts,0.35,minY,maxY));
+    path.setAttribute('fill','none'); path.setAttribute('stroke',color);
+    path.setAttribute('stroke-width','2'); path.setAttribute('stroke-linecap','round');
+    path.id = `js-line-${si}`; linesEl.appendChild(path);
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('r','5'); dot.setAttribute('fill',color);
+    dot.setAttribute('stroke','#0F1317'); dot.setAttribute('stroke-width','2');
+    dot.id = `js-dot-${si}`; dotsEl.appendChild(dot);
+  });
+
+  /* X-axis */
+  const xaxisEl = document.getElementById('js-xaxis');
+  xaxisEl.innerHTML = '';
+  const step = Math.max(1, Math.ceil(N/7));
+  dates.forEach((d,i) => {
+    if (i%step !== 0) return;
+    const pct = N===1 ? 50 : (xs[i]/VW)*100;
+    const span = document.createElement('span');
+    span.textContent = fmtDateShort(d);
+    const shift = i===0 ? '0%' : '-50%';
+    span.style.cssText = `left:${pct}%; transform:translateX(${shift})`;
+    xaxisEl.appendChild(span);
+  });
+
+  /* Hover */
+  const svg     = document.getElementById('js-chart-main');
+  const overlay = document.getElementById('js-chart-overlay');
+  const indG    = document.getElementById('js-chart-ind');
+  const indLine = document.getElementById('js-ind-line');
+  const tipEl   = document.getElementById('js-chart-tip');
+
+  function getIdx(cx) {
+    const r = svg.getBoundingClientRect();
+    return Math.round(Math.max(0,Math.min(1,(cx-r.left)/r.width))*(N-1));
+  }
+  function showTip(cx) {
+    const idx=getIdx(cx), svgX=xs[idx];
+    indLine.setAttribute('x1',svgX); indLine.setAttribute('x2',svgX);
+    series.forEach((s,si) => {
+      const dot=document.getElementById(`js-dot-${si}`);
+      const on=!activeProduct||activeProduct===s.product;
+      if (dot&&on) { dot.setAttribute('cx',svgX); dot.setAttribute('cy',toY(s.counts[idx])); }
+    });
+    indG.style.display='';
+    let html=`<div class="chart-tooltip__date">${fmtDateShort(dates[idx])}</div>`;
+    series.forEach((s,si) => {
+      if (activeProduct&&activeProduct!==s.product) return;
+      html+=`<div class="chart-tooltip__row"><span class="chart-tooltip__dot" style="background:${COLORS[si%COLORS.length]}"></span>${s.product}<span class="chart-tooltip__val">${s.counts[idx]} шт.</span></div>`;
+    });
+    tipEl.innerHTML=html;
+    const r=svg.getBoundingClientRect(), screenX=(svgX/VW)*r.width, tipW=tipEl.offsetWidth||180;
+    tipEl.style.left=(screenX+14+tipW>r.width ? screenX-tipW-10 : screenX+14)+'px';
+    tipEl.style.display='block';
+  }
+  function hideTip() { indG.style.display='none'; tipEl.style.display='none'; }
+  overlay.addEventListener('mousemove', e=>showTip(e.clientX));
+  overlay.addEventListener('mouseleave', hideTip);
+  overlay.addEventListener('touchstart', e=>{e.preventDefault();showTip(e.touches[0].clientX);},{passive:false});
+  overlay.addEventListener('touchmove',  e=>{e.preventDefault();showTip(e.touches[0].clientX);},{passive:false});
+  overlay.addEventListener('touchend', hideTip);
+}
+
+/* Render order rows */
+function renderOrders(sales) {
+  const el = document.getElementById('js-orders');
+  if (!sales.length) { el.innerHTML='<p class="orders-empty">Заказов не найдено.</p>'; return; }
+  el.innerHTML = '';
   sales.forEach(o => {
     const productLabel = PRODUCT_NAMES[o.product] || o.product || '—';
-    const isPartner    = o.product === 'Partnership';
     const statusLabel  = STATUS_LABELS[o.status] || o.status;
     const statusCls    = STATUS_CLS[o.status] || 'status-pill--pending';
     const amountHtml   = +o.amount > 0
-      ? `<span class="amount-val">${fmtPrice(o.amount)}</span>`
-      : `<span class="amount-free">Бесплатно</span>`;
+      ? `<span>${fmtPrice(o.amount)}</span>`
+      : `<span style="color:var(--c-dim)">Бесплатно</span>`;
 
-    const row = document.createElement('div');
-    row.className = 'sale-row';
-    row.innerHTML = `
-      <div>
-        <div class="buyer-name">${o.buyer_name || '—'}</div>
-        <div class="buyer-email">${o.buyer_email}</div>
-      </div>
-      <div><span class="product-badge ${isPartner ? 'product-badge--partnership' : ''}">${productLabel}</span></div>
-      <div>${amountHtml}</div>
-      <div class="${o.promo_code ? 'promo-val' : 'promo-empty'}">${o.promo_code || '—'}</div>
-      <div><span class="status-pill ${statusCls}">${statusLabel}</span></div>
-      <div class="sale-date">${fmtDate(o.created_at)}</div>`;
-    body.appendChild(row);
+    el.insertAdjacentHTML('beforeend', `
+      <div class="card order-row">
+        <div class="order-field">
+          <p class="order-field__label">Стоимость</p>
+          <p class="order-field__value">${amountHtml}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Статус</p>
+          <p class="order-field__value"><span class="status-pill ${statusCls}">${statusLabel}</span></p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Продукт</p>
+          <p class="order-field__value">${productLabel}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Промокод</p>
+          <p class="order-field__value ${o.promo_code ? '' : 'order-field__value--muted'}">${o.promo_code || '—'}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Дата</p>
+          <p class="order-field__value">${fmtDate(o.created_at)}</p>
+        </div>
+      </div>`);
   });
 }
 
-/* ── Render pagination ── */
+/* Render pagination */
 function renderPagination(total) {
   const wrap  = document.getElementById('js-pagination');
-  const pages = Math.ceil(total / PAGE_SIZE);
-  if (pages <= 1) { wrap.innerHTML = ''; return; }
-
+  const pages = Math.ceil(total/PAGE_SIZE);
+  if (pages<=1) { wrap.innerHTML=''; return; }
   let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>← Назад</button>`;
-  const range = [];
-  for (let i = 1; i <= pages; i++) {
-    if (i===1 || i===pages || Math.abs(i-currentPage)<=1) range.push(i);
-    else if (range[range.length-1] !== '…') range.push('…');
+  const range=[];
+  for (let i=1;i<=pages;i++) {
+    if(i===1||i===pages||Math.abs(i-currentPage)<=1) range.push(i);
+    else if(range[range.length-1]!=='…') range.push('…');
   }
   range.forEach(p => {
-    if (p==='…') html += `<span class="page-btn" style="cursor:default">…</span>`;
-    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    if(p==='…') html+=`<span class="page-btn" style="cursor:default">…</span>`;
+    else html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
   });
-  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
-  wrap.innerHTML = html;
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
+  wrap.innerHTML=html;
 }
-function goPage(p) { currentPage = p; load(); }
+function goPage(p) { currentPage=p; loadSales(); }
 
-/* ── Load ── */
-async function load() {
-  document.getElementById('js-table-body').innerHTML = '<div class="table-empty">Загрузка…</div>';
+/* Build sales URL */
+function buildSalesUrl(page) {
+  const p=new URLSearchParams({page,limit:PAGE_SIZE});
+  if (currentStatus) p.set('status',currentStatus);
+  if (fromDate)      p.set('from',fromDate);
+  if (toDate)        p.set('to',toDate);
+  if (searchQuery)   p.set('search',searchQuery);
+  return `/api/admin/sales?${p}`;
+}
+
+/* Load sales list */
+async function loadSales() {
+  document.getElementById('js-orders').innerHTML='<p class="orders-empty">Загрузка…</p>';
   try {
-    const res  = await apiFetch(buildUrl(currentPage));
-    const data = res.ok ? await res.json() : { sales:[], total:0, revenue:0 };
-
-    renderRows(data.sales || []);
-    renderPagination(data.total || 0);
-
-    const total   = data.total   || 0;
-    const revenue = data.revenue || 0;
-    const avg     = total > 0 && revenue > 0 ? Math.round(revenue / total) : 0;
-
-    document.getElementById('js-stat-total').textContent   = total.toLocaleString('ru-RU');
-    document.getElementById('js-stat-revenue').textContent = fmtPrice(revenue);
-    document.getElementById('js-stat-avg').textContent     = avg > 0 ? fmtPrice(avg) : '—';
-  } catch (e) {
+    const res  = await apiFetch(buildSalesUrl(currentPage));
+    const data = res.ok ? await res.json() : {sales:[],total:0};
+    renderOrders(data.sales||[]);
+    renderPagination(data.total||0);
+  } catch(e) {
     console.error(e);
-    document.getElementById('js-table-body').innerHTML = '<div class="table-empty">Ошибка загрузки данных.</div>';
+    document.getElementById('js-orders').innerHTML='<p class="orders-empty">Ошибка загрузки.</p>';
   }
 }
 
-/* ── Init ── */
-async function init() {
-  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
-  let canShow = false;
+/* Load chart */
+async function loadChart() {
+  const p=new URLSearchParams({from:fromDate,to:toDate});
   try {
-    const res  = await apiFetch('/api/auth/me');
+    const res=await apiFetch(`/api/admin/chart?${p}`);
+    if (res.ok) renderChart((await res.json()).chart||[]);
+  } catch(e) { console.error(e); }
+}
+
+/* Load all */
+async function loadAll() {
+  activeProduct=null;
+  await Promise.all([loadChart(), loadSales()]);
+}
+
+/* Init */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href='login.html'; return; }
+  let canShow=false;
+  try {
+    const res=await apiFetch('/api/auth/me');
     if (!res.ok) { window.Auth.logout(); return; }
-    const user = await res.json();
-    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
-    canShow = true;
-    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
+    const user=await res.json();
+    if (user.role!=='admin') { window.location.href='profile.html'; return; }
+    canShow=true;
+    document.getElementById('js-nav-name').textContent=user.name||'Админ';
 
     setPreset(30);
-    await load();
+    await loadAll();
 
-    /* Period presets */
-    document.querySelectorAll('[data-days]').forEach(b => {
-      b.addEventListener('click', () => { setPreset(+b.dataset.days); currentPage = 1; load(); });
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.addEventListener('click', () => { setPreset(+b.dataset.days); currentPage=1; loadAll(); });
     });
-
-    /* Date pickers */
     document.getElementById('js-from').addEventListener('change', e => {
-      fromDate = e.target.value;
-      document.querySelectorAll('[data-days]').forEach(b => b.classList.remove('active'));
-      currentPage = 1; load();
+      fromDate=e.target.value;
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      currentPage=1; loadAll();
     });
     document.getElementById('js-to').addEventListener('change', e => {
-      toDate = e.target.value;
-      document.querySelectorAll('[data-days]').forEach(b => b.classList.remove('active'));
-      currentPage = 1; load();
+      toDate=e.target.value;
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      currentPage=1; loadAll();
     });
-
-    /* Status filter */
     document.querySelectorAll('[data-status]').forEach(b => {
       b.addEventListener('click', () => {
-        document.querySelectorAll('[data-status]').forEach(x => x.classList.remove('active'));
-        b.classList.add('active');
-        currentStatus = b.dataset.status;
-        currentPage = 1; load();
+        document.querySelectorAll('[data-status]').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); currentStatus=b.dataset.status; currentPage=1; loadSales();
       });
     });
-
-    /* Search */
     document.getElementById('js-search').addEventListener('input', e => {
       clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        searchQuery = e.target.value.trim();
-        currentPage = 1; load();
-      }, 350);
+      searchTimer=setTimeout(() => { searchQuery=e.target.value.trim(); currentPage=1; loadSales(); }, 350);
     });
 
-  } catch (e) {
-    console.error(e); canShow = true;
-  } finally {
-    if (canShow) document.body.style.opacity = '1';
-  }
+  } catch(e) { console.error(e); canShow=true; }
+  finally { if (canShow) document.body.style.opacity='1'; }
 }
 
 init();

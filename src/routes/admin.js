@@ -196,19 +196,26 @@ router.get('/users', async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/chart', async (req, res, next) => {
   try {
+    const { from, to } = req.query;
     const days = parseInt(req.query.days, 10) || 14;
+
+    let dateFilter, params;
+    if (from && to) {
+      dateFilter = `paid_at >= $1::date AND paid_at < ($2::date + interval '1 day')`;
+      params = [from, to];
+    } else {
+      dateFilter = `paid_at >= NOW() - ($1 || ' days')::interval`;
+      params = [days];
+    }
+
     const { rows } = await query(
-      `SELECT
-         DATE(paid_at) AS day,
-         product,
-         COUNT(*)::int AS count,
-         SUM(amount)::numeric AS revenue
+      `SELECT DATE(paid_at) AS day, product,
+              COUNT(*)::int AS count, SUM(amount)::numeric AS revenue
        FROM orders
-       WHERE status = 'paid'
-         AND paid_at >= NOW() - ($1 || ' days')::interval
+       WHERE status = 'paid' AND product != 'Partnership' AND ${dateFilter}
        GROUP BY DATE(paid_at), product
        ORDER BY day ASC`,
-      [days],
+      params,
     );
     res.json({ chart: rows });
   } catch (err) {
