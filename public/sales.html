@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Продажи — Панель управления</title>
+
   <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,16 +26,23 @@
     ul, ol { list-style: none; }
 
     :root {
-      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
-      --c-cyan: #3BCFFE; --c-blue: #0166C3;
-      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
-      --c-dim: rgba(255,255,255,.30);
-      --c-border: rgba(255,255,255,.08); --c-border-mid: rgba(255,255,255,.13);
-      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px,3.125vw,40px);
+      --c-bg:         #0F1317;
+      --c-surf:       #131920;
+      --c-surf2:      #161d24;
+      --c-cyan:       #3BCFFE;
+      --c-blue:       #0166C3;
+      --c-text:       #FFFFFF;
+      --c-muted:      rgba(255,255,255,.55);
+      --c-dim:        rgba(255,255,255,.30);
+      --c-border:     rgba(255,255,255,.08);
+      --c-border-mid: rgba(255,255,255,.13);
+      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --nav-h: 80px; --wrap: 1280px;
+      --px: clamp(16px, 3.125vw, 40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* NAV */
+    /* ── NAV ── */
     .nav {
       position: fixed; inset: 0 0 auto; z-index: 200;
       height: var(--nav-h); width: 100%;
@@ -50,7 +58,7 @@
     }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
     .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
     .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
@@ -59,8 +67,8 @@
     .nav__avatar {
       width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
       border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
-      cursor: pointer; transition: border-color .2s;
       display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .2s;
     }
     .nav__avatar:hover { border-color: var(--c-cyan); }
     .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
@@ -73,12 +81,10 @@
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .nav__burger.open span:nth-child(2) { opacity: 0; }
     .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-    .nav__avatar-mobile { display: none; flex-shrink: 0; }
     .nav__drawer {
       position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
       background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
-      display: flex; flex-direction: column;
-      padding: 28px var(--px) 40px; gap: 4px;
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
       transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
     }
     .nav__drawer.open { transform: translateX(0); }
@@ -86,204 +92,226 @@
     .nav__drawer a:hover { color: #fff; }
     @media (max-width: 1100px) {
       .nav__links { display: none; } .nav__auth { display: none; }
-      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
+      .nav__burger { display: flex; }
       .nav__inner { gap: 8px; padding-inline: 16px; }
     }
 
-    /* LAYOUT */
+    /* ── LAYOUT ── */
     main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
-    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
+    .page-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(22px,3vw,44px); font-weight: 800;
+      letter-spacing: -0.03em; color: #fff;
+      margin-bottom: clamp(20px,2.5vw,32px);
+    }
 
-    /* TAB NAV */
-    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    /* ── TABS ── */
+    .tab-nav {
+      display: flex; align-items: center; gap: clamp(6px,1vw,10px);
+      margin-bottom: clamp(24px,3vw,40px);
+      overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    }
     .tab-nav::-webkit-scrollbar { display: none; }
     .tab-btn {
-      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px;
-      font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
+      border-radius: 100px; font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted);
+      background: rgba(255,255,255,.05); border: 1.5px solid transparent;
       cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* PERIOD SELECTOR */
+    /* ── PERIOD BAR ── */
     .period-bar {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin-bottom: clamp(20px,2.5vw,32px);
+      margin-bottom: clamp(16px,2vw,24px);
     }
-    .period-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; margin-right: 4px; }
+    .period-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; }
     .date-input-wrap {
       display: flex; align-items: center; gap: 8px;
-      background: var(--c-surf2); border: 1px solid var(--c-border-mid);
-      border-radius: 10px; padding: 8px 14px; cursor: pointer;
-      transition: border-color .2s;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; padding: 9px 16px; transition: border-color .2s;
     }
-    .date-input-wrap:focus-within { border-color: var(--c-cyan); }
-    .date-input-wrap svg { width: 15px; height: 15px; stroke: var(--c-muted); fill: none; flex-shrink: 0; }
+    .date-input-wrap:focus-within { border-color: rgba(59,207,254,.4); }
+    .date-input-wrap svg { width: 14px; height: 14px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
     .date-input-wrap input[type="date"] {
       background: none; border: none; outline: none; color: #fff;
       font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
-      cursor: pointer; width: 118px;
+      cursor: pointer; width: 110px;
     }
-    .date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.6); cursor: pointer; }
-    .period-divider { font-size: 13px; color: var(--c-dim); }
-    .period-presets { display: flex; gap: 6px; flex-wrap: wrap; }
-    .preset-btn {
-      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
-      cursor: pointer; transition: all .2s; white-space: nowrap;
+    .date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.5); cursor: pointer; }
+    .period-sep { font-size: 13px; color: var(--c-dim); }
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 9px 18px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05);
+      border: 1.5px solid transparent; cursor: pointer;
+      transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
-    .preset-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .preset-btn.active { color: var(--c-cyan); border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .filter-btn:hover { color: #fff; }
+    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* STATS */
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-bottom: clamp(16px,2vw,24px);
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; stroke: var(--c-dim); fill: none;
+      stroke-width: 2; stroke-linecap: round; pointer-events: none;
+    }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s;
+    }
+    .search-input::placeholder { color: var(--c-dim); }
+    .search-input:focus { border-color: rgba(59,207,254,.4); }
+    .status-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── STATS CHIPS ── */
     .stats-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: clamp(10px,1.5vw,18px); margin-bottom: clamp(18px,2.5vw,28px);
+      display: flex; gap: clamp(10px,1.5vw,16px); flex-wrap: wrap;
+      margin-bottom: clamp(16px,2vw,24px);
     }
-    .stat-card {
-      background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(14px,1.5vw,20px); padding: clamp(14px,1.8vw,22px) clamp(16px,2vw,24px);
+    .stat-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 100px;
+      background: rgba(255,255,255,.04); border: 1px solid var(--c-border);
+      font-family: 'Golos Text', sans-serif; font-size: 13px; color: var(--c-muted);
     }
-    .stat-card__label { font-size: 12px; color: var(--c-muted); margin-bottom: 8px; }
-    .stat-card__value { font-size: clamp(20px,2vw,28px); font-weight: 700; color: #fff; }
-    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 380px) { .stats-row { grid-template-columns: 1fr; } }
+    .stat-chip strong { color: #fff; font-weight: 700; }
 
-    /* FILTER ROW */
-    .filter-row {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-      margin-bottom: clamp(14px,2vw,22px);
-    }
-    .filter-tabs { display: flex; gap: 6px; }
-    .filter-tab {
-      padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
-      cursor: pointer; transition: all .2s;
-    }
-    .filter-tab:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .filter-tab.active { color: #fff; background: rgba(255,255,255,.10); border-color: var(--c-border-mid); }
-    .search-wrap {
-      display: flex; align-items: center; gap: 8px; margin-left: auto;
-      background: var(--c-surf2); border: 1px solid var(--c-border-mid);
-      border-radius: 10px; padding: 8px 14px; min-width: 220px;
-      transition: border-color .2s;
-    }
-    .search-wrap:focus-within { border-color: var(--c-cyan); }
-    .search-wrap svg { width: 15px; height: 15px; stroke: var(--c-muted); fill: none; flex-shrink: 0; }
-    .search-wrap input {
-      background: none; border: none; outline: none; color: #fff;
-      font-family: 'Golos Text', sans-serif; font-size: 13px; width: 100%;
-    }
-    .search-wrap input::placeholder { color: var(--c-dim); }
-
-    /* TABLE */
-    .table-card {
+    /* ── TABLE ── */
+    .table-wrap {
       background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(16px,1.8vw,24px); overflow: hidden;
+      border-radius: clamp(16px,1.6vw,24px); overflow: hidden;
     }
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 680px; }
-    thead th {
-      padding: 14px 18px; text-align: left;
-      font-size: 11px; font-weight: 600; color: var(--c-muted);
-      text-transform: uppercase; letter-spacing: .06em;
+    .table-head {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr 1.2fr;
+      gap: 12px; align-items: center;
+      padding: 12px 24px;
       border-bottom: 1px solid var(--c-border);
-      white-space: nowrap;
+      background: rgba(255,255,255,.02);
     }
-    tbody tr { border-bottom: 1px solid var(--c-border); transition: background .15s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(255,255,255,.025); }
-    tbody td { padding: 14px 18px; font-size: 13px; color: #fff; vertical-align: middle; }
-    .td-buyer { display: flex; align-items: center; gap: 10px; }
-    .td-avatar {
-      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-      background: rgba(59,207,254,.12); border: 1px solid rgba(59,207,254,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; color: var(--c-cyan);
+    .th {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600; color: var(--c-dim);
+      text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
     }
-    .td-name { font-weight: 600; line-height: 1.2; }
-    .td-email { font-size: 11px; color: var(--c-muted); margin-top: 2px; }
-    .td-muted { color: var(--c-muted); }
+    .table-body { display: flex; flex-direction: column; }
+
+    .sale-row {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr 1.2fr;
+      gap: 12px; align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--c-border);
+      transition: background .15s;
+    }
+    .sale-row:last-child { border-bottom: none; }
+    .sale-row:hover { background: rgba(255,255,255,.025); }
+
+    .buyer-name {
+      font-size: 14px; font-weight: 600; color: #fff;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .buyer-email {
+      font-size: 12px; color: var(--c-muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
     .product-badge {
       display: inline-flex; align-items: center;
-      padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); color: #fff;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: var(--c-muted);
     }
     .product-badge--partnership { background: rgba(59,207,254,.10); border-color: rgba(59,207,254,.20); color: var(--c-cyan); }
-    .amount-val { font-weight: 700; }
-    .amount-free { color: var(--c-dim); font-size: 12px; }
+
+    .amount-val { font-size: 14px; font-weight: 700; color: #fff; }
+    .amount-free { font-size: 13px; color: var(--c-dim); }
+
+    .promo-val { font-size: 13px; font-family: 'Golos Text', monospace; color: var(--c-muted); }
+    .promo-empty { color: var(--c-dim); }
 
     .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
     }
-    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; }
-    .status-pill--paid    { background:rgba(34,197,94,.10); border:1px solid rgba(34,197,94,.22); color:#22C55E; }
-    .status-pill--paid::before { background:#22C55E; }
+    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .status-pill--paid    { background:rgba(34,197,94,.10);  border:1px solid rgba(34,197,94,.22);  color:#22C55E; }
+    .status-pill--paid::before    { background:#22C55E; }
     .status-pill--pending { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
     .status-pill--pending::before { background:#FBBF24; }
-    .status-pill--refunded { background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.22); color:#EF4444; }
+    .status-pill--refunded { background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.22);  color:#EF4444; }
     .status-pill--refunded::before { background:#EF4444; }
 
-    .td-date { color: var(--c-muted); font-size: 12px; white-space: nowrap; }
+    .sale-date { font-size: 13px; color: var(--c-dim); white-space: nowrap; }
 
-    /* EMPTY / LOADING */
+    /* ── EMPTY / LOADING ── */
     .table-empty {
       padding: 48px 24px; text-align: center;
-      font-size: 14px; color: var(--c-dim);
+      font-family: 'Golos Text', sans-serif; font-size: 15px; color: var(--c-dim);
     }
-    .table-loading { padding: 48px 24px; text-align: center; }
-    .spinner {
-      width: 28px; height: 28px; border: 3px solid rgba(255,255,255,.08);
-      border-top-color: var(--c-cyan); border-radius: 50%;
-      animation: spin .7s linear infinite; margin-inline: auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* PAGINATION */
+    /* ── PAGINATION ── */
     .pagination {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px; border-top: 1px solid var(--c-border);
-      flex-wrap: wrap; gap: 10px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap;
     }
-    .pagination__info { font-size: 13px; color: var(--c-muted); }
-    .pagination__btns { display: flex; gap: 6px; }
     .page-btn {
-      width: 34px; height: 34px; border-radius: 8px; font-size: 13px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
-      cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center;
+      padding: 8px 16px; border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05);
+      border: 1px solid transparent; cursor: pointer; transition: all .2s;
     }
-    .page-btn:hover:not(:disabled) { color: #fff; background: rgba(255,255,255,.10); }
-    .page-btn.active { color: var(--c-cyan); border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .page-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .page-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.08); }
     .page-btn:disabled { opacity: .35; cursor: default; }
-    .page-btn--arrow { width: auto; padding: 0 12px; }
 
-    /* FOOTER */
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .table-head { grid-template-columns: 1.8fr 1fr 1fr 1.2fr; }
+      .table-head .th:nth-child(4),
+      .table-head .th:nth-child(5) { display: none; }
+      .sale-row { grid-template-columns: 1.8fr 1fr 1fr 1.2fr; }
+      .sale-row > *:nth-child(4),
+      .sale-row > *:nth-child(5) { display: none; }
+    }
+    @media (max-width: 600px) {
+      .table-head { display: none; }
+      .sale-row { grid-template-columns: 1fr auto; gap: 8px; padding: 14px 16px; }
+      .sale-row > *:nth-child(n+3) { display: none; }
+    }
+
+    /* ── FOOTER ── */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
-    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); row-gap: 0; align-items: start; }
-    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
     .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
     .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
     .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
     .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
     .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
     .footer__legal a:hover { color: var(--c-muted); }
     .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
-    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; cursor: pointer; }
-    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
-    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
-    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
-    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
-    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
-    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
 
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
   </style>
@@ -301,7 +329,6 @@
       <a href="index.html#hero">О курсе</a>
       <a href="index.html#curriculum">Программа</a>
       <a href="index.html#pricing">Тарифы</a>
-      <a href="index.html#partnership">Подписка</a>
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
@@ -313,17 +340,10 @@
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
-      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    </a>
   </div>
 </header>
 <nav class="nav__drawer" id="js-drawer">
-  <a href="index.html#hero">О курсе</a>
-  <a href="index.html#curriculum">Программа</a>
-  <a href="index.html#pricing">Тарифы</a>
-  <a href="index.html#partnership">Подписка</a>
-  <a href="index.html#faq">Ответы на вопросы</a>
+  <a href="dashboard.html">Дашборд</a>
   <a href="profile.html">Профиль</a>
 </nav>
 
@@ -333,7 +353,7 @@
 
     <h1 class="page-title">Панель управления</h1>
 
-    <!-- TAB NAV -->
+    <!-- TABS -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
       <a class="tab-btn" href="admin-users.html">Пользователи</a>
@@ -348,73 +368,60 @@
     <div class="period-bar">
       <span class="period-label">Период:</span>
       <div class="date-input-wrap">
-        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         <input type="date" id="js-from" />
       </div>
-      <span class="period-divider">—</span>
+      <span class="period-sep">—</span>
       <div class="date-input-wrap">
-        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         <input type="date" id="js-to" />
       </div>
-      <div class="period-presets">
-        <button class="preset-btn" data-days="7">7 дней</button>
-        <button class="preset-btn active" data-days="30">30 дней</button>
-        <button class="preset-btn" data-days="90">3 месяца</button>
-        <button class="preset-btn" data-days="365">Год</button>
+      <div class="filter-group">
+        <button class="filter-btn" data-days="7">7 дней</button>
+        <button class="filter-btn active" data-days="30">30 дней</button>
+        <button class="filter-btn" data-days="90">3 месяца</button>
+        <button class="filter-btn" data-days="365">Год</button>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени или email…" autocomplete="off" />
+      </div>
+      <div class="status-group">
+        <button class="filter-btn active" data-status="">Все</button>
+        <button class="filter-btn" data-status="paid">Оплачено</button>
+        <button class="filter-btn" data-status="pending">Ожидание</button>
+        <button class="filter-btn" data-status="refunded">Возврат</button>
       </div>
     </div>
 
     <!-- STATS -->
     <div class="stats-row">
-      <div class="stat-card">
-        <p class="stat-card__label">Всего заказов</p>
-        <p class="stat-card__value" id="js-total">—</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-card__label">Выручка</p>
-        <p class="stat-card__value" id="js-revenue">—</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-card__label">Средний чек</p>
-        <p class="stat-card__value" id="js-avg">—</p>
-      </div>
-    </div>
-
-    <!-- FILTERS + SEARCH -->
-    <div class="filter-row">
-      <div class="filter-tabs">
-        <button class="filter-tab active" data-status="">Все</button>
-        <button class="filter-tab" data-status="paid">Оплачено</button>
-        <button class="filter-tab" data-status="pending">Ожидание</button>
-        <button class="filter-tab" data-status="refunded">Возврат</button>
-      </div>
-      <div class="search-wrap">
-        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="js-search" placeholder="Поиск по имени или email…" />
-      </div>
+      <div class="stat-chip">Заказов: <strong id="js-stat-total">—</strong></div>
+      <div class="stat-chip">Выручка: <strong id="js-stat-revenue">—</strong></div>
+      <div class="stat-chip">Средний чек: <strong id="js-stat-avg">—</strong></div>
     </div>
 
     <!-- TABLE -->
-    <div class="table-card">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Покупатель</th>
-              <th>Продукт</th>
-              <th>Сумма</th>
-              <th>Промокод</th>
-              <th>Статус</th>
-              <th>Дата</th>
-            </tr>
-          </thead>
-          <tbody id="js-tbody">
-            <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div></div></td></tr>
-          </tbody>
-        </table>
+    <div class="table-wrap">
+      <div class="table-head">
+        <span class="th">Покупатель</span>
+        <span class="th">Продукт</span>
+        <span class="th">Сумма</span>
+        <span class="th">Промокод</span>
+        <span class="th">Статус</span>
+        <span class="th">Дата</span>
       </div>
-      <div class="pagination" id="js-pagination" style="display:none"></div>
+      <div class="table-body" id="js-table-body">
+        <div class="table-empty">Загрузка…</div>
+      </div>
     </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="js-pagination"></div>
 
   </div>
 </main>
@@ -437,21 +444,10 @@
       </div>
       <nav class="footer__nav">
         <a href="index.html#advantages">О курсе</a>
-        <a href="index.html#partnership">Подписка</a>
         <a href="index.html#curriculum">Программа</a>
-        <a href="index.html#faq">Ответы на вопросы</a>
         <a href="index.html#pricing">Тарифы</a>
-        <a href="partner.html">Партнёрка</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
       </nav>
-      <a href="#" class="footer__tg-capsule">
-        <div class="footer__tg-capsule-text">
-          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
-          <span class="footer__tg-capsule-name">Телеграм</span>
-        </div>
-        <div class="footer__tg-icon">
-          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
-        </div>
-      </a>
     </div>
   </div>
 </footer>
@@ -460,44 +456,38 @@
 <script>
 'use strict';
 
-/* Nav */
+/* ── Nav ── */
 const navEl = document.getElementById('js-nav');
-window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
-let drawerOpen = false;
-function setDrawer(v) {
-  drawerOpen = v; burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
-  burger.setAttribute('aria-expanded', String(v)); document.body.style.overflow = v ? 'hidden' : '';
-}
-burger.addEventListener('click', () => setDrawer(!drawerOpen));
-document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+burger.addEventListener('click', () => {
+  const open = drawer.classList.toggle('open');
+  burger.classList.toggle('open', open);
+  burger.setAttribute('aria-expanded', String(open));
+});
 
-/* Helpers */
+/* ── Helpers ── */
 function fmtPrice(n) { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
-}
-function initials(name) {
-  if (!name) return '?';
-  return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const PRODUCT_NAMES = { Partnership: 'Подписка сотрудничество' };
 const STATUS_LABELS = { paid: 'Оплачено', pending: 'В ожидании', refunded: 'Возврат' };
 const STATUS_CLS    = { paid: 'status-pill--paid', pending: 'status-pill--pending', refunded: 'status-pill--refunded' };
 
-/* State */
+/* ── State ── */
 let currentPage   = 1;
-const PAGE_LIMIT  = 20;
+const PAGE_SIZE   = 20;
 let currentStatus = '';
 let searchQuery   = '';
 let fromDate      = '';
 let toDate        = '';
 let searchTimer   = null;
 
-/* ── Set default period: last 30 days ── */
+/* ── Period preset ── */
 function setPreset(days) {
   const to   = new Date();
   const from = new Date(); from.setDate(from.getDate() - (days - 1));
@@ -505,12 +495,12 @@ function setPreset(days) {
   toDate   = to.toISOString().slice(0,10);
   document.getElementById('js-from').value = fromDate;
   document.getElementById('js-to').value   = toDate;
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
+  document.querySelectorAll('[data-days]').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
 }
 
 /* ── Build API URL ── */
 function buildUrl(page) {
-  const p = new URLSearchParams({ page, limit: PAGE_LIMIT });
+  const p = new URLSearchParams({ page, limit: PAGE_SIZE });
   if (currentStatus) p.set('status', currentStatus);
   if (fromDate)      p.set('from', fromDate);
   if (toDate)        p.set('to', toDate);
@@ -518,14 +508,14 @@ function buildUrl(page) {
   return `/api/admin/sales?${p}`;
 }
 
-/* ── Render table ── */
-function renderTable(sales) {
-  const tbody = document.getElementById('js-tbody');
+/* ── Render rows ── */
+function renderRows(sales) {
+  const body = document.getElementById('js-table-body');
   if (!sales.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty">Заказов не найдено.</div></td></tr>`;
+    body.innerHTML = '<div class="table-empty">Заказов не найдено.</div>';
     return;
   }
-  tbody.innerHTML = '';
+  body.innerHTML = '';
   sales.forEach(o => {
     const productLabel = PRODUCT_NAMES[o.product] || o.product || '—';
     const isPartner    = o.product === 'Partnership';
@@ -535,84 +525,63 @@ function renderTable(sales) {
       ? `<span class="amount-val">${fmtPrice(o.amount)}</span>`
       : `<span class="amount-free">Бесплатно</span>`;
 
-    tbody.insertAdjacentHTML('beforeend', `
-      <tr>
-        <td>
-          <div class="td-buyer">
-            <div class="td-avatar">${initials(o.buyer_name)}</div>
-            <div>
-              <div class="td-name">${o.buyer_name || '—'}</div>
-              <div class="td-email">${o.buyer_email}</div>
-            </div>
-          </div>
-        </td>
-        <td><span class="product-badge ${isPartner ? 'product-badge--partnership' : ''}">${productLabel}</span></td>
-        <td>${amountHtml}</td>
-        <td class="${o.promo_code ? '' : 'td-muted'}">${o.promo_code || '—'}</td>
-        <td><span class="status-pill ${statusCls}">${statusLabel}</span></td>
-        <td class="td-date">${fmtDate(o.created_at)}</td>
-      </tr>`);
+    const row = document.createElement('div');
+    row.className = 'sale-row';
+    row.innerHTML = `
+      <div>
+        <div class="buyer-name">${o.buyer_name || '—'}</div>
+        <div class="buyer-email">${o.buyer_email}</div>
+      </div>
+      <div><span class="product-badge ${isPartner ? 'product-badge--partnership' : ''}">${productLabel}</span></div>
+      <div>${amountHtml}</div>
+      <div class="${o.promo_code ? 'promo-val' : 'promo-empty'}">${o.promo_code || '—'}</div>
+      <div><span class="status-pill ${statusCls}">${statusLabel}</span></div>
+      <div class="sale-date">${fmtDate(o.created_at)}</div>`;
+    body.appendChild(row);
   });
 }
 
 /* ── Render pagination ── */
-function renderPagination(total, page) {
-  const pagEl = document.getElementById('js-pagination');
-  const pages = Math.ceil(total / PAGE_LIMIT);
-  if (pages <= 1) { pagEl.style.display = 'none'; return; }
-  pagEl.style.display = 'flex';
+function renderPagination(total) {
+  const wrap  = document.getElementById('js-pagination');
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if (pages <= 1) { wrap.innerHTML = ''; return; }
 
-  const from = (page - 1) * PAGE_LIMIT + 1;
-  const to   = Math.min(page * PAGE_LIMIT, total);
-
-  let btns = '';
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>← Назад</button>`;
   const range = [];
   for (let i = 1; i <= pages; i++) {
-    if (i === 1 || i === pages || Math.abs(i - page) <= 1) range.push(i);
+    if (i===1 || i===pages || Math.abs(i-currentPage)<=1) range.push(i);
     else if (range[range.length-1] !== '…') range.push('…');
   }
   range.forEach(p => {
-    if (p === '…') btns += `<span class="page-btn" style="cursor:default">…</span>`;
-    else btns += `<button class="page-btn ${p===page?'active':''}" data-page="${p}">${p}</button>`;
+    if (p==='…') html += `<span class="page-btn" style="cursor:default">…</span>`;
+    else html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
   });
-
-  pagEl.innerHTML = `
-    <span class="pagination__info">${from}–${to} из ${total}</span>
-    <div class="pagination__btns">
-      <button class="page-btn page-btn--arrow" data-page="${page-1}" ${page<=1?'disabled':''}>← Назад</button>
-      ${btns}
-      <button class="page-btn page-btn--arrow" data-page="${page+1}" ${page>=pages?'disabled':''}>Вперёд →</button>
-    </div>`;
-
-  pagEl.querySelectorAll('[data-page]').forEach(b => {
-    b.addEventListener('click', () => { currentPage = +b.dataset.page; load(); });
-  });
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
+  wrap.innerHTML = html;
 }
+function goPage(p) { currentPage = p; load(); }
 
 /* ── Load ── */
 async function load() {
-  document.getElementById('js-tbody').innerHTML =
-    `<tr><td colspan="6"><div class="table-loading"><div class="spinner"></div></div></td></tr>`;
-
+  document.getElementById('js-table-body').innerHTML = '<div class="table-empty">Загрузка…</div>';
   try {
     const res  = await apiFetch(buildUrl(currentPage));
     const data = res.ok ? await res.json() : { sales:[], total:0, revenue:0 };
 
-    renderTable(data.sales || []);
-    renderPagination(data.total || 0, currentPage);
+    renderRows(data.sales || []);
+    renderPagination(data.total || 0);
 
     const total   = data.total   || 0;
     const revenue = data.revenue || 0;
-    const paidCount = (data.sales || []).filter(o => o.status === 'paid').length;
-    const avg = total > 0 && revenue > 0 ? revenue / total : 0;
+    const avg     = total > 0 && revenue > 0 ? Math.round(revenue / total) : 0;
 
-    document.getElementById('js-total').textContent   = total.toLocaleString('ru-RU');
-    document.getElementById('js-revenue').textContent = fmtPrice(revenue);
-    document.getElementById('js-avg').textContent     = avg > 0 ? fmtPrice(Math.round(avg)) : '—';
+    document.getElementById('js-stat-total').textContent   = total.toLocaleString('ru-RU');
+    document.getElementById('js-stat-revenue').textContent = fmtPrice(revenue);
+    document.getElementById('js-stat-avg').textContent     = avg > 0 ? fmtPrice(avg) : '—';
   } catch (e) {
     console.error(e);
-    document.getElementById('js-tbody').innerHTML =
-      `<tr><td colspan="6"><div class="table-empty">Ошибка загрузки данных.</div></td></tr>`;
+    document.getElementById('js-table-body').innerHTML = '<div class="table-empty">Ошибка загрузки данных.</div>';
   }
 }
 
@@ -628,34 +597,30 @@ async function init() {
     canShow = true;
     document.getElementById('js-nav-name').textContent = user.name || 'Админ';
 
-    /* Default period */
     setPreset(30);
     await load();
 
-    /* Preset buttons */
-    document.querySelectorAll('.preset-btn').forEach(b => {
-      b.addEventListener('click', () => {
-        setPreset(+b.dataset.days);
-        currentPage = 1; load();
-      });
+    /* Period presets */
+    document.querySelectorAll('[data-days]').forEach(b => {
+      b.addEventListener('click', () => { setPreset(+b.dataset.days); currentPage = 1; load(); });
     });
 
     /* Date pickers */
     document.getElementById('js-from').addEventListener('change', e => {
-      fromDate = e.target.value; currentPage = 1;
-      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      load();
+      fromDate = e.target.value;
+      document.querySelectorAll('[data-days]').forEach(b => b.classList.remove('active'));
+      currentPage = 1; load();
     });
     document.getElementById('js-to').addEventListener('change', e => {
-      toDate = e.target.value; currentPage = 1;
-      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      load();
+      toDate = e.target.value;
+      document.querySelectorAll('[data-days]').forEach(b => b.classList.remove('active'));
+      currentPage = 1; load();
     });
 
     /* Status filter */
-    document.querySelectorAll('.filter-tab').forEach(b => {
+    document.querySelectorAll('[data-status]').forEach(b => {
       b.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('[data-status]').forEach(x => x.classList.remove('active'));
         b.classList.add('active');
         currentStatus = b.dataset.status;
         currentPage = 1; load();
