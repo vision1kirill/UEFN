@@ -191,6 +191,32 @@ router.get('/users', async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/admin/chart
+//  Sales grouped by day for the last 30 days (for dashboard chart)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/chart', async (req, res, next) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 14;
+    const { rows } = await query(
+      `SELECT
+         DATE(paid_at) AS day,
+         product,
+         COUNT(*)::int AS count,
+         SUM(amount)::numeric AS revenue
+       FROM orders
+       WHERE status = 'paid'
+         AND paid_at >= NOW() - ($1 || ' days')::interval
+       GROUP BY DATE(paid_at), product
+       ORDER BY day ASC`,
+      [days],
+    );
+    res.json({ chart: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/admin/stats
 //  Dashboard summary
 // ─────────────────────────────────────────────────────────────────────────────
