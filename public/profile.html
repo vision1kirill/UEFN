@@ -892,13 +892,14 @@ async function loadProgress() {
     if (!container || !data.progress || !data.progress.length) return;
 
     container.innerHTML = '';
-    data.progress.forEach(p => {
-      const done = p.completed;
+    const completed = data.progress.filter(p => p.completed);
+    if (!completed.length) return;
+    completed.forEach(p => {
       const el = document.createElement('div');
-      el.className = 'progress-step' + (done ? ' progress-step--done' : '');
+      el.className = 'progress-step progress-step--done';
       el.innerHTML = `
-        <div class="progress-step__circle ${done ? 'progress-step__circle--done' : 'progress-step__circle--todo'}">
-          ${done ? '<svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>' : ''}
+        <div class="progress-step__circle progress-step__circle--done">
+          <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
         </div>
         <span class="progress-step__label">${p.sort_order} занятие</span>`;
       container.appendChild(el);
