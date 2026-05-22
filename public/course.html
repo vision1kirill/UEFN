@@ -22,6 +22,7 @@
       background: var(--c-bg); color: var(--c-text);
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
       display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
     }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
@@ -531,6 +532,42 @@
       margin-bottom: calc(-1 * clamp(6px, .8vw, 12px));
     }
 
+    /* ── 4. Locked lesson card ── */
+    .lcard--locked {
+      background: rgba(255,255,255,.015);
+      border: 1px solid rgba(255,255,255,.06);
+      cursor: default;
+      opacity: .55;
+    }
+    .lcard--locked:hover { transform: none; box-shadow: none; }
+    .lcard--locked .lcard__num  { color: rgba(255,255,255,.25); }
+    .lcard--locked .lcard__title { color: rgba(255,255,255,.22); }
+    .lcard__lock {
+      position: absolute;
+      top: clamp(10px,1vw,14px); right: clamp(10px,1vw,14px);
+      width: clamp(20px,2vw,26px); height: clamp(20px,2vw,26px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lcard__lock svg { width: 14px; height: 14px; stroke: rgba(255,255,255,.3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Complete button ── */
+    .lesson-complete-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: clamp(24px,3vw,36px);
+      padding: 12px 28px;
+      background: var(--g-accent); border: none; border-radius: 100px;
+      color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .lesson-complete-btn:hover { opacity: .88; transform: translateY(-1px); }
+    .lesson-complete-btn:disabled { opacity: .45; cursor: default; transform: none; }
+    .lesson-complete-btn--done {
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.25); color: #22C55E;
+    }
+    .lesson-complete-btn--done:hover { opacity: 1; transform: none; }
+
     /* ── Responsive ── */
     @media (max-width: 1000px) {
       .lesson-content { grid-template-columns: 1fr; gap: clamp(32px, 4vw, 48px); }
@@ -665,7 +702,7 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__plan-badge" id="js-nav-plan">Essential</span>
+      <span class="nav__plan-badge" id="js-nav-plan"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -690,7 +727,7 @@
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
   <div class="drawer-btns">
-    <a href="profile.html" class="nav__plan-badge">Essential</a>
+    <a href="profile.html" class="nav__plan-badge" id="js-drawer-plan"></a>
   </div>
 </nav>
 
@@ -700,7 +737,7 @@
 
     <!-- 1. HEADER -->
     <section class="course-header">
-      <h1 class="course-header__title">Курс Essential</h1>
+      <h1 class="course-header__title" id="js-course-title">Курс</h1>
       <div class="course-progress">
         <div class="course-progress__meta">
           <span class="course-progress__label">Прогресс курса</span>
@@ -717,54 +754,8 @@
 
     <!-- 2. LESSON NAVIGATION -->
     <div class="lesson-nav-wrap">
-      <div class="lesson-nav">
-
-        <!-- Lesson 1 — done -->
-        <div class="lcard lcard--done" onclick="selectLesson(1)" data-lesson="1">
-          <span class="lcard__num">1 занятие</span>
-          <p class="lcard__title">Старт: установка и знакомство с UEFN</p>
-          <span class="lcard__check" aria-label="Завершено">
-            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
-          </span>
-        </div>
-
-        <!-- Lesson 2 — done -->
-        <div class="lcard lcard--done" onclick="selectLesson(2)" data-lesson="2">
-          <span class="lcard__num">2 занятие</span>
-          <p class="lcard__title">Первая карта без кода</p>
-          <span class="lcard__check" aria-label="Завершено">
-            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
-          </span>
-        </div>
-
-        <!-- Lesson 3 — done -->
-        <div class="lcard lcard--done" onclick="selectLesson(3)" data-lesson="3">
-          <span class="lcard__num">3 занятие</span>
-          <p class="lcard__title">Оформление карты: готовые модели</p>
-          <span class="lcard__check" aria-label="Завершено">
-            <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4"/></svg>
-          </span>
-        </div>
-
-        <!-- Lesson 4 — active -->
-        <div class="lcard lcard--active" onclick="selectLesson(4)" data-lesson="4">
-          <span class="lcard__num">4 занятие</span>
-          <p class="lcard__title">Код на Verse: первые шаги</p>
-          <span class="lcard__active-dot" aria-label="Текущий урок"></span>
-        </div>
-
-        <!-- Lesson 5 — future -->
-        <div class="lcard lcard--future" onclick="selectLesson(5)" data-lesson="5">
-          <span class="lcard__num">5 занятие</span>
-          <p class="lcard__title">Тестируем с друзьями и готовим релиз</p>
-        </div>
-
-        <!-- Lesson 6 — future -->
-        <div class="lcard lcard--future" onclick="selectLesson(6)" data-lesson="6">
-          <span class="lcard__num">6 занятие</span>
-          <p class="lcard__title">Публикация, продвижение и первые метрики</p>
-        </div>
-
+      <div class="lesson-nav" id="js-lesson-nav">
+        <!-- Карточки уроков рендерятся из API -->
       </div>
     </div>
 
@@ -776,32 +767,12 @@
         <p class="lesson-info__num" id="js-lesson-num">4 занятие</p>
         <h2 class="lesson-info__title" id="js-lesson-title">Код на Verse: первые шаги</h2>
 
-        <ul class="lesson-topics" id="js-lesson-topics">
-          <li class="lesson-topic">
-            <span class="lesson-topic__icon">
-              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
-            </span>
-            <span class="lesson-topic__text">Зачем нужен Verse и как «подключать» код к устройствам. Пишем первый скрипт.</span>
-          </li>
-          <li class="lesson-topic">
-            <span class="lesson-topic__icon">
-              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
-            </span>
-            <span class="lesson-topic__text">Основы программирования в Verse: переменные, условия, циклы.</span>
-          </li>
-          <li class="lesson-topic">
-            <span class="lesson-topic__icon">
-              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
-            </span>
-            <span class="lesson-topic__text">Создаём коды с помощью ИИ и учимся их правильно адаптировать.</span>
-          </li>
-          <li class="lesson-topic">
-            <span class="lesson-topic__icon">
-              <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
-            </span>
-            <span class="lesson-topic__text">Как заставить карту реагировать: условия, таймеры и счётчики.</span>
-          </li>
-        </ul>
+        <ul class="lesson-topics" id="js-lesson-topics"></ul>
+
+        <button class="lesson-complete-btn" id="js-complete-btn" onclick="markCompleted()" style="display:none;">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg>
+          Отметить урок выполненным
+        </button>
       </div>
 
       <!-- Right: videos -->
@@ -818,8 +789,8 @@
             </div>
           </div>
           <div class="video-card__body">
-            <h3 class="video-card__title">Код на Verse: первые шаги</h3>
-            <p class="video-card__desc">Начинаем знакомство с языком Verse — пишем первый рабочий скрипт, подключаем его к устройствам на карте и учимся отлаживать поведение прямо в редакторе.</p>
+            <h3 class="video-card__title" id="js-video-main-title">Выберите урок</h3>
+            <p class="video-card__desc" id="js-video-main-desc">Нажмите на карточку урока выше, чтобы начать просмотр.</p>
           </div>
         </div>
 
@@ -899,16 +870,17 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
-/* Nav scroll shadow */
+/* ── Nav scroll ── */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => {
   navEl.classList.toggle('scrolled', window.scrollY > 8);
 }, { passive: true });
 
-/* Burger */
+/* ── Burger ── */
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
 let drawerOpen = false;
@@ -920,170 +892,155 @@ function setDrawer(v) {
   document.body.style.overflow = v ? 'hidden' : '';
 }
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
-document.querySelectorAll('.nav__drawer a').forEach(a => {
-  a.addEventListener('click', () => setDrawer(false));
-});
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
-/* ── LocalStorage progress ── */
-const LS_KEY = 'uefn_course_progress';
-const TOTAL_LESSONS = 6;
-
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  // Default mock state: lessons 1-3 completed, lesson 4 is current
-  return {
-    currentLesson: 4,
-    completedLessons: [1, 2, 3],
-    viewedLessons: [1, 2, 3, 4],
-    lastActivity: new Date().toISOString().slice(0, 10)
-  };
-}
-
-function saveProgress(p) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(p)); } catch(e) {}
-}
-
-let progress = loadProgress();
-// Ensure saved on first load so state persists from now on
-saveProgress(progress);
-
-function getPercent() {
-  return Math.round((progress.completedLessons.length / TOTAL_LESSONS) * 100);
-}
-
-function renderProgressBar() {
-  const pct = getPercent();
-  const barEl  = document.getElementById('js-progress-bar');
-  const pctEl  = document.getElementById('js-progress-pct');
-  const lastEl = document.getElementById('js-progress-last');
-  if (barEl)  barEl.style.width  = pct + '%';
-  if (pctEl)  pctEl.textContent  = pct + '%';
-  if (lastEl && progress.lastActivity) {
-    const d = new Date(progress.lastActivity + 'T12:00:00');
-    lastEl.textContent = 'Последняя активность: ' +
-      d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-  }
-}
-
-/* ── Apply saved state to lesson cards on load ── */
-function applyProgressToCards() {
-  document.querySelectorAll('.lcard').forEach(card => {
-    const n = +card.dataset.lesson;
-    // Remove all state classes first
-    card.classList.remove('lcard--done', 'lcard--active', 'lcard--future');
-    // Remove badge elements inserted dynamically (keep original structure clean)
-    card.querySelectorAll('.lcard__check, .lcard__active-dot').forEach(el => el.remove());
-
-    if (progress.completedLessons.includes(n)) {
-      card.classList.add('lcard--done');
-      const check = document.createElement('span');
-      check.className = 'lcard__check';
-      check.setAttribute('aria-label', 'Завершено');
-      check.innerHTML = '<svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
-      card.appendChild(check);
-    } else if (n === progress.currentLesson) {
-      card.classList.add('lcard--active');
-      const dot = document.createElement('span');
-      dot.className = 'lcard__active-dot';
-      dot.setAttribute('aria-label', 'Текущий урок');
-      card.appendChild(dot);
-    } else {
-      card.classList.add('lcard--future');
-    }
-  });
-}
-
-/* ── Lesson data ── */
-const LESSONS = {
+/* ── Static lesson content (topics + video titles) ── */
+const LESSON_CONTENT = {
   1: {
-    num: '1 занятие',
-    title: 'Старт: установка и знакомство с UEFN',
     topics: [
       'Скачиваем и устанавливаем UEFN, знакомимся с интерфейсом редактора.',
       'Создаём первый проект: выбираем шаблон и настраиваем базовые параметры.',
       'Учимся навигировать по сцене и работать с ассетами из библиотеки Fortnite.',
       'Публикуем тестовую карту и открываем её для себя в игре.',
     ],
-    badge: null
   },
   2: {
-    num: '2 занятие',
-    title: 'Первая карта без кода',
     topics: [
       'Строим игровое пространство из готовых пропсов и ландшафтных инструментов.',
       'Расставляем точки спавна, зоны и триггеры через визуальный редактор.',
       'Настраиваем освещение и атмосферу: туман, небо, пост-эффекты.',
       'Тестируем карту в соло и правим первые баги окружения.',
     ],
-    badge: null
   },
   3: {
-    num: '3 занятие',
-    title: 'Оформление карты: готовые модели',
     topics: [
       'Находим и импортируем ассеты из Fab-маркетплейса напрямую в UEFN.',
       'Расставляем декорации, настраиваем коллизии и LOD-уровни.',
       'Работаем с материалами: меняем цвета и текстуры без знания шейдеров.',
       'Оптимизируем сцену под лимиты памяти Fortnite Creative.',
     ],
-    badge: null
   },
   4: {
-    num: '4 занятие',
-    title: 'Код на Verse: первые шаги',
     topics: [
       'Зачем нужен Verse и как «подключать» код к устройствам. Пишем первый скрипт.',
       'Основы программирования в Verse: переменные, условия, циклы.',
       'Создаём коды с помощью ИИ и учимся их правильно адаптировать.',
       'Как заставить карту реагировать: условия, таймеры и счётчики.',
     ],
-    badge: 'Текущий урок'
   },
   5: {
-    num: '5 занятие',
-    title: 'Тестируем с друзьями и готовим релиз',
     topics: [
       'Запускаем плейтест с друзьями: как пригласить игроков и собрать обратную связь.',
       'Находим и исправляем баги геймплея, которые всплыли во время теста.',
       'Оптимизируем карту: удаляем лишнее, снижаем нагрузку на память.',
       'Финальный чеклист перед публикацией в Creative.',
     ],
-    badge: null
   },
   6: {
-    num: '6 занятие',
-    title: 'Публикация, продвижение и первые метрики',
     topics: [
       'Публикуем карту: заполняем описание, выбираем теги и тип игры.',
       'Как работает алгоритм продвижения в Fortnite Creative.',
       'Анализируем первые метрики: просмотры, уникальные игроки, удержание.',
       'Собираем обратную связь от сообщества и планируем следующее обновление.',
     ],
-    badge: null
   },
 };
 
-const videoTitles = {
-  1: ['Старт: установка и знакомство с UEFN', 'Настройка первого проекта'],
-  2: ['Первая карта без кода', 'Инструменты ландшафта и освещение'],
-  3: ['Оформление карты: готовые модели', 'Импорт ассетов из Fab'],
-  4: ['Код на Verse: первые шаги', 'Переменные и условия в Verse', 'ИИ-помощник в разработке на Verse'],
-};
+/* ── State ── */
+let allLessons   = [];   // массив из API
+let currentLessonId = null;
 
-function selectLesson(num) {
-  const lesson = LESSONS[num];
-  if (!lesson) return;
+/* ── Helpers ── */
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
 
-  /* Update heading */
-  document.getElementById('js-lesson-num').textContent   = lesson.num;
+/* ── Render lesson nav cards ── */
+function renderCards() {
+  const nav = document.getElementById('js-lesson-nav');
+  nav.innerHTML = '';
+
+  // Determine which lesson is "active" (first non-completed unlocked)
+  const activeLesson = allLessons.find(l => l.unlocked && !l.completed)
+                    || allLessons.find(l => l.unlocked)
+                    || allLessons[0];
+
+  allLessons.forEach(l => {
+    const isActive = activeLesson && l.id === activeLesson.id && !l.completed;
+    const card = document.createElement('div');
+
+    if (!l.unlocked) {
+      card.className = 'lcard lcard--locked';
+      card.innerHTML = `
+        <span class="lcard__num">${l.sort_order} занятие</span>
+        <p class="lcard__title">${l.title}</p>
+        <span class="lcard__lock" aria-label="Закрыто">
+          <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+        </span>`;
+    } else if (l.completed) {
+      card.className = 'lcard lcard--done';
+      card.dataset.lesson = l.id;
+      card.onclick = () => selectLesson(l);
+      card.innerHTML = `
+        <span class="lcard__num">${l.sort_order} занятие</span>
+        <p class="lcard__title">${l.title}</p>
+        <span class="lcard__check" aria-label="Завершено">
+          <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </span>`;
+    } else if (isActive) {
+      card.className = 'lcard lcard--active';
+      card.dataset.lesson = l.id;
+      card.onclick = () => selectLesson(l);
+      card.innerHTML = `
+        <span class="lcard__num">${l.sort_order} занятие</span>
+        <p class="lcard__title">${l.title}</p>
+        <span class="lcard__active-dot" aria-label="Текущий урок"></span>`;
+    } else {
+      card.className = 'lcard lcard--future';
+      card.dataset.lesson = l.id;
+      card.onclick = () => selectLesson(l);
+      card.innerHTML = `
+        <span class="lcard__num">${l.sort_order} занятие</span>
+        <p class="lcard__title">${l.title}</p>`;
+    }
+
+    nav.appendChild(card);
+  });
+}
+
+/* ── Render progress bar ── */
+function renderProgressBar(data) {
+  const pct   = data.percentage || 0;
+  const barEl = document.getElementById('js-progress-bar');
+  const pctEl = document.getElementById('js-progress-pct');
+  const lastEl= document.getElementById('js-progress-last');
+  if (barEl) barEl.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (lastEl && data.lastActivity) {
+    lastEl.textContent = 'Последняя активность: ' + formatDate(data.lastActivity);
+  }
+}
+
+/* ── Select and display a lesson ── */
+function selectLesson(lesson) {
+  currentLessonId = lesson.id;
+
+  /* Update info panel */
+  document.getElementById('js-lesson-num').textContent   = lesson.sort_order + ' занятие';
   document.getElementById('js-lesson-title').textContent = lesson.title;
 
-  /* Update topics */
+  /* Update main video title */
+  const vTitle = document.getElementById('js-video-main-title');
+  const vDesc  = document.getElementById('js-video-main-desc');
+  if (vTitle) vTitle.textContent = lesson.title;
+  if (vDesc)  vDesc.textContent  = 'Видео для этого урока скоро появятся.';
+
+  /* Topics */
+  const content = LESSON_CONTENT[lesson.sort_order] || {};
+  const topics  = content.topics || [];
   const ul = document.getElementById('js-lesson-topics');
-  ul.innerHTML = lesson.topics.map(t => `
+  ul.innerHTML = topics.map(t => `
     <li class="lesson-topic">
       <span class="lesson-topic__icon">
         <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
@@ -1091,38 +1048,130 @@ function selectLesson(num) {
       <span class="lesson-topic__text">${t}</span>
     </li>`).join('');
 
-  /* Highlight selected done/future card with a subtle outline ring */
-  document.querySelectorAll('.lcard').forEach(c => {
-    const isThis = +c.dataset.lesson === num;
-    const isNotActive = !c.classList.contains('lcard--active');
-    if (isThis && isNotActive) {
-      c.style.outline = '2px solid rgba(59,207,254,.45)';
-      c.style.outlineOffset = '3px';
+  /* Complete button */
+  const btn = document.getElementById('js-complete-btn');
+  if (btn && lesson.unlocked) {
+    btn.style.display = '';
+    if (lesson.completed) {
+      btn.textContent = '✓ Урок завершён';
+      btn.className = 'lesson-complete-btn lesson-complete-btn--done';
+      btn.disabled = true;
     } else {
-      c.style.outline = '';
-      c.style.outlineOffset = '';
+      btn.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 8.5 6 12 13.5 4.5"/></svg> Отметить урок выполненным`;
+      btn.className = 'lesson-complete-btn';
+      btn.disabled = false;
     }
+  } else if (btn) {
+    btn.style.display = 'none';
+  }
+
+  /* Highlight card */
+  document.querySelectorAll('.lcard').forEach(c => {
+    const isThis = +c.dataset.lesson === lesson.id && !c.classList.contains('lcard--active');
+    c.style.outline      = isThis ? '2px solid rgba(59,207,254,.45)' : '';
+    c.style.outlineOffset = isThis ? '3px' : '';
   });
 
-  /* Scroll lesson nav into view */
-  const activeCard = document.querySelector(`.lcard[data-lesson="${num}"]`);
-  if (activeCard) activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  /* Scroll card into view */
+  const card = document.querySelector(`.lcard[data-lesson="${lesson.id}"]`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-  /* ── Save progress ── */
-  if (!progress.viewedLessons.includes(num)) {
-    progress.viewedLessons.push(num);
+  /* Mark as viewed in API (fire-and-forget) */
+  if (lesson.unlocked && !lesson.viewed) {
+    lesson.viewed = true;
+    apiFetch('/api/courses/progress', {
+      method: 'POST',
+      body: JSON.stringify({ lessonId: lesson.id, viewed: true }),
+    }).catch(() => {});
   }
-  progress.currentLesson = num;
-  progress.lastActivity = new Date().toISOString().slice(0, 10);
-  saveProgress(progress);
-  renderProgressBar();
 }
 
-/* ── Init on page load ── */
-applyProgressToCards();
-renderProgressBar();
-// Pre-select the saved current lesson in the info panel
-selectLesson(progress.currentLesson);
+/* ── Mark current lesson as completed ── */
+async function markCompleted() {
+  if (!currentLessonId) return;
+  const btn = document.getElementById('js-complete-btn');
+  btn.disabled = true;
+  btn.textContent = 'Сохраняем...';
+
+  try {
+    const res = await apiFetch('/api/courses/progress', {
+      method: 'POST',
+      body: JSON.stringify({ lessonId: currentLessonId, completed: true }),
+    });
+    if (res.ok) {
+      // Update local state
+      const lesson = allLessons.find(l => l.id === currentLessonId);
+      if (lesson) { lesson.completed = true; lesson.viewed = true; }
+
+      btn.textContent = '✓ Урок завершён';
+      btn.className = 'lesson-complete-btn lesson-complete-btn--done';
+
+      // Re-render cards and progress
+      renderCards();
+      const progRes = await apiFetch('/api/courses/progress');
+      if (progRes.ok) renderProgressBar(await progRes.json());
+    }
+  } catch {}
+}
+
+/* ── Init ── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    // Load lessons + progress in parallel
+    const [lessonsRes, progressRes, ordersRes] = await Promise.all([
+      apiFetch('/api/courses/lessons'),
+      apiFetch('/api/courses/progress'),
+      apiFetch('/api/courses/orders'),
+    ]);
+
+    if (!lessonsRes.ok) { window.Auth.logout(); return; }
+
+    const { lessons, hasPurchased } = await lessonsRes.json();
+
+    // If no course purchased — send to profile
+    if (!hasPurchased) {
+      window.location.href = 'profile.html';
+      return;
+    }
+
+    allLessons = lessons;
+
+    // Course title from orders
+    if (ordersRes.ok) {
+      const { orders } = await ordersRes.json();
+      const paid = orders.find(o => o.status === 'paid');
+      const planName = paid?.product || 'Курс';
+      document.getElementById('js-course-title').textContent = 'Курс ' + planName;
+      document.getElementById('js-nav-plan').textContent    = planName;
+      const drawerPlan = document.getElementById('js-drawer-plan');
+      if (drawerPlan) drawerPlan.textContent = planName;
+    }
+
+    // Progress bar
+    if (progressRes.ok) renderProgressBar(await progressRes.json());
+
+    // Render lesson cards
+    renderCards();
+
+    // Auto-select first non-completed unlocked lesson
+    const toSelect = lessons.find(l => l.unlocked && !l.completed)
+                  || lessons.find(l => l.unlocked)
+                  || lessons[0];
+    if (toSelect) selectLesson(toSelect);
+
+  } catch (e) {
+    console.error(e);
+  } finally {
+    document.body.style.opacity = '1';
+  }
+}
+
+init();
 </script>
 </body>
 </html>
