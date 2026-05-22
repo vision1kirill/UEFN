@@ -531,9 +531,9 @@
         </div>
       </div>
 
-      <!-- Продажи -->
+      <!-- Подписки -->
       <div class="card metric-card">
-        <p class="metric-title">Продажи</p>
+        <p class="metric-title">Подписки</p>
         <div class="metric-spark spark-wrap" id="js-sub-wrap">
           <svg viewBox="0 0 400 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
             <path id="js-spark-subs" fill="none" stroke="#3BCFFE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -647,7 +647,7 @@ function smoothPath(pts, tension = 0.35, minY = -Infinity, maxY = Infinity) {
 const COLORS = ['#F59E0B','#22C55E','#EF4444','#3BCFFE','#A78BFA','#F472B6'];
 const VW = 900, VH = 200;
 /* Все тарифы — показываем всегда, даже с 0 продажами */
-const ALL_PRODUCTS = ['Essential', 'Deluxe', 'Pro'];
+const ALL_PRODUCTS = ['Essential', 'Extra', 'Deluxe'];
 let activeProduct  = null; // null = показывать все
 
 /* ── Build main chart from API data ── */
@@ -808,7 +808,7 @@ function renderSparkline(pathId, overlayId, indGId, indLineId, indDotId, tipId, 
   const min = Math.min(...values), max = Math.max(...values), rng = max - min || 1;
   const pts = xs.map((x, i) => [x, sparkH - PAD - ((values[i]-min)/rng)*(sparkH - PAD*2)]);
 
-  document.getElementById(pathId).setAttribute('d', smoothPath(pts));
+  document.getElementById(pathId).setAttribute('d', smoothPath(pts, 0.35, PAD, sparkH - PAD));
 
   const svgEl   = document.querySelector(`#${wrapId} svg`);
   const indGEl  = document.getElementById(indGId);
