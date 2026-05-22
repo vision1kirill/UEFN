@@ -276,17 +276,14 @@
       box-shadow: 0 0 0 5px rgba(59,207,254,.10), 0 0 36px rgba(59,207,254,.38);
     }
 
-    /* ── 3. Future / upcoming — ghost style, no icons, no disabled look ── */
+    /* ── 3. Future / upcoming — locked sequentially, no click ── */
     .lcard--future {
-      background: rgba(255,255,255,.025);
-      border: 1px solid rgba(255,255,255,.09);
-      cursor: pointer;
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.07);
+      cursor: not-allowed;
+      opacity: .45;
     }
-    .lcard--future:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 24px rgba(0,0,0,.25);
-      border-color: rgba(255,255,255,.15);
-    }
+    .lcard--future:hover { transform: none; box-shadow: none; }
 
     /* Card number label */
     .lcard__num {
@@ -997,9 +994,8 @@ function renderCards() {
         <p class="lcard__title">${l.title}</p>
         <span class="lcard__active-dot" aria-label="Текущий урок"></span>`;
     } else {
+      // Предыдущие уроки не завершены — недоступно для просмотра
       card.className = 'lcard lcard--future';
-      card.dataset.lesson = l.id;
-      card.onclick = () => selectLesson(l);
       card.innerHTML = `
         <span class="lcard__num">${l.sort_order} занятие</span>
         <p class="lcard__title">${l.title}</p>`;
