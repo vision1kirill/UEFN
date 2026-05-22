@@ -483,7 +483,7 @@
     <div class="dash-section">
       <div class="card chart-card">
         <div class="chart-header">
-          <span class="chart-title">Подписки</span>
+          <span class="chart-title">Продажи</span>
           <div class="chart-legend" id="js-chart-legend"></div>
         </div>
         <div class="chart-wrap">
@@ -843,7 +843,7 @@ function renderSparkline(pathId, overlayId, indGId, indLineId, indDotId, tipId, 
 }
 
 /* ── Render metrics from chart data ── */
-function renderMetrics(chartRows, stats) {
+function renderMetrics(chartRows, stats, partnerships) {
   const N = 14;
   const dates = [];
   for (let i = N-1; i >= 0; i--) {
@@ -851,36 +851,42 @@ function renderMetrics(chartRows, stats) {
     dates.push(d.toISOString().slice(0,10));
   }
 
+  /* Выручка по дням (из chart) */
   const map = {};
   chartRows.forEach(r => {
     const day = r.day.slice(0,10);
-    if (!map[day]) map[day] = { revenue: 0, count: 0 };
+    if (!map[day]) map[day] = { revenue: 0 };
     map[day].revenue += +r.revenue;
-    map[day].count   += +r.count;
   });
+  const revValues  = dates.map(d => map[d]?.revenue || 0);
+  const dateLabels = dates.map(d => fmtDateShort(d));
 
-  const revValues   = dates.map(d => map[d]?.revenue || 0);
-  const countValues = dates.map(d => map[d]?.count   || 0);
-  const dateLabels  = dates.map(d => fmtDateShort(d));
+  /* Подписки сотрудничества по дням */
+  const partMap = {};
+  (partnerships || []).forEach(o => {
+    const day = (o.paid_at || o.created_at || '').slice(0, 10);
+    if (day) partMap[day] = (partMap[day] || 0) + 1;
+  });
+  const partValues = dates.map(d => partMap[d] || 0);
 
-  // Revenue sparkline
+  /* Revenue sparkline */
   renderSparkline('js-spark-revenue','js-rev-overlay','js-spark-rev-ind','js-spark-rev-line','js-spark-rev-dot','js-rev-tip','js-rev-wrap',
     revValues, dateLabels, v => fmtPrice(v));
 
-  // Sales sparkline
+  /* Подписки sparkline */
   renderSparkline('js-spark-subs','js-sub-overlay','js-spark-sub-ind','js-spark-sub-line','js-spark-sub-dot','js-sub-tip','js-sub-wrap',
-    countValues, dateLabels, v => v + ' продаж');
+    partValues, dateLabels, v => v + ' шт.');
 
-  // Values
-  const totalRevenue  = stats?.orders?.revenue  ?? revValues.reduce((a,b)=>a+b,0);
-  const totalSales    = stats?.orders?.paidCount ?? countValues.reduce((a,b)=>a+b,0);
-  const todayRevenue  = revValues[revValues.length-1]   || 0;
-  const todaySales    = countValues[countValues.length-1] || 0;
+  /* Итоговые значения */
+  const totalRevenue  = stats?.orders?.revenue ?? revValues.reduce((a,b)=>a+b,0);
+  const totalPart     = (partnerships || []).length;
+  const todayRevenue  = revValues[revValues.length-1]  || 0;
+  const todayPart     = partValues[partValues.length-1] || 0;
 
   document.getElementById('js-rev-val').textContent   = fmtPrice(totalRevenue);
   document.getElementById('js-rev-delta').textContent = todayRevenue ? '+' + fmtPrice(todayRevenue) + ' сегодня' : '';
-  document.getElementById('js-sub-val').textContent   = fmtNum(totalSales);
-  document.getElementById('js-sub-delta').textContent = todaySales ? '+' + todaySales + ' сегодня' : '';
+  document.getElementById('js-sub-val').textContent   = fmtNum(totalPart);
+  document.getElementById('js-sub-delta').textContent = todayPart ? '+' + todayPart + ' сегодня' : '';
 }
 
 /* ── Render recent orders ── */
@@ -942,18 +948,21 @@ async function init() {
 
     document.getElementById('js-nav-name').textContent = user.name || 'Админ';
 
-    const [chartRes, statsRes, salesRes] = await Promise.all([
+    const [chartRes, statsRes, salesRes, partnershipRes] = await Promise.all([
       apiFetch('/api/admin/chart?days=14'),
       apiFetch('/api/admin/stats'),
       apiFetch('/api/admin/sales?limit=10'),
+      apiFetch('/api/admin/sales?limit=1000&status=paid'),
     ]);
 
-    const chartRows = chartRes.ok ? (await chartRes.json()).chart : [];
-    const stats     = statsRes.ok ? (await statsRes.json())      : null;
-    const sales     = salesRes.ok ? (await salesRes.json()).sales : [];
+    const chartRows    = chartRes.ok ? (await chartRes.json()).chart : [];
+    const stats        = statsRes.ok ? (await statsRes.json())      : null;
+    const sales        = salesRes.ok ? (await salesRes.json()).sales : [];
+    const allSales     = partnershipRes.ok ? (await partnershipRes.json()).sales : [];
+    const partnerships = allSales.filter(o => o.product === 'Partnership');
 
     renderMainChart(chartRows);
-    renderMetrics(chartRows, stats);
+    renderMetrics(chartRows, stats, partnerships);
     renderOrders(sales);
 
   } catch (e) {
