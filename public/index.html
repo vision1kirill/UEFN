@@ -223,6 +223,8 @@
       text-decoration: none;
     }
     .nav__btn-login.visible { display: inline-flex; }
+    /* Мобильная кнопка — всегда скрыта на десктопе, даже с .visible */
+    .nav__login-mobile { display: none !important; }
     .nav__btn-login:hover { background: rgba(59,207,254,0.1); }
 
     /* Burger */
@@ -312,7 +314,7 @@
       .nav__links, .nav__actions { display: none; }
       .nav__burger { display: flex; }
       /* Мобильная "Войти" — только если гость и JS добавил .visible */
-      .nav__login-mobile.visible { display: inline-flex; }
+      .nav__login-mobile.visible { display: inline-flex !important; }
       /* На мобиле десктопный аватар убирается вместе с nav__actions,
          мобильный — показываем если есть .visible */
       .nav__avatar--mobile.visible { display: inline-flex !important; }
