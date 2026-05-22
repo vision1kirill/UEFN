@@ -740,7 +740,18 @@ loginForm.addEventListener('submit', async e => {
     const role = data.user?.role || 'user';
     if (role === 'admin')   return window.location.href = 'dashboard.html';
     if (role === 'partner') return window.location.href = 'partner-dashboard.html';
-    window.location.href = 'course.html';
+
+    // Проверяем наличие оплаченного курса
+    try {
+      const ordersRes = await apiFetch('/api/courses/orders');
+      if (ordersRes.ok) {
+        const { orders } = await ordersRes.json();
+        const hasCourse = orders.some(o => o.status === 'paid');
+        return window.location.href = hasCourse ? 'course.html' : 'profile.html';
+      }
+    } catch {}
+    // Если запрос не прошёл — по умолчанию на профиль
+    window.location.href = 'profile.html';
   } catch {
     loginErrEl.textContent   = 'Нет соединения с сервером. Попробуйте позже.';
     loginErrEl.style.display = '';
