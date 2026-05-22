@@ -1117,6 +1117,10 @@ async function markCompleted() {
       renderCards();
       const progRes = await apiFetch('/api/courses/progress');
       if (progRes.ok) renderProgressBar(await progRes.json());
+
+      // Auto-select next lesson
+      const nextLesson = allLessons.find(l => l.sort_order === (lesson?.sort_order ?? 0) + 1);
+      if (nextLesson && nextLesson.unlocked) selectLesson(nextLesson);
     } else {
       // Server returned error — restore button
       const data = await res.json().catch(() => ({}));
