@@ -749,7 +749,7 @@ function renderMainChart(chartRows) {
   xaxisEl.innerHTML = '';
   const step = Math.ceil(N / 7);
   dates.forEach((d, i) => {
-    if (i % step !== 0 && i !== N-1) return;
+    if (i % step !== 0) return;
     const pct = (xs[i] / VW) * 100;
     const span = document.createElement('span');
     span.textContent = fmtDateShort(d);
