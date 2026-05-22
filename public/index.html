@@ -290,6 +290,19 @@
       justify-content: center;
     }
 
+    /* Nav avatar (shown when logged in) */
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      overflow: hidden; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; transition: border-color .2s; text-decoration: none;
+    }
+    .nav__avatar:hover { border-color: var(--c-cyan); }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: rgba(255,255,255,.6); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .nav__avatar.visible { display: inline-flex; }
+
     @media (max-width: 1100px) {
       .nav__links, .nav__actions { display: none; }
       .nav__burger { display: flex; }
@@ -1816,12 +1829,18 @@
     </nav>
     <div class="nav__actions">
       <a href="#pricing" class="nav__btn-dark">Выбрать тариф</a>
-      <a href="login.html" class="nav__btn-login">Войти</a>
+      <a href="login.html" class="nav__btn-login" id="js-login-btn">Войти</a>
+      <a href="profile.html" class="nav__avatar" id="js-avatar-btn" aria-label="Профиль">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </a>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-    <a href="login.html" class="nav__btn-login nav__login-mobile">Войти</a>
+    <a href="login.html" class="nav__btn-login nav__login-mobile" id="js-login-mobile">Войти</a>
+    <a href="profile.html" class="nav__avatar" id="js-avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
   </div>
 </header>
 
@@ -1834,7 +1853,8 @@
   <a href="#partnership">Партнёрка</a>
   <div class="drawer-btns">
     <a href="#pricing" class="nav__btn-dark">Выбрать тариф</a>
-    <a href="login.html" class="nav__btn-login">Войти</a>
+    <a href="login.html" class="nav__btn-login" id="js-login-drawer">Войти</a>
+    <a href="profile.html" class="nav__btn-dark" id="js-profile-drawer" style="display:none;">Мой профиль</a>
   </div>
 </nav>
 
@@ -2451,8 +2471,30 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
+
+/* ── Auth-aware nav ── */
+(function() {
+  const loggedIn = window.Auth?.isLoggedIn();
+
+  const loginBtn    = document.getElementById('js-login-btn');
+  const loginMobile = document.getElementById('js-login-mobile');
+  const loginDrawer = document.getElementById('js-login-drawer');
+  const avatarBtn   = document.getElementById('js-avatar-btn');
+  const avatarMob   = document.getElementById('js-avatar-mobile');
+  const profileDraw = document.getElementById('js-profile-drawer');
+
+  if (loggedIn) {
+    if (loginBtn)    loginBtn.style.display    = 'none';
+    if (loginMobile) loginMobile.style.display = 'none';
+    if (loginDrawer) loginDrawer.style.display = 'none';
+    if (avatarBtn)   avatarBtn.classList.add('visible');
+    if (avatarMob)   avatarMob.classList.add('visible');
+    if (profileDraw) profileDraw.style.display = '';
+  }
+})();
 
 /* Nav scroll shadow */
 const navEl = document.getElementById('js-nav');
