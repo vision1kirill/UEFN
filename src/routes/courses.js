@@ -109,34 +109,25 @@ router.post('/progress', async (req, res, next) => {
       }
     }
 
-    const sets = [];
-    const vals = [req.user.id, lessonId];
-
-    if (viewed !== undefined) {
-      sets.push(`viewed = $${vals.length + 1}`);
-      vals.push(Boolean(viewed));
-      if (viewed) {
-        sets.push(`viewed_at = COALESCE(viewed_at, NOW())`);
-      }
-    }
-    if (completed !== undefined) {
-      sets.push(`completed = $${vals.length + 1}`);
-      vals.push(Boolean(completed));
-      if (completed) {
-        sets.push(`completed_at = COALESCE(completed_at, NOW())`);
-        // Auto-mark as viewed when completed
-        sets.push(`viewed = TRUE`);
-        sets.push(`viewed_at = COALESCE(viewed_at, NOW())`);
-      }
+    if (viewed === undefined && completed === undefined) {
+      return res.status(400).json({ error: 'Нет данных для обновления.' });
     }
 
-    if (!sets.length) return res.status(400).json({ error: 'Нет данных для обновления.' });
+    const isViewed    = completed ? true : Boolean(viewed);
+    const isCompleted = Boolean(completed);
 
     await query(
-      `INSERT INTO course_progress (user_id, lesson_id, ${viewed !== undefined ? 'viewed,' : ''} ${completed !== undefined ? 'completed,' : ''} viewed_at, completed_at)
-       VALUES ($1, $2, ${viewed !== undefined ? `${Boolean(viewed)},` : ''} ${completed !== undefined ? `${Boolean(completed)},` : ''} ${viewed ? 'NOW(),' : 'NULL,'} ${completed ? 'NOW()' : 'NULL'})
-       ON CONFLICT (user_id, lesson_id) DO UPDATE SET ${sets.join(', ')}`,
-      vals,
+      `INSERT INTO course_progress (user_id, lesson_id, viewed, completed, viewed_at, completed_at)
+       VALUES ($1, $2, $3, $4,
+         CASE WHEN $3 THEN NOW() ELSE NULL END,
+         CASE WHEN $4 THEN NOW() ELSE NULL END
+       )
+       ON CONFLICT (user_id, lesson_id) DO UPDATE SET
+         viewed       = GREATEST(course_progress.viewed, $3),
+         completed    = GREATEST(course_progress.completed, $4),
+         viewed_at    = CASE WHEN $3 AND course_progress.viewed_at IS NULL THEN NOW() ELSE course_progress.viewed_at END,
+         completed_at = CASE WHEN $4 AND course_progress.completed_at IS NULL THEN NOW() ELSE course_progress.completed_at END`,
+      [req.user.id, lessonId, isViewed, isCompleted],
     );
 
     res.json({ message: 'Прогресс сохранён.' });

@@ -1090,6 +1090,7 @@ function selectLesson(lesson) {
 async function markCompleted() {
   if (!currentLessonId) return;
   const btn = document.getElementById('js-complete-btn');
+  const origHtml = btn.innerHTML;
   btn.disabled = true;
   btn.textContent = 'Сохраняем...';
 
@@ -1098,6 +1099,7 @@ async function markCompleted() {
       method: 'POST',
       body: JSON.stringify({ lessonId: currentLessonId, completed: true }),
     });
+
     if (res.ok) {
       // Update local state
       const lesson = allLessons.find(l => l.id === currentLessonId);
@@ -1110,8 +1112,20 @@ async function markCompleted() {
       renderCards();
       const progRes = await apiFetch('/api/courses/progress');
       if (progRes.ok) renderProgressBar(await progRes.json());
+    } else {
+      // Server returned error — restore button
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Ошибка сохранения. Попробуйте ещё раз.');
+      btn.innerHTML  = origHtml;
+      btn.className  = 'lesson-complete-btn';
+      btn.disabled   = false;
     }
-  } catch {}
+  } catch (e) {
+    console.error('markCompleted error:', e);
+    btn.innerHTML = origHtml;
+    btn.className = 'lesson-complete-btn';
+    btn.disabled  = false;
+  }
 }
 
 /* ── Init ── */
