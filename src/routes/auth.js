@@ -326,6 +326,101 @@ router.patch('/me', requireAuth, authLimiter, async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/auth/change-email
+//  Шаг 1: отправить OTP на СТАРЫЙ email
+//  Body: { newEmail }
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/change-email', requireAuth, authLimiter, async (req, res, next) => {
+  try {
+    const { newEmail } = req.body;
+    if (!newEmail) return res.status(400).json({ error: 'Укажите новый email.' });
+
+    const normalized = newEmail.trim().toLowerCase();
+
+    // Не менять на тот же email
+    if (normalized === req.user.email) {
+      return res.status(400).json({ error: 'Это уже ваш текущий email.' });
+    }
+
+    // Проверить что новый email не занят
+    const { rows: existing } = await query(
+      'SELECT id FROM users WHERE email = $1',
+      [normalized],
+    );
+    if (existing.length) {
+      return res.status(409).json({ error: 'Этот email уже используется.' });
+    }
+
+    // Создать OTP для СТАРОГО email с новым email в purpose
+    const purpose = `change_email:${normalized}`;
+    const code = await createOtp(req.user.email, purpose);
+
+    // Отправить код на старую почту
+    await sendOtpEmail(req.user.email, code, 'verify_email');
+
+    res.json({ message: 'Код подтверждения отправлен на вашу текущую почту.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/auth/confirm-email-change
+//  Шаг 2: подтвердить OTP и сменить email
+//  Body: { code }
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/confirm-email-change', requireAuth, authLimiter, async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'Введите код.' });
+
+    // Найти актуальный OTP для старого email с purpose change_email:*
+    const { rows } = await query(
+      `SELECT id, purpose, expires_at, used
+       FROM otp_codes
+       WHERE email = $1 AND purpose LIKE 'change_email:%' AND code = $2
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.user.email, code],
+    );
+
+    if (!rows.length) {
+      return res.status(400).json({ error: 'Неверный код подтверждения.' });
+    }
+
+    const otp = rows[0];
+    if (otp.used) return res.status(400).json({ error: 'Код уже использован.' });
+    if (new Date() > new Date(otp.expires_at)) {
+      return res.status(400).json({ error: 'Срок действия кода истёк. Запросите новый.' });
+    }
+
+    // Извлечь новый email из purpose
+    const newEmail = otp.purpose.replace('change_email:', '');
+
+    // Проверить что новый email ещё не занят (могли занять пока ждали)
+    const { rows: taken } = await query('SELECT id FROM users WHERE email = $1', [newEmail]);
+    if (taken.length) {
+      return res.status(409).json({ error: 'Этот email уже занят другим пользователем.' });
+    }
+
+    // Пометить OTP использованным
+    await query('UPDATE otp_codes SET used = TRUE WHERE id = $1', [otp.id]);
+
+    // Обновить email
+    await query(
+      'UPDATE users SET email = $1, updated_at = NOW() WHERE id = $2',
+      [newEmail, req.user.id],
+    );
+
+    // Удалить все refresh-токены — пользователь должен войти заново
+    await query('DELETE FROM refresh_tokens WHERE user_id = $1', [req.user.id]);
+
+    res.json({ message: 'Email успешно изменён. Войдите с новым адресом.', newEmail });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  POST /api/auth/reset-password
 //  Body: { email, code, newPassword }
 // ─────────────────────────────────────────────────────────────────────────────

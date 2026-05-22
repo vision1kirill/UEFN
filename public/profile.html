@@ -245,6 +245,79 @@
     .profile-field.editing .profile-field__edit { display: none; }
     .profile-field.editing .profile-field__input { display: block; }
 
+    /* ── Email change modal ── */
+    .email-modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .email-modal-overlay.open { display: flex; }
+    .email-modal {
+      background: #131920;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 24px;
+      padding: clamp(28px,4vw,44px) clamp(24px,3.5vw,40px);
+      width: 100%; max-width: 440px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .email-modal__title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(16px,1.6vw,20px); font-weight: 700;
+      color: #fff; line-height: 1.2;
+    }
+    .email-modal__sub {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; color: var(--c-muted); line-height: 1.6;
+      margin-top: -8px;
+    }
+    .email-modal__field {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 16px 20px;
+      transition: border-color .2s;
+    }
+    .email-modal__field:focus-within { border-color: rgba(59,207,254,.35); }
+    .email-modal__label {
+      display: block; font-size: 12px; color: var(--c-dim); margin-bottom: 6px;
+    }
+    .email-modal__input {
+      display: block; width: 100%; background: none; border: none; outline: none;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 16px; font-weight: 500; color: #fff;
+    }
+    .email-modal__input::placeholder { color: rgba(255,255,255,.25); font-weight: 400; }
+    .email-modal__error {
+      font-size: 13px; color: #f87171;
+      display: none;
+    }
+    .email-modal__actions {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .email-modal__btn-main {
+      flex: 1; padding: 13px 24px;
+      background: var(--g-accent); border: none; border-radius: 100px;
+      color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: opacity .2s;
+    }
+    .email-modal__btn-main:hover { opacity: .85; }
+    .email-modal__btn-main:disabled { opacity: .5; cursor: default; }
+    .email-modal__btn-cancel {
+      padding: 13px 24px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 100px; color: #fff;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background .2s;
+    }
+    .email-modal__btn-cancel:hover { background: rgba(255,255,255,.12); }
+    .email-modal__step { display: none; flex-direction: column; gap: 20px; }
+    .email-modal__step.active { display: flex; }
+
     .profile-date {
       font-family: 'Golos Text', sans-serif;
       font-size: clamp(14px, 1.1vw, 17px); font-weight: 700; color: #fff;
@@ -603,14 +676,11 @@
         <div class="profile-field" id="field-email">
           <p class="profile-field__label">Электронная почта</p>
           <div class="profile-field__row">
-            <span class="profile-field__value" id="val-email">alexander8849@mail.ru</span>
-            <button class="profile-field__edit" aria-label="Редактировать почту" onclick="startEdit('field-email','val-email','input-email')">
+            <span class="profile-field__value" id="val-email">—</span>
+            <button class="profile-field__edit" aria-label="Изменить почту" onclick="openEmailModal()">
               <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><path d="M9 4l3 3"/></svg>
             </button>
           </div>
-          <input class="profile-field__input" id="input-email" type="email" value="alexander8849@mail.ru"
-            onblur="saveEdit('field-email','val-email','input-email')"
-            onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelEdit('field-email','val-email','input-email')" />
         </div>
 
         <!-- Reg date -->
@@ -731,6 +801,44 @@
     </div>
   </div>
 </footer>
+
+<!-- ██████ EMAIL CHANGE MODAL ██████ -->
+<div class="email-modal-overlay" id="js-email-modal" role="dialog" aria-modal="true" aria-label="Смена email">
+  <div class="email-modal">
+
+    <!-- Шаг 1: ввод нового email -->
+    <div class="email-modal__step active" id="email-step-1">
+      <p class="email-modal__title">Изменить email</p>
+      <p class="email-modal__sub">Введите новый адрес. Мы вышлем код подтверждения на ваш текущий email.</p>
+      <label class="email-modal__field">
+        <span class="email-modal__label">Новый email</span>
+        <input class="email-modal__input" id="email-new-input" type="email" placeholder="new@example.com" autocomplete="off" />
+      </label>
+      <p class="email-modal__error" id="email-step1-error"></p>
+      <div class="email-modal__actions">
+        <button class="email-modal__btn-main" id="email-step1-btn" onclick="requestEmailChange()">Отправить код</button>
+        <button class="email-modal__btn-cancel" onclick="closeEmailModal()">Отмена</button>
+      </div>
+    </div>
+
+    <!-- Шаг 2: ввод кода -->
+    <div class="email-modal__step" id="email-step-2">
+      <p class="email-modal__title">Введите код</p>
+      <p class="email-modal__sub" id="email-step2-sub">Код отправлен на вашу текущую почту. Введите его ниже.</p>
+      <label class="email-modal__field">
+        <span class="email-modal__label">Код подтверждения</span>
+        <input class="email-modal__input" id="email-otp-input" type="text"
+               inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="off" />
+      </label>
+      <p class="email-modal__error" id="email-step2-error"></p>
+      <div class="email-modal__actions">
+        <button class="email-modal__btn-main" id="email-step2-btn" onclick="confirmEmailChange()">Подтвердить</button>
+        <button class="email-modal__btn-cancel" onclick="closeEmailModal()">Отмена</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <script src="api.js"></script>
 <script>
@@ -897,6 +1005,95 @@ async function saveEdit(fieldId, valId, inputId) {
 function cancelEdit(fieldId, valId, inputId) {
   document.getElementById(inputId).value = document.getElementById(valId).textContent;
   document.getElementById(fieldId).classList.remove('editing');
+}
+
+/* ── Email change modal ── */
+function openEmailModal() {
+  document.getElementById('js-email-modal').classList.add('open');
+  showEmailStep(1);
+  document.getElementById('email-new-input').focus();
+}
+function closeEmailModal() {
+  document.getElementById('js-email-modal').classList.remove('open');
+  document.getElementById('email-new-input').value = '';
+  document.getElementById('email-otp-input').value = '';
+  document.getElementById('email-step1-error').style.display = 'none';
+  document.getElementById('email-step2-error').style.display = 'none';
+}
+function showEmailStep(n) {
+  document.getElementById('email-step-1').classList.toggle('active', n === 1);
+  document.getElementById('email-step-2').classList.toggle('active', n === 2);
+}
+// Закрыть по клику на оверлей
+document.getElementById('js-email-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeEmailModal();
+});
+
+async function requestEmailChange() {
+  const btn      = document.getElementById('email-step1-btn');
+  const errEl    = document.getElementById('email-step1-error');
+  const newEmail = document.getElementById('email-new-input').value.trim();
+
+  errEl.style.display = 'none';
+  if (!newEmail) { errEl.textContent = 'Введите новый email.'; errEl.style.display = ''; return; }
+
+  btn.disabled = true; btn.textContent = 'Отправка...';
+
+  try {
+    const res  = await apiFetch('/api/auth/change-email', {
+      method: 'POST',
+      body: JSON.stringify({ newEmail }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Ошибка. Попробуйте ещё раз.';
+      errEl.style.display = '';
+    } else {
+      document.getElementById('email-step2-sub').textContent =
+        `Код отправлен на вашу текущую почту. Введите его ниже чтобы сменить email на ${newEmail}.`;
+      showEmailStep(2);
+      document.getElementById('email-otp-input').focus();
+    }
+  } catch {
+    errEl.textContent = 'Нет соединения с сервером.';
+    errEl.style.display = '';
+  }
+
+  btn.disabled = false; btn.textContent = 'Отправить код';
+}
+
+async function confirmEmailChange() {
+  const btn   = document.getElementById('email-step2-btn');
+  const errEl = document.getElementById('email-step2-error');
+  const code  = document.getElementById('email-otp-input').value.trim();
+
+  errEl.style.display = 'none';
+  if (!code) { errEl.textContent = 'Введите код.'; errEl.style.display = ''; return; }
+
+  btn.disabled = true; btn.textContent = 'Проверяем...';
+
+  try {
+    const res  = await apiFetch('/api/auth/confirm-email-change', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.error || 'Неверный код.';
+      errEl.style.display = '';
+      btn.disabled = false; btn.textContent = 'Подтвердить';
+    } else {
+      // Email сменён — выходим и перелогиниваемся
+      closeEmailModal();
+      window.Auth.logout();
+    }
+  } catch {
+    errEl.textContent = 'Нет соединения с сервером.';
+    errEl.style.display = '';
+    btn.disabled = false; btn.textContent = 'Подтвердить';
+  }
 }
 
 /* ── Logout ── */
