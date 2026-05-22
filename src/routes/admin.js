@@ -208,11 +208,20 @@ router.get('/chart', async (req, res, next) => {
       params = [days];
     }
 
+    const { product } = req.query;
+    let productFilter;
+    if (product) {
+      params.push(product);
+      productFilter = `AND product = $${params.length}`;
+    } else {
+      productFilter = `AND product != 'Partnership'`;
+    }
+
     const { rows } = await query(
       `SELECT DATE(paid_at) AS day, product,
               COUNT(*)::int AS count, SUM(amount)::numeric AS revenue
        FROM orders
-       WHERE status = 'paid' AND product != 'Partnership' AND ${dateFilter}
+       WHERE status = 'paid' ${productFilter} AND ${dateFilter}
        GROUP BY DATE(paid_at), product
        ORDER BY day ASC`,
       params,
@@ -270,15 +279,16 @@ router.get('/stats', async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/sales', async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, status, from, to, search } = req.query;
+    const { page = 1, limit = 20, status, from, to, search, product } = req.query;
     const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
     const params = [];
     const conds  = [];
 
-    if (status) { params.push(status);        conds.push(`o.status = $${params.length}`); }
-    if (from)   { params.push(from);           conds.push(`o.created_at >= $${params.length}::date`); }
-    if (to)     { params.push(to);             conds.push(`o.created_at < ($${params.length}::date + interval '1 day')`); }
-    if (search) { params.push(`%${search}%`);  conds.push(`(u.email ILIKE $${params.length} OR u.name ILIKE $${params.length})`); }
+    if (status)  { params.push(status);        conds.push(`o.status = $${params.length}`); }
+    if (product) { params.push(product);        conds.push(`o.product = $${params.length}`); }
+    if (from)    { params.push(from);           conds.push(`o.created_at >= $${params.length}::date`); }
+    if (to)      { params.push(to);             conds.push(`o.created_at < ($${params.length}::date + interval '1 day')`); }
+    if (search)  { params.push(`%${search}%`);  conds.push(`(u.email ILIKE $${params.length} OR u.name ILIKE $${params.length})`); }
 
     const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
 
