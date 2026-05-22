@@ -578,6 +578,22 @@ async function updateStatus(id, status, rejectReason) {
   } catch(e) { console.error(e); }
 }
 
+/* ── Event listeners (вне async, вешаются сразу) ─────── */
+document.querySelectorAll('.filter-btn[data-status]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-status]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStatus = btn.dataset.status;
+    currentPage   = 1;
+    loadApps();
+  });
+});
+
+document.getElementById('js-search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { searchQuery = e.target.value.trim(); currentPage = 1; loadApps(); }, 350);
+});
+
 /* ── Init ────────────────────────────────────────────── */
 async function init() {
   if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
@@ -589,24 +605,7 @@ async function init() {
     if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
     canShow = true;
     document.getElementById('js-nav-name').textContent = user.name || 'Админ';
-
     await loadApps();
-
-    document.querySelectorAll('[data-status]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentStatus = btn.dataset.status;
-        currentPage = 1;
-        loadApps();
-      });
-    });
-
-    document.getElementById('js-search').addEventListener('input', e => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => { searchQuery = e.target.value.trim(); currentPage = 1; loadApps(); }, 350);
-    });
-
   } catch(e) { console.error(e); canShow = true; }
   finally { if (canShow) document.body.style.opacity = '1'; }
 }
