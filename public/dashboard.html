@@ -202,9 +202,12 @@
       display: flex; align-items: center; gap: 7px;
       font-family: 'Golos Text', sans-serif;
       font-size: clamp(11px,.85vw,13px); font-weight: 400; color: var(--c-muted);
+      cursor: pointer; user-select: none; transition: opacity .2s;
     }
+    .legend-item:hover { color: #fff; }
     .legend-dot {
       width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+      transition: transform .2s;
     }
 
     .chart-svg-wrap {
@@ -480,7 +483,7 @@
     <div class="dash-section">
       <div class="card chart-card">
         <div class="chart-header">
-          <span class="chart-title">Продажи</span>
+          <span class="chart-title">Подписки</span>
           <div class="chart-legend" id="js-chart-legend"></div>
         </div>
         <div class="chart-wrap">
@@ -626,14 +629,16 @@ function fmtDateShort(iso) {
   return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0');
 }
 
-/* ── Smooth curve (Catmull-Rom → Bezier) ── */
-function smoothPath(pts, tension = 0.35) {
+/* ── Smooth curve (Catmull-Rom → Bezier, clamped) ── */
+function smoothPath(pts, tension = 0.35, minY = -Infinity, maxY = Infinity) {
   if (pts.length < 2) return '';
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(i-1,0)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(i+2,pts.length-1)];
-    const cp1x = p1[0] + (p2[0]-p0[0])*tension, cp1y = p1[1] + (p2[1]-p0[1])*tension;
-    const cp2x = p2[0] - (p3[0]-p1[0])*tension, cp2y = p2[1] - (p3[1]-p1[1])*tension;
+    const cp1x = p1[0] + (p2[0]-p0[0])*tension;
+    const cp1y = Math.max(minY, Math.min(maxY, p1[1] + (p2[1]-p0[1])*tension));
+    const cp2x = p2[0] - (p3[0]-p1[0])*tension;
+    const cp2y = Math.max(minY, Math.min(maxY, p2[1] - (p3[1]-p1[1])*tension));
     d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
   }
   return d;
@@ -641,6 +646,9 @@ function smoothPath(pts, tension = 0.35) {
 
 const COLORS = ['#F59E0B','#22C55E','#EF4444','#3BCFFE','#A78BFA','#F472B6'];
 const VW = 900, VH = 200;
+/* Все тарифы — показываем всегда, даже с 0 продажами */
+const ALL_PRODUCTS = ['Essential', 'Deluxe', 'Pro'];
+let activeProduct  = null; // null = показывать все
 
 /* ── Build main chart from API data ── */
 function renderMainChart(chartRows) {
@@ -651,7 +659,10 @@ function renderMainChart(chartRows) {
     dates.push(d.toISOString().slice(0,10));
   }
 
-  const products = [...new Set(chartRows.map(r => r.product))].sort();
+  /* Объединяем статичные тарифы + тарифы из API (без дублей) */
+  const apiProducts = [...new Set(chartRows.map(r => r.product))];
+  const products = [...new Set([...ALL_PRODUCTS, ...apiProducts])];
+
   const map = {};
   chartRows.forEach(r => { map[r.day.slice(0,10) + '|' + r.product] = { count: +r.count, revenue: +r.revenue }; });
 
@@ -665,17 +676,42 @@ function renderMainChart(chartRows) {
   const allCounts = series.flatMap(s => s.counts);
   const maxVal = Math.max(...allCounts, 1);
   const PAD = 14;
+  const minY = PAD, maxY = VH - PAD;
   function toY(v) { return VH - PAD - (v / maxVal) * (VH - PAD*2); }
 
-  /* legend */
+  /* ── Легенда с фильтрацией ── */
   const legendEl = document.getElementById('js-chart-legend');
   legendEl.innerHTML = '';
+
+  function updateVisibility() {
+    series.forEach((s, si) => {
+      const pathEl = document.getElementById(`js-line-${si}`);
+      const dotEl  = document.getElementById(`js-dot-${si}`);
+      const legEl  = legendEl.children[si];
+      const active = !activeProduct || activeProduct === s.product;
+      if (pathEl) pathEl.style.opacity = active ? '1' : '0.12';
+      if (dotEl)  dotEl.style.display  = active ? '' : 'none';
+      if (legEl) {
+        legEl.style.opacity = active ? '1' : '0.4';
+        legEl.querySelector('.legend-dot').style.transform = active ? 'scale(1.25)' : 'scale(1)';
+      }
+    });
+  }
+
   series.forEach((s, si) => {
-    legendEl.insertAdjacentHTML('beforeend',
-      `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[si%COLORS.length]}"></span>${s.product}</div>`);
+    const color = COLORS[si % COLORS.length];
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.style.cssText = 'cursor:pointer; user-select:none; transition:opacity .2s';
+    item.innerHTML = `<span class="legend-dot" style="background:${color}; transition:transform .2s"></span>${s.product}`;
+    item.addEventListener('click', () => {
+      activeProduct = (activeProduct === s.product) ? null : s.product;
+      updateVisibility();
+    });
+    legendEl.appendChild(item);
   });
 
-  /* lines */
+  /* ── Линии ── */
   const linesEl   = document.getElementById('js-chart-lines');
   const indDotsEl = document.getElementById('js-ind-dots');
   linesEl.innerHTML = '';
@@ -686,12 +722,13 @@ function renderMainChart(chartRows) {
     const pts   = xs.map((x, i) => [x, toY(s.counts[i])]);
 
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', smoothPath(pts));
+    path.setAttribute('d', smoothPath(pts, 0.35, minY, maxY));
     path.setAttribute('fill', 'none');
     path.setAttribute('stroke', color);
     path.setAttribute('stroke-width', '2');
     path.setAttribute('stroke-linecap', 'round');
     path.setAttribute('stroke-linejoin', 'round');
+    path.id = `js-line-${si}`;
     linesEl.appendChild(path);
 
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -703,7 +740,7 @@ function renderMainChart(chartRows) {
     indDotsEl.appendChild(dot);
   });
 
-  /* x-axis */
+  /* ── X-axis ── */
   const xaxisEl = document.getElementById('js-xaxis');
   xaxisEl.innerHTML = '';
   const step = Math.ceil(N / 7);
@@ -714,7 +751,7 @@ function renderMainChart(chartRows) {
     xaxisEl.appendChild(span);
   });
 
-  /* hover */
+  /* ── Hover / tooltip ── */
   const chartSvg = document.getElementById('js-chart-main');
   const overlay  = document.getElementById('js-chart-overlay');
   const indG     = document.getElementById('js-chart-ind');
@@ -732,12 +769,14 @@ function renderMainChart(chartRows) {
     series.forEach((s, si) => {
       const dot = document.getElementById(`js-dot-${si}`);
       const pts = xs.map((x, i) => [x, toY(s.counts[i])]);
-      if (dot) { dot.setAttribute('cx', svgX); dot.setAttribute('cy', pts[idx][1]); }
+      const visible = !activeProduct || activeProduct === s.product;
+      if (dot && visible) { dot.setAttribute('cx', svgX); dot.setAttribute('cy', pts[idx][1]); }
     });
     indG.style.display = '';
 
     let html = `<div class="chart-tooltip__date">${fmtDateShort(dates[idx])}</div>`;
     series.forEach((s, si) => {
+      if (activeProduct && activeProduct !== s.product) return;
       html += `<div class="chart-tooltip__row">
         <span class="chart-tooltip__dot" style="background:${COLORS[si%COLORS.length]}"></span>
         ${s.product}
@@ -746,7 +785,7 @@ function renderMainChart(chartRows) {
     });
     tipEl.innerHTML = html;
 
-    const rect   = chartSvg.getBoundingClientRect();
+    const rect    = chartSvg.getBoundingClientRect();
     const screenX = (svgX / VW) * rect.width;
     const tipW    = tipEl.offsetWidth || 180;
     tipEl.style.left = (screenX + 14 + tipW > rect.width ? screenX - tipW - 10 : screenX + 14) + 'px';
