@@ -302,11 +302,16 @@
     .nav__avatar:hover { border-color: var(--c-cyan); }
     .nav__avatar svg { width: 20px; height: 20px; stroke: rgba(255,255,255,.6); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
     .nav__avatar.visible { display: inline-flex; }
+    /* Мобильный аватар — скрыт на десктопе */
+    .nav__avatar--mobile { display: none !important; }
 
     @media (max-width: 1100px) {
       .nav__links, .nav__actions { display: none; }
       .nav__burger { display: flex; }
       .nav__login-mobile { display: inline-flex; }
+      /* На мобиле десктопный аватар убирается вместе с nav__actions,
+         мобильный — показываем если есть .visible */
+      .nav__avatar--mobile.visible { display: inline-flex !important; }
       .nav__inner {
         gap: 8px;
         padding-inline: 16px;
@@ -1838,7 +1843,7 @@
       <span></span><span></span><span></span>
     </button>
     <a href="login.html" class="nav__btn-login nav__login-mobile" id="js-login-mobile">Войти</a>
-    <a href="profile.html" class="nav__avatar" id="js-avatar-mobile" aria-label="Профиль">
+    <a href="profile.html" class="nav__avatar nav__avatar--mobile" id="js-avatar-mobile" aria-label="Профиль">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     </a>
   </div>
