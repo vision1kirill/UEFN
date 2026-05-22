@@ -580,6 +580,77 @@ router.get('/subscriptions', async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  PARTNER APPLICATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/applications
+router.get('/applications', async (req, res, next) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const params = [];
+    const conds  = [];
+
+    if (status) { params.push(status);        conds.push(`a.status = $${params.length}`); }
+    if (search) { params.push(`%${search}%`); conds.push(`(a.name ILIKE $${params.length} OR a.email ILIKE $${params.length} OR a.telegram ILIKE $${params.length})`); }
+
+    const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
+
+    const { rows: countRows } = await query(
+      `SELECT COUNT(*) AS total FROM partner_applications a ${where}`, params,
+    );
+
+    params.push(parseInt(limit, 10));
+    params.push(offset);
+
+    const { rows } = await query(
+      `SELECT a.*
+       FROM partner_applications a
+       ${where}
+       ORDER BY
+         CASE a.status WHEN 'pending' THEN 0 ELSE 1 END,
+         a.created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params,
+    );
+
+    res.json({ applications: rows, total: parseInt(countRows[0].total, 10) });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/applications/:id  — approve or reject
+router.patch('/applications/:id', async (req, res, next) => {
+  try {
+    const { status, reject_reason } = req.body;
+    if (!['approved', 'rejected', 'pending'].includes(status)) {
+      return res.status(400).json({ error: 'Неверный статус' });
+    }
+
+    const { rows } = await query(
+      `UPDATE partner_applications
+       SET status = $1, reject_reason = $2, reviewed_at = NOW(), reviewed_by = $3
+       WHERE id = $4
+       RETURNING *`,
+      [status, reject_reason || null, req.user.id, req.params.id],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Не найдено' });
+
+    // Auto-create partner record when approved
+    if (status === 'approved' && rows[0].user_id && rows[0].slug) {
+      const promoCode = rows[0].slug.toUpperCase();
+      await query(
+        `INSERT INTO partners (user_id, slug, promo_code)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (user_id) DO NOTHING`,
+        [rows[0].user_id, rows[0].slug, promoCode],
+      ).catch(e => console.error('partner create error:', e));
+    }
+
+    res.json({ application: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  PROMO CODES
 // ─────────────────────────────────────────────────────────────────────────────
 

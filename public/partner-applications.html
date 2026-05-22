@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Заявки — UEFN с нуля</title>
+  <title>Заявки — Панель управления</title>
+
   <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
-    body { font-family: 'Golos Text', sans-serif; background: var(--c-bg); color: var(--c-text); overflow-x: hidden; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; min-height: 100vh; }
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--c-bg); color: var(--c-text);
+      overflow-x: hidden; -webkit-font-smoothing: antialiased;
+      display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
+    }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
     button { font-family: inherit; border: none; background: none; cursor: pointer; }
@@ -20,171 +28,229 @@
       --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
       --c-cyan: #3BCFFE; --c-blue: #0166C3;
       --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
-      --c-dim: rgba(255,255,255,.30); --c-border: rgba(255,255,255,.08);
-      --c-border-mid: rgba(255,255,255,.13);
-      --g-accent: linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
-      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px, 3.125vw, 40px);
+      --c-dim: rgba(255,255,255,.30);
+      --c-border: rgba(255,255,255,.08); --c-border-mid: rgba(255,255,255,.13);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px,3.125vw,40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* ── NAV ── */
-    .nav { position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h); width: 100%; display: flex; align-items: center; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: rgba(15,19,23,.80); transition: box-shadow .3s; }
+    /* NAV */
+    .nav {
+      position: fixed; inset: 0 0 auto; z-index: 200; height: var(--nav-h);
+      width: 100%; display: flex; align-items: center;
+      backdrop-filter: blur(24px); background: rgba(15,19,23,.80); transition: box-shadow .3s;
+    }
     .nav.scrolled { box-shadow: 0 4px 48px rgba(0,0,0,.60); }
-    .nav__inner { max-width: var(--wrap); width: 100%; margin-inline: auto; padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px); }
+    .nav__inner {
+      max-width: var(--wrap); width: 100%; margin-inline: auto;
+      padding-inline: var(--px); display: flex; align-items: center; gap: clamp(16px,2.2vw,28px);
+    }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; }
     .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
-    .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
+    .nav__links a { font-size: 14px; color: #fff; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__user-name { font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center; transition: border-color .2s;
+    }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav__burger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 40px; height: 40px; padding: 8px;
+      border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0;
+    }
     .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .nav__burger.open span:nth-child(2) { opacity: 0; }
     .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-    .nav__avatar-mobile { display: none; flex-shrink: 0; }
-    .nav__drawer { position: fixed; inset: var(--nav-h) 0 0; z-index: 190; background: rgba(15,19,23,.97); backdrop-filter: blur(24px); display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px; transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+    .nav__drawer {
+      position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
+      background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
+      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
+    }
     .nav__drawer.open { transform: translateX(0); }
     .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
-    .nav__drawer a:hover { color: #fff; }
-    @media (max-width: 1100px) { .nav__links { display: none; } .nav__auth { display: none; } .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; } }
-    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
+    @media (max-width: 1100px) {
+      .nav__links { display: none; } .nav__auth { display: none; }
+      .nav__burger { display: flex; } .nav__inner { gap: 8px; padding-inline: 16px; }
+    }
 
-    /* ── PAGE ── */
+    /* LAYOUT */
     main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
     .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
 
-    /* ── TAB NAV ── */
-    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    /* TABS */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; scrollbar-width: none; }
     .tab-nav::-webkit-scrollbar { display: none; }
-    .tab-btn { flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
+    .tab-btn {
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px;
+      font-size: clamp(12px,.9vw,14px); font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+    }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ── FILTER PILLS ── */
-    .filter-bar { display: flex; align-items: center; gap: clamp(6px,.8vw,10px); margin-bottom: clamp(20px,2.5vw,32px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .filter-bar::-webkit-scrollbar { display: none; }
-    .filter-pill { flex-shrink: 0; padding: clamp(8px,.8vw,11px) clamp(14px,1.4vw,22px); border-radius: 100px; font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap; }
-    .filter-pill:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .filter-pill.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
-
-    /* ── APPLICATION LIST ── */
-    .app-list { display: flex; flex-direction: column; gap: clamp(10px,1.2vw,14px); }
-
-    /* ── APPLICATION ROW ── */
-    .app-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      align-items: center;
-      gap: clamp(12px,1.5vw,24px);
-      padding: clamp(20px,2vw,28px) clamp(20px,2.2vw,30px);
-      background: var(--c-surf2);
-      border: 1px solid var(--c-border);
-      border-radius: clamp(16px,1.6vw,22px);
-      transition: border-color .2s, opacity .3s;
+    /* TOOLBAR */
+    .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: clamp(20px,2.5vw,32px); }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--c-dim); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
+    .search-input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 100px; color: #fff; font-family: 'Golos Text', sans-serif; font-size: 14px; outline: none; transition: border-color .2s;
     }
-    .app-row:hover { border-color: rgba(255,255,255,.13); }
-    .app-row.removing {
-      animation: slide-out .32s ease-in forwards;
+    .search-input::placeholder { color: var(--c-dim); }
+    .search-input:focus { border-color: rgba(59,207,254,.4); }
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
     }
+    .filter-btn:hover { color: #fff; }
+    .filter-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    @keyframes slide-out {
-      from { opacity: 1; transform: translateX(0); max-height: 200px; margin-bottom: 0; }
-      60%  { opacity: 0; transform: translateX(30px); }
-      to   { opacity: 0; transform: translateX(30px); max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: -14px; border-width: 0; }
-    }
+    /* SECTION TITLE */
+    .section-title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.4vw,22px); font-weight: 800; letter-spacing: -0.02em; color: #fff; margin-bottom: clamp(14px,1.8vw,22px); }
 
-    .app-field { display: flex; flex-direction: column; gap: 4px; }
-    .app-field__label { font-size: clamp(10px,.75vw,12px); color: var(--c-dim); font-weight: 400; letter-spacing: .02em; }
-    .app-field__value { font-size: clamp(13px,.95vw,15px); font-weight: 600; color: #fff; }
-
-    /* Status badge */
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: clamp(11px,.8vw,13px); font-weight: 500;
-    }
-    .status-badge::before {
-      content: ''; display: block; width: 7px; height: 7px;
-      border-radius: 50%; flex-shrink: 0;
-    }
-    .status-badge--new::before    { background: #3BCFFE; box-shadow: 0 0 6px rgba(59,207,254,.6); }
-    .status-badge--approved::before { background: #22C55E; box-shadow: 0 0 6px rgba(34,197,94,.6); }
-    .status-badge--rejected::before { background: #EF4444; box-shadow: 0 0 6px rgba(239,68,68,.5); }
-    .status-badge--new    { color: #3BCFFE; }
-    .status-badge--approved { color: #22C55E; }
-    .status-badge--rejected { color: #EF4444; }
-
-    /* Action buttons */
-    .app-actions { display: flex; align-items: center; gap: clamp(8px,.9vw,12px); flex-shrink: 0; }
-
-    .btn-accept {
-      padding: clamp(9px,.9vw,11px) clamp(16px,1.6vw,22px);
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.85vw,14px); font-weight: 600;
-      background: rgba(34,197,94,.12);
-      border: 1.5px solid rgba(34,197,94,.30);
-      color: #22C55E;
-      white-space: nowrap;
-      transition: background .2s, border-color .2s, transform .15s;
-    }
-    .btn-accept:hover { background: rgba(34,197,94,.20); border-color: rgba(34,197,94,.55); transform: translateY(-1px); }
-    .btn-accept:active { transform: translateY(0); }
-
-    .btn-reject {
-      padding: clamp(9px,.9vw,11px) clamp(16px,1.6vw,22px);
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.85vw,14px); font-weight: 600;
-      background: rgba(239,68,68,.10);
-      border: 1.5px solid rgba(239,68,68,.25);
-      color: #EF4444;
-      white-space: nowrap;
-      transition: background .2s, border-color .2s, transform .15s;
-    }
-    .btn-reject:hover { background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.50); transform: translateY(-1px); }
-    .btn-reject:active { transform: translateY(0); }
-
-    /* Done label instead of buttons for processed applications */
-    .app-done-label {
-      font-size: clamp(12px,.85vw,14px); font-weight: 500;
-      color: var(--c-dim); white-space: nowrap; min-width: 120px; text-align: right;
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: clamp(48px,6vw,80px) 24px;
+    /* APPLICATION CARDS */
+    .apps-list { display: flex; flex-direction: column; gap: clamp(12px,1.5vw,20px); }
+    .app-card {
       background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(18px,1.8vw,26px);
-      text-align: center; gap: 14px;
+      border-radius: clamp(18px,1.8vw,26px); overflow: hidden;
+      transition: border-color .2s;
     }
-    .empty-state__icon { color: var(--c-dim); opacity: .5; }
-    .empty-state__text { font-family: 'Golos Text', sans-serif; font-size: clamp(14px,1vw,16px); font-weight: 500; color: var(--c-muted); }
-    .empty-state__sub { font-size: clamp(12px,.85vw,13px); color: var(--c-dim); }
+    .app-card:hover { border-color: var(--c-border-mid); }
 
-    /* ── TOAST ── */
-    .toast {
-      position: fixed; bottom: clamp(16px,2vw,28px); left: 50%; transform: translateX(-50%) translateY(20px);
-      background: rgba(22,29,36,.97); border: 1px solid var(--c-border-mid);
-      border-radius: 100px; padding: 12px 24px; display: flex; align-items: center; gap: 10px;
-      font-family: 'Golos Text', sans-serif; font-size: clamp(13px,.9vw,14px); font-weight: 500;
-      color: #fff; box-shadow: 0 8px 32px rgba(0,0,0,.5); z-index: 300;
-      opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; white-space: nowrap;
+    /* Card header */
+    .app-header {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: clamp(18px,2vw,26px) clamp(20px,2.2vw,28px);
+      flex-wrap: wrap;
     }
-    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .toast__dot--green { background: #22C55E; }
-    .toast__dot--red   { background: #EF4444; }
-    .toast__dot--cyan  { background: #3BCFFE; }
+    .app-avatar {
+      width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; color: #fff; letter-spacing: .02em;
+    }
+    .app-meta { flex: 1; min-width: 0; }
+    .app-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .app-contacts { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .app-contact { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--c-muted); }
+    .app-contact svg { width: 13px; height: 13px; stroke: var(--c-dim); fill: none; stroke-width: 1.8; stroke-linecap: round; flex-shrink: 0; }
+    .app-contact a { color: var(--c-cyan); transition: opacity .2s; }
+    .app-contact a:hover { opacity: .75; }
+    .app-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 
-    /* ── FOOTER ── */
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-type-partner  { background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.28); color: #A78BFA; }
+    .badge-type-attract  { background: rgba(59,207,254,.12); border: 1px solid rgba(59,207,254,.28); color: #3BCFFE; }
+    .badge-type-other    { background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid); color: var(--c-muted); }
+    .badge-pending  { background: rgba(251,191,36,.10); border: 1px solid rgba(251,191,36,.25); color: #FBBF24; }
+    .badge-approved { background: rgba(34,197,94,.10);  border: 1px solid rgba(34,197,94,.25);  color: #22C55E; }
+    .badge-rejected { background: rgba(239,68,68,.10);  border: 1px solid rgba(239,68,68,.25);  color: #EF4444; }
+    .badge__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge-pending  .badge__dot { background: #FBBF24; }
+    .badge-approved .badge__dot { background: #22C55E; }
+    .badge-rejected .badge__dot { background: #EF4444; }
+
+    .app-date { font-size: 12px; color: var(--c-dim); white-space: nowrap; align-self: center; }
+
+    /* Card divider */
+    .app-divider { border: none; border-top: 1px solid var(--c-border); margin: 0; }
+
+    /* Card body — info grid */
+    .app-body { padding: clamp(18px,2vw,26px) clamp(20px,2.2vw,28px); }
+    .app-info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: clamp(14px,1.8vw,24px) clamp(24px,3vw,40px);
+    }
+    @media (max-width: 700px) { .app-info-grid { grid-template-columns: 1fr; } }
+    .app-field { }
+    .app-field__label { font-size: 11px; font-weight: 600; color: var(--c-dim); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .app-field__value { font-size: 14px; color: #fff; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+    .app-field__value--muted { color: var(--c-muted); font-style: italic; }
+    .app-field--full { grid-column: 1 / -1; }
+
+    /* Rejection reason shown in card */
+    .reject-reason-block {
+      margin-top: 14px; padding: 12px 16px;
+      background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.18);
+      border-radius: 12px;
+    }
+    .reject-reason-block__label { font-size: 11px; color: #EF4444; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .reject-reason-block__text  { font-size: 13px; color: rgba(255,255,255,.7); }
+
+    /* Card footer — actions */
+    .app-footer { padding: clamp(14px,1.6vw,20px) clamp(20px,2.2vw,28px); border-top: 1px solid var(--c-border); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .action-approve {
+      padding: 10px 24px; border-radius: 100px; font-size: 13px; font-weight: 700;
+      background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.28); color: #22C55E;
+      transition: background .2s;
+    }
+    .action-approve:hover { background: rgba(34,197,94,.22); }
+    .action-reject {
+      padding: 10px 24px; border-radius: 100px; font-size: 13px; font-weight: 700;
+      background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.25); color: #EF4444;
+      transition: background .2s;
+    }
+    .action-reject:hover { background: rgba(239,68,68,.20); }
+    .action-pending {
+      padding: 10px 24px; border-radius: 100px; font-size: 13px; font-weight: 700;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid); color: var(--c-muted);
+      transition: background .2s;
+    }
+    .action-pending:hover { background: rgba(255,255,255,.10); }
+    .action-decided { font-size: 13px; color: var(--c-muted); }
+
+    /* Inline reject form */
+    .reject-form { display: none; width: 100%; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .reject-form.open { display: flex; }
+    .reject-textarea {
+      width: 100%; padding: 10px 14px; border-radius: 14px; resize: vertical; min-height: 72px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      color: #fff; font-family: 'Golos Text', sans-serif; font-size: 13px; outline: none;
+      transition: border-color .2s;
+    }
+    .reject-textarea::placeholder { color: var(--c-dim); }
+    .reject-textarea:focus { border-color: rgba(239,68,68,.4); }
+    .reject-form-btns { display: flex; gap: 8px; }
+    .reject-confirm {
+      padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 700;
+      background: #EF4444; color: #fff; transition: opacity .2s;
+    }
+    .reject-confirm:hover { opacity: .85; }
+    .reject-cancel {
+      padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid); color: var(--c-muted);
+    }
+    .reject-cancel:hover { color: #fff; }
+
+    /* Empty */
+    .apps-empty { font-size: 14px; color: var(--c-dim); padding: 8px 0; }
+
+    /* PAGINATION */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: clamp(16px,2vw,24px); flex-wrap: wrap; }
+    .page-btn { padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent; cursor: pointer; transition: all .2s; }
+    .page-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .page-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.08); }
+    .page-btn:disabled { opacity: .35; cursor: default; }
+
+    /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
     .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
@@ -192,37 +258,17 @@
     .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
     .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
     .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; }
     .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
     .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
     .footer__legal a:hover { color: var(--c-muted); }
     .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
-    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); transition: background .2s, border-color .2s; }
-    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
-    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
-    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
-    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
-    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
-    .footer__tg-icon img { width: 33px; height: 33px; }
-    @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
-    @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 760px) {
-      .app-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
-      .app-row .app-field:nth-child(3) { grid-column: 1 / -1; }
-      .app-actions { grid-column: 1 / -1; justify-content: flex-end; }
-      .app-done-label { grid-column: 1 / -1; text-align: left; }
-    }
-    @media (max-width: 460px) {
-      .app-row { grid-template-columns: 1fr; }
-      .app-row .app-field:nth-child(3) { grid-column: 1; }
-      .app-actions { justify-content: flex-start; }
-    }
-
-    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--c-bg); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -235,37 +281,34 @@
       <span class="nav__logo-text">UEFN с нуля</span>
     </div>
     <nav class="nav__links">
-      <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
-      <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
+      <a href="index.html#hero">О курсе</a>
+      <a href="index.html#curriculum">Программа</a>
+      <a href="index.html#pricing">Тарифы</a>
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
-      <a href="profile.html" class="nav__avatar" aria-label="Профиль">
-        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+      <span class="nav__user-name" id="js-nav-name"></span>
+      <a href="profile.html" class="nav__avatar">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
-    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
-    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
-      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    </a>
+    <button class="nav__burger" id="js-burger"><span></span><span></span><span></span></button>
   </div>
 </header>
 <nav class="nav__drawer" id="js-drawer">
-  <a href="index.html#hero">О курсе</a><a href="index.html#curriculum">Программа</a>
-  <a href="index.html#pricing">Тарифы</a><a href="index.html#partnership">Подписка</a>
-  <a href="index.html#faq">Ответы на вопросы</a><a href="profile.html">Профиль</a>
+  <a href="dashboard.html">Дашборд</a>
+  <a href="profile.html">Профиль</a>
 </nav>
 
 <!-- MAIN -->
 <main>
   <div class="page-wrap">
-
     <h1 class="page-title">Панель управления</h1>
 
-    <!-- TAB NAV (admin) -->
+    <!-- TABS -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="admin-users.html">Пользователи</a>
       <a class="tab-btn" href="sales.html">Продажи</a>
       <a class="tab-btn" href="subscriptions.html">Подписки</a>
       <a class="tab-btn" href="referrals.html">Рефералы</a>
@@ -273,190 +316,302 @@
       <a class="tab-btn" href="content.html">Контент</a>
     </nav>
 
-    <!-- FILTER PILLS -->
-    <div class="filter-bar" id="js-filter-bar">
-      <button class="filter-pill active" data-filter="new">Новые</button>
-      <button class="filter-pill" data-filter="approved">Одобренные</button>
-      <button class="filter-pill" data-filter="rejected">Отклонённые</button>
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+        <input class="search-input" id="js-search" type="text" placeholder="Поиск по имени, email или telegram…" autocomplete="off" />
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" data-status="">Все</button>
+        <button class="filter-btn" data-status="pending">На рассмотрении</button>
+        <button class="filter-btn" data-status="approved">Одобренные</button>
+        <button class="filter-btn" data-status="rejected">Отклонённые</button>
+      </div>
     </div>
 
-    <!-- APPLICATION LIST -->
-    <div class="app-list" id="js-app-list"></div>
-
+    <!-- LIST -->
+    <h2 class="section-title" id="js-section-title">Заявки</h2>
+    <div class="apps-list" id="js-apps">
+      <p class="apps-empty">Загрузка…</p>
+    </div>
+    <div class="pagination" id="js-pagination"></div>
   </div>
 </main>
-
-<!-- TOAST -->
-<div class="toast" id="js-toast" aria-live="polite">
-  <span class="toast__dot" id="js-toast-dot"></span>
-  <span id="js-toast-text"></span>
-</div>
 
 <!-- FOOTER -->
 <footer class="footer">
   <div class="wrap">
     <hr class="footer__rule" />
     <div class="footer__grid">
-      <div class="footer__brand"><span class="footer__copy">© 2025…2026</span><div class="footer__brand-logo"><img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" /><span class="footer__brand-logo-text">UEFN с нуля</span></div></div>
-      <div class="footer__legal"><a href="privacy.html">Политика конфиденциальности</a><a href="terms.html">Пользовательское соглашение</a></div>
-      <nav class="footer__nav"><a href="index.html#advantages">О курсе</a><a href="index.html#partnership">Подписка</a><a href="index.html#curriculum">Программа</a><a href="index.html#faq">Ответы на вопросы</a><a href="index.html#pricing">Тарифы</a><a href="partner.html">Партнёрка</a></nav>
-      <a href="#" class="footer__tg-capsule" aria-label="Telegram"><div class="footer__tg-capsule-text"><span class="footer__tg-capsule-sub">Вступайте в группу</span><span class="footer__tg-capsule-name">Телеграм</span></div><div class="footer__tg-icon"><img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" /></div></a>
+      <div class="footer__brand">
+        <span class="footer__copy">© 2025…2026</span>
+        <div class="footer__brand-logo">
+          <img src="фотографии/uefnLogo.png" alt="UEFN с нуля" width="34" height="34" />
+          <span class="footer__brand-logo-text">UEFN с нуля</span>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <a href="privacy.html">Политика конфиденциальности</a>
+        <a href="terms.html">Пользовательское соглашение</a>
+      </div>
+      <nav class="footer__nav">
+        <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#curriculum">Программа</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="index.html#faq">Ответы на вопросы</a>
+      </nav>
     </div>
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
-/* ── Nav ── */
+/* Nav */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
-const burger = document.getElementById('js-burger'), drawer = document.getElementById('js-drawer');
-let drawerOpen = false;
-function setDrawer(v) { drawerOpen=v; burger.classList.toggle('open',v); drawer.classList.toggle('open',v); burger.setAttribute('aria-expanded',String(v)); document.body.style.overflow=v?'hidden':''; }
-burger.addEventListener('click', () => setDrawer(!drawerOpen));
-document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+const burger = document.getElementById('js-burger');
+const drawer = document.getElementById('js-drawer');
+burger.addEventListener('click', () => { const o = drawer.classList.toggle('open'); burger.classList.toggle('open', o); });
 
-/* ════════════════════════════════════
-   DATA
-════════════════════════════════════ */
-let applications = [
-  { id: 1,  status: 'new',      type: 'Стать партнёром', name: 'Александр',        date: '01.05.2026' },
-  { id: 2,  status: 'new',      type: 'Стать партнёром', name: 'Мария Степанова',   date: '30.04.2026' },
-  { id: 3,  status: 'new',      type: 'Стать партнёром', name: 'dmitry_ue',         date: '29.04.2026' },
-  { id: 4,  status: 'new',      type: 'Стать партнёром', name: 'Кирилл В.',         date: '28.04.2026' },
-  { id: 5,  status: 'new',      type: 'Стать партнёром', name: 'fortnite_pro99',    date: '27.04.2026' },
-  { id: 6,  status: 'approved', type: 'Стать партнёром', name: 'Наталья Орлова',    date: '25.04.2026' },
-  { id: 7,  status: 'approved', type: 'Стать партнёром', name: 'uefn_creator',      date: '22.04.2026' },
-  { id: 8,  status: 'approved', type: 'Стать партнёром', name: 'Виктор Белов',      date: '20.04.2026' },
-  { id: 9,  status: 'rejected', type: 'Стать партнёром', name: 'spam123',           date: '24.04.2026' },
-  { id: 10, status: 'rejected', type: 'Стать партнёром', name: 'Аноним',            date: '21.04.2026' },
-];
-
-let currentFilter = 'new';
-
-/* ════════════════════════════════════
-   TOAST
-════════════════════════════════════ */
-let toastTimer = null;
-function showToast(text, type = 'cyan') {
-  const toastEl = document.getElementById('js-toast');
-  const dotEl   = document.getElementById('js-toast-dot');
-  const textEl  = document.getElementById('js-toast-text');
-  dotEl.className = `toast__dot toast__dot--${type}`;
-  textEl.textContent = text;
-  toastEl.classList.add('visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('visible'), 2800);
+/* ── Helpers ─────────────────────────────────────────── */
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
 }
 
-/* ════════════════════════════════════
-   STATUS HELPERS
-════════════════════════════════════ */
-const STATUS_MAP = {
-  new:      { cls: 'status-badge--new',      label: 'Новая'      },
-  approved: { cls: 'status-badge--approved', label: 'Одобрена'   },
-  rejected: { cls: 'status-badge--rejected', label: 'Отклонена'  },
-};
+const AVATAR_COLORS = ['#0166C3','#3BCFFE','#8B5CF6','#EC4899','#F59E0B','#10B981','#6366F1'];
+function avatarColor(s) {
+  let h = 0; for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+function avatarInitials(name, email) {
+  if (name) { const p = name.trim().split(/\s+/); return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : name.slice(0,2).toUpperCase(); }
+  return (email||'??').slice(0,2).toUpperCase();
+}
 
-/* ════════════════════════════════════
-   RENDER
-════════════════════════════════════ */
-function renderList() {
-  const listEl = document.getElementById('js-app-list');
-  const filtered = applications.filter(a => a.status === currentFilter);
-  listEl.innerHTML = '';
+const TYPE_LABELS = { partner:'Стать партнёром', attract:'Привлекать клиентов', ambassador:'Амбассадор', affiliate:'Аффилиат' };
+const TYPE_CLS    = { partner:'badge-type-partner', attract:'badge-type-attract' };
+const STATUS_LABEL= { pending:'На рассмотрении', approved:'Одобрена', rejected:'Отклонена' };
+const STATUS_CLS  = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' };
 
-  if (filtered.length === 0) {
-    listEl.innerHTML = `
-      <div class="empty-state">
-        <svg class="empty-state__icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="3"/>
-          <path d="M9 9h6M9 12h6M9 15h4"/>
-        </svg>
-        <p class="empty-state__text">Заявок нет</p>
-        <p class="empty-state__sub">В этой категории пока нет заявок</p>
+function field(label, value, full) {
+  if (!value) return `<div class="app-field${full?' app-field--full':''}"><p class="app-field__label">${label}</p><p class="app-field__value app-field__value--muted">Не указано</p></div>`;
+  return `<div class="app-field${full?' app-field--full':''}"><p class="app-field__label">${label}</p><p class="app-field__value">${escHtml(value)}</p></div>`;
+}
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── State ───────────────────────────────────────────── */
+let currentStatus = '', searchQuery = '', currentPage = 1, searchTimer = null;
+const PAGE_SIZE = 15;
+
+/* ── Render ──────────────────────────────────────────── */
+function renderApps(apps, total) {
+  const el = document.getElementById('js-apps');
+  const titleEl = document.getElementById('js-section-title');
+  titleEl.textContent = `Заявки (${total})`;
+
+  if (!apps.length) { el.innerHTML = '<p class="apps-empty">Заявок не найдено.</p>'; return; }
+  el.innerHTML = '';
+
+  apps.forEach(a => {
+    const initials   = avatarInitials(a.name, a.email);
+    const color      = avatarColor(a.email || a.name || String(a.id));
+    const typeCls    = TYPE_CLS[a.cooperation_type] || 'badge-type-other';
+    const typeLabel  = TYPE_LABELS[a.cooperation_type] || a.cooperation_type || 'Не указан';
+    const statusCls  = STATUS_CLS[a.status] || 'badge-pending';
+    const statusLabel= STATUS_LABEL[a.status] || a.status;
+    const isPending  = a.status === 'pending';
+
+    const tgLink = a.telegram
+      ? `<a href="https://t.me/${a.telegram.replace('@','')}" target="_blank">@${a.telegram.replace('@','')}</a>`
+      : '<span style="color:var(--c-dim)">—</span>';
+
+    const card = document.createElement('div');
+    card.className = 'app-card';
+    card.dataset.id = a.id;
+
+    card.innerHTML = `
+      <!-- HEADER -->
+      <div class="app-header">
+        <div class="app-avatar" style="background:${color}">${initials}</div>
+        <div class="app-meta">
+          <p class="app-name">${escHtml(a.name || '—')}</p>
+          <div class="app-contacts">
+            <span class="app-contact">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              ${escHtml(a.email || '—')}
+            </span>
+            <span class="app-contact">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              ${tgLink}
+            </span>
+            ${a.slug ? `<span class="app-contact"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>${escHtml(a.slug)}</span>` : ''}
+          </div>
+        </div>
+        <div class="app-badges">
+          <span class="badge ${typeCls}">${typeLabel}</span>
+          <span class="badge ${statusCls}"><span class="badge__dot"></span>${statusLabel}</span>
+        </div>
+        <span class="app-date">${fmtDate(a.created_at)}</span>
+      </div>
+
+      <hr class="app-divider" />
+
+      <!-- BODY -->
+      <div class="app-body">
+        <div class="app-info-grid">
+          ${field('Аудитория', a.audience)}
+          ${field('Откуда будет трафик', a.traffic_source)}
+          ${field('О себе', a.about, true)}
+          ${field('Опыт и деятельность', a.experience, true)}
+          ${field('Соцсети, каналы, проекты', a.social_links, true)}
+          ${field('Почему хочет сотрудничать', a.motivation, true)}
+          ${a.comment ? field('Доп. комментарий', a.comment, true) : ''}
+        </div>
+        ${a.status === 'rejected' && a.reject_reason ? `
+          <div class="reject-reason-block">
+            <p class="reject-reason-block__label">Причина отказа</p>
+            <p class="reject-reason-block__text">${escHtml(a.reject_reason)}</p>
+          </div>` : ''}
+      </div>
+
+      <!-- FOOTER -->
+      <div class="app-footer">
+        ${isPending ? `
+          <button class="action-approve js-approve" data-id="${a.id}">✓ Одобрить</button>
+          <button class="action-reject js-reject-open" data-id="${a.id}">✕ Отклонить</button>
+          <div class="reject-form js-reject-form" data-id="${a.id}">
+            <textarea class="reject-textarea" placeholder="Укажите причину отказа (необязательно)…"></textarea>
+            <div class="reject-form-btns">
+              <button class="reject-confirm js-reject-confirm" data-id="${a.id}">Подтвердить отказ</button>
+              <button class="reject-cancel js-reject-cancel">Отмена</button>
+            </div>
+          </div>
+        ` : `
+          <span class="action-decided">
+            ${a.status === 'approved'
+              ? '✓ Одобрена'
+              : '✕ Отклонена'}
+            ${a.reviewed_at ? ' · ' + fmtDate(a.reviewed_at) : ''}
+          </span>
+          <button class="action-pending js-reset" data-id="${a.id}">Вернуть на рассмотрение</button>
+        `}
       </div>`;
-    return;
-  }
 
-  filtered.forEach(app => {
-    const { cls, label } = STATUS_MAP[app.status];
-    const actionsHtml = app.status === 'new'
-      ? `<div class="app-actions">
-           <button class="btn-accept" data-id="${app.id}" aria-label="Принять заявку">Принять</button>
-           <button class="btn-reject" data-id="${app.id}" aria-label="Отклонить заявку">Отклонить</button>
-         </div>`
-      : `<div class="app-done-label">${app.date}</div>`;
-
-    const row = document.createElement('div');
-    row.className = 'app-row';
-    row.dataset.id = app.id;
-    row.innerHTML = `
-      <div class="app-field">
-        <span class="app-field__label">Статус</span>
-        <span class="app-field__value"><span class="status-badge ${cls}">${label}</span></span>
-      </div>
-      <div class="app-field">
-        <span class="app-field__label">Тип</span>
-        <span class="app-field__value">${app.type}</span>
-      </div>
-      <div class="app-field">
-        <span class="app-field__label">Имя или никнейм</span>
-        <span class="app-field__value">${app.name}</span>
-      </div>
-      ${actionsHtml}`;
-    listEl.appendChild(row);
+    el.appendChild(card);
   });
 
-  /* Bind action buttons */
-  listEl.querySelectorAll('.btn-accept').forEach(btn => {
-    btn.addEventListener('click', () => handleAction(+btn.dataset.id, 'approved'));
+  /* Actions */
+  el.querySelectorAll('.js-approve').forEach(btn =>
+    btn.addEventListener('click', () => updateStatus(+btn.dataset.id, 'approved')));
+
+  el.querySelectorAll('.js-reject-open').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = el.querySelector(`.js-reject-form[data-id="${btn.dataset.id}"]`);
+      form?.classList.toggle('open');
+    });
   });
-  listEl.querySelectorAll('.btn-reject').forEach(btn => {
-    btn.addEventListener('click', () => handleAction(+btn.dataset.id, 'rejected'));
+
+  el.querySelectorAll('.js-reject-cancel').forEach(btn =>
+    btn.addEventListener('click', () => btn.closest('.js-reject-form')?.classList.remove('open')));
+
+  el.querySelectorAll('.js-reject-confirm').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form   = btn.closest('.js-reject-form');
+      const reason = form?.querySelector('.reject-textarea')?.value?.trim() || '';
+      updateStatus(+btn.dataset.id, 'rejected', reason);
+    });
   });
+
+  el.querySelectorAll('.js-reset').forEach(btn =>
+    btn.addEventListener('click', () => updateStatus(+btn.dataset.id, 'pending')));
 }
 
-/* ════════════════════════════════════
-   ACTION: accept / reject
-════════════════════════════════════ */
-function handleAction(id, newStatus) {
-  const row = document.querySelector(`.app-row[data-id="${id}"]`);
-  if (!row) return;
+function renderPagination(total) {
+  const wrap  = document.getElementById('js-pagination');
+  const pages = Math.ceil(total / PAGE_SIZE);
+  if (pages <= 1) { wrap.innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>← Назад</button>`;
+  const range = [];
+  for (let i = 1; i <= pages; i++) {
+    if (i===1||i===pages||Math.abs(i-currentPage)<=1) range.push(i);
+    else if (range[range.length-1]!=='…') range.push('…');
+  }
+  range.forEach(p => {
+    if (p==='…') html+=`<span class="page-btn" style="cursor:default">…</span>`;
+    else html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  });
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage>=pages?'disabled':''}>Вперёд →</button>`;
+  wrap.innerHTML = html;
+}
+function goPage(p) { currentPage = p; loadApps(); }
 
-  const app = applications.find(a => a.id === id);
-  if (!app) return;
-
-  /* Slide out */
-  row.classList.add('removing');
-  row.addEventListener('animationend', () => {
-    app.status = newStatus;
-    renderList();
-  }, { once: true });
-
-  const name = app.name;
-  if (newStatus === 'approved') {
-    showToast(`Заявка «${name}» одобрена`, 'green');
-  } else {
-    showToast(`Заявка «${name}» отклонена`, 'red');
+/* ── API ─────────────────────────────────────────────── */
+async function loadApps() {
+  document.getElementById('js-apps').innerHTML = '<p class="apps-empty">Загрузка…</p>';
+  try {
+    const p = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (currentStatus) p.set('status', currentStatus);
+    if (searchQuery)   p.set('search', searchQuery);
+    const res  = await apiFetch(`/api/admin/applications?${p}`);
+    const data = res.ok ? await res.json() : { applications: [], total: 0 };
+    renderApps(data.applications || [], data.total || 0);
+    renderPagination(data.total || 0);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('js-apps').innerHTML = '<p class="apps-empty">Ошибка загрузки.</p>';
   }
 }
 
-/* ════════════════════════════════════
-   FILTER PILLS
-════════════════════════════════════ */
-document.querySelectorAll('.filter-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    currentFilter = pill.dataset.filter;
-    renderList();
-  });
-});
+async function updateStatus(id, status, rejectReason) {
+  try {
+    const res = await apiFetch(`/api/admin/applications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, reject_reason: rejectReason }),
+    });
+    if (res.ok) loadApps();
+    else { const d = await res.json(); alert(d.error || 'Ошибка'); }
+  } catch(e) { console.error(e); }
+}
 
-/* Initial render */
-renderList();
+/* ── Init ────────────────────────────────────────────── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+  let canShow = false;
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    canShow = true;
+    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
+
+    await loadApps();
+
+    document.querySelectorAll('[data-status]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStatus = btn.dataset.status;
+        currentPage = 1;
+        loadApps();
+      });
+    });
+
+    document.getElementById('js-search').addEventListener('input', e => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { searchQuery = e.target.value.trim(); currentPage = 1; loadApps(); }, 350);
+    });
+
+  } catch(e) { console.error(e); canShow = true; }
+  finally { if (canShow) document.body.style.opacity = '1'; }
+}
+
+init();
 </script>
 </body>
 </html>
