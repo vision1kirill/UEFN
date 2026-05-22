@@ -22,6 +22,7 @@
       background: var(--c-bg); color: var(--c-text);
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
       display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
     }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
@@ -614,7 +615,7 @@
     </nav>
     <!-- Auth zone: plan badge + avatar -->
     <div class="nav__auth">
-      <span class="nav__plan-badge" id="js-nav-plan">Essential</span>
+      <span class="nav__plan-badge" id="js-nav-plan"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -639,7 +640,7 @@
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
   <div class="drawer-btns">
-    <a href="profile.html" class="nav__plan-badge" style="display:flex;align-items:center;justify-content:center;">Essential</a>
+    <a href="profile.html" class="nav__plan-badge" id="js-drawer-plan" style="display:flex;align-items:center;justify-content:center;"></a>
   </div>
 </nav>
 
@@ -649,7 +650,7 @@
 
     <!-- 1. GREETING -->
     <section class="greeting">
-      <h1 class="greeting__title" id="js-greeting">Здравствуйте, Александр</h1>
+      <h1 class="greeting__title" id="js-greeting"></h1>
     </section>
 
     <!-- 2+3. PROFILE + COURSE -->
@@ -662,12 +663,12 @@
         <div class="profile-field" id="field-name">
           <p class="profile-field__label">Имя или никнейм</p>
           <div class="profile-field__row">
-            <span class="profile-field__value" id="val-name">Александр</span>
+            <span class="profile-field__value" id="val-name">—</span>
             <button class="profile-field__edit" aria-label="Редактировать имя" onclick="startEdit('field-name','val-name','input-name')">
               <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3L11 2z"/><path d="M9 4l3 3"/></svg>
             </button>
           </div>
-          <input class="profile-field__input" id="input-name" type="text" value="Александр"
+          <input class="profile-field__input" id="input-name" type="text" value=""
             onblur="saveEdit('field-name','val-name','input-name')"
             onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelEdit('field-name','val-name','input-name')" />
         </div>
@@ -698,15 +699,15 @@
       <div class="course-card">
         <div class="course-card__header">
           <span class="course-card__label">Ваш курс</span>
-          <span class="course-card__expiry">До 28 мая 2026</span>
+          <span class="course-card__expiry" id="js-course-expiry"></span>
         </div>
-        <p class="course-card__name">Essential</p>
+        <p class="course-card__name" id="js-course-name">—</p>
 
         <!-- Статусы -->
         <div class="status-row">
           <div class="status-item">
             <span class="status-item__label">Доступ к курсу</span>
-            <span class="status-badge status-badge--active">Активен</span>
+            <span class="status-badge status-badge--none" id="js-access-badge">—</span>
           </div>
           <div class="status-item">
             <span class="status-item__label">Подписка «Сотрудничество»</span>
@@ -715,38 +716,7 @@
         </div>
 
         <!-- Progress -->
-        <div class="course-progress" id="js-progress-steps">
-          <div class="progress-step progress-step--done">
-            <div class="progress-step__circle progress-step__circle--done">
-              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
-            </div>
-            <span class="progress-step__label">1 занятие</span>
-          </div>
-          <div class="progress-step progress-step--done">
-            <div class="progress-step__circle progress-step__circle--done">
-              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
-            </div>
-            <span class="progress-step__label">2 занятие</span>
-          </div>
-          <div class="progress-step progress-step--done">
-            <div class="progress-step__circle progress-step__circle--done">
-              <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
-            </div>
-            <span class="progress-step__label">3 занятие</span>
-          </div>
-          <div class="progress-step">
-            <div class="progress-step__circle progress-step__circle--todo"></div>
-            <span class="progress-step__label">4 занятие</span>
-          </div>
-          <div class="progress-step">
-            <div class="progress-step__circle progress-step__circle--todo"></div>
-            <span class="progress-step__label">5 занятие</span>
-          </div>
-          <div class="progress-step">
-            <div class="progress-step__circle progress-step__circle--todo"></div>
-            <span class="progress-step__label">6 занятие</span>
-          </div>
-        </div>
+        <div class="course-progress" id="js-progress-steps"></div>
 
         <a href="course.html" class="course-card__btn">Продолжить обучение</a>
       </div>
@@ -882,23 +852,26 @@ async function loadProfile() {
     return;
   }
 
-  const res = await apiFetch('/api/auth/me');
-  if (!res.ok) { window.Auth.logout(); return; }
-  const user = await res.json();
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
 
-  // Greeting
-  document.getElementById('js-greeting').textContent = 'Здравствуйте, ' + (user.name || 'пользователь');
+    // Greeting
+    document.getElementById('js-greeting').textContent = 'Здравствуйте, ' + (user.name || 'пользователь');
 
-  // Profile fields
-  document.getElementById('val-name').textContent  = user.name  || '—';
-  document.getElementById('val-email').textContent = user.email || '—';
-  document.getElementById('input-name').value      = user.name  || '';
-  document.getElementById('input-email').value     = user.email || '';
-  document.getElementById('js-reg-date').textContent = formatDate(user.created_at);
+    // Profile fields
+    document.getElementById('val-name').textContent     = user.name  || '—';
+    document.getElementById('val-email').textContent    = user.email || '—';
+    document.getElementById('input-name').value         = user.name  || '';
+    document.getElementById('js-reg-date').textContent  = formatDate(user.created_at);
 
-  // Nav plan badge
-  const planBadges = document.querySelectorAll('.nav__plan-badge');
-  planBadges.forEach(b => b.textContent = user.plan || 'Без тарифа');
+    // Nav plan badge — filled in by loadOrders based on purchases
+  } catch (e) {
+    // On any error still reveal the page
+  } finally {
+    document.body.style.opacity = '1';
+  }
 }
 
 /* ── Load course progress ── */
@@ -908,16 +881,11 @@ async function loadProgress() {
     if (!res.ok) return;
     const data = await res.json();
 
-    const pct = data.percentage || 0;
-    document.getElementById('js-progress-pct').textContent = pct + '%';
-
     // Render steps
     const container = document.getElementById('js-progress-steps');
-    if (!container || !data.progress) return;
-    container.innerHTML = '';
+    if (!container || !data.progress || !data.progress.length) return;
 
-    const { rows: lessons } = { rows: data.progress };
-    // Just show done/todo for each lesson in progress
+    container.innerHTML = '';
     data.progress.forEach(p => {
       const done = p.completed;
       const el = document.createElement('div');
@@ -939,9 +907,40 @@ async function loadOrders() {
     if (!res.ok) return;
     const { orders } = await res.json();
 
-    const list = document.getElementById('js-orders-list');
+    const list  = document.getElementById('js-orders-list');
     const empty = document.getElementById('js-orders-empty');
     if (!list) return;
+
+    // Update course card from latest paid order
+    const paidOrder = orders.find(o => o.status === 'paid');
+    const planName  = paidOrder ? (paidOrder.plan || 'Курс') : null;
+
+    // Nav plan badges
+    const navBadge    = document.getElementById('js-nav-plan');
+    const drawerBadge = document.getElementById('js-drawer-plan');
+    if (navBadge)    navBadge.textContent    = planName || 'Без тарифа';
+    if (drawerBadge) drawerBadge.textContent = planName || 'Без тарифа';
+
+    // Course card
+    const courseNameEl   = document.getElementById('js-course-name');
+    const courseExpiryEl = document.getElementById('js-course-expiry');
+    const accessBadgeEl  = document.getElementById('js-access-badge');
+
+    if (paidOrder) {
+      if (courseNameEl)   courseNameEl.textContent   = planName;
+      if (courseExpiryEl) courseExpiryEl.textContent = '';  // no expiry in current schema
+      if (accessBadgeEl) {
+        accessBadgeEl.textContent = 'Активен';
+        accessBadgeEl.className   = 'status-badge status-badge--active';
+      }
+    } else {
+      if (courseNameEl)   courseNameEl.textContent   = 'Нет доступа';
+      if (courseExpiryEl) courseExpiryEl.textContent = '';
+      if (accessBadgeEl) {
+        accessBadgeEl.textContent = 'Нет доступа';
+        accessBadgeEl.className   = 'status-badge status-badge--none';
+      }
+    }
 
     if (!orders.length) {
       list.style.display = 'none';
@@ -951,7 +950,7 @@ async function loadOrders() {
 
     list.innerHTML = '';
     orders.forEach(o => {
-      const hasDiscount = o.original_amount && o.original_amount !== o.amount;
+      const hasDiscount = o.original_amount && Number(o.original_amount) !== Number(o.amount);
       list.insertAdjacentHTML('beforeend', `
         <div class="order-row">
           <span class="order-price">${formatPrice(o.amount)}</span>
