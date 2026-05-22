@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Панель управления — UEFN с нуля</title>
+  <meta name="description" content="Панель управления — UEFN с нуля." />
 
   <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
+    /* ═══════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
     body {
@@ -37,15 +41,18 @@
       --c-border:     rgba(255,255,255,.08);
       --c-border-mid: rgba(255,255,255,.13);
       --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
+      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
       --nav-h: 80px; --wrap: 1280px;
       --px: clamp(16px, 3.125vw, 40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* ── NAV ── */
+    /* ═══════════════════════════════════
+       NAV
+    ═══════════════════════════════════ */
     .nav {
       position: fixed; inset: 0 0 auto; z-index: 200;
-      height: var(--nav-h); width: 100%;
+      height: var(--nav-h); width: 100%; overflow: hidden;
       display: flex; align-items: center;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       background: rgba(15,19,23,.80); transition: box-shadow .3s;
@@ -58,17 +65,23 @@
     }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: .01em; color: #fff; white-space: nowrap; }
+    .nav__logo-text {
+      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
+      letter-spacing: .01em; color: #fff; white-space: nowrap;
+    }
     .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
     .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
+    .nav__user-name {
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      color: #fff; white-space: nowrap;
+    }
     .nav__avatar {
       width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-      border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
+      border: 2px solid rgba(255,255,255,.20);
+      background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: border-color .2s;
     }
     .nav__avatar:hover { border-color: var(--c-cyan); }
     .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
@@ -81,25 +94,41 @@
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
     .nav__burger.open span:nth-child(2) { opacity: 0; }
     .nav__burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav__avatar-mobile { display: none; flex-shrink: 0; }
     .nav__drawer {
       position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
       background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
-      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      -webkit-backdrop-filter: blur(24px); display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px; gap: 4px;
       transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
     }
     .nav__drawer.open { transform: translateX(0); }
-    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
+    .nav__drawer a {
+      display: block; font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 600; color: var(--c-muted);
+      padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
+    }
     .nav__drawer a:hover { color: #fff; }
     @media (max-width: 1100px) {
       .nav__links { display: none; } .nav__auth { display: none; }
-      .nav__burger { display: flex; }
+      .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
       .nav__inner { gap: 8px; padding-inline: 16px; }
     }
+    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
 
-    /* ── LAYOUT ── */
-    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
+    /* ═══════════════════════════════════
+       PAGE LAYOUT
+    ═══════════════════════════════════ */
+    main {
+      flex: 1;
+      padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px));
+      padding-bottom: clamp(64px,8vw,100px);
+    }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
+    /* ═══════════════════════════════════
+       PAGE TITLE
+    ═══════════════════════════════════ */
     .page-title {
       font-family: 'Unbounded', sans-serif;
       font-size: clamp(22px,3vw,44px); font-weight: 800;
@@ -107,194 +136,284 @@
       margin-bottom: clamp(20px,2.5vw,32px);
     }
 
-    /* ── TABS ── */
+    /* ═══════════════════════════════════
+       TAB NAV
+    ═══════════════════════════════════ */
     .tab-nav {
-      display: flex; align-items: center; gap: clamp(6px,1vw,10px);
+      display: flex; align-items: center;
+      gap: clamp(6px,1vw,10px);
       margin-bottom: clamp(24px,3vw,40px);
-      overflow-x: auto; scrollbar-width: none;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     .tab-nav::-webkit-scrollbar { display: none; }
     .tab-btn {
-      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
-      border-radius: 100px; font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.9vw,14px); font-weight: 500; color: var(--c-muted);
-      background: rgba(255,255,255,.05); border: 1.5px solid transparent;
-      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
+      flex-shrink: 0;
+      padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
+      border-radius: 100px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 500;
+      color: var(--c-muted);
+      background: rgba(255,255,255,.05);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: color .2s, border-color .2s, background .2s;
+      white-space: nowrap;
     }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .tab-btn.active {
+      color: #fff;
+      border-color: var(--c-cyan);
+      background: rgba(59,207,254,.06);
+    }
 
-    /* ── STAT CARDS ROW ── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: clamp(10px,1.5vw,18px);
-      margin-bottom: clamp(20px,2.5vw,32px);
-    }
-    .stat-card {
-      background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(16px,1.6vw,22px);
-      padding: clamp(18px,2vw,26px) clamp(18px,2vw,26px);
-      display: flex; flex-direction: column; gap: 10px;
-    }
-    .stat-card__label {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(11px,.85vw,13px); font-weight: 500; color: var(--c-muted);
-    }
-    .stat-card__value {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(20px,2.2vw,32px); font-weight: 800; color: #fff; line-height: 1;
-    }
-    .stat-card__sub {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(11px,.82vw,13px); color: var(--c-dim);
-    }
-    .stat-card__sub--green { color: #22C55E; }
-    .stat-card__sub--yellow { color: #FBBF24; }
-    @media (max-width: 800px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+    /* ═══════════════════════════════════
+       SECTION SPACING
+    ═══════════════════════════════════ */
+    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
 
-    /* ── CHART CARD ── */
+    /* ═══════════════════════════════════
+       CARD BASE
+    ═══════════════════════════════════ */
     .card {
-      background: var(--c-surf2); border: 1px solid var(--c-border);
+      background: var(--c-surf2);
+      border: 1px solid var(--c-border);
       border-radius: clamp(18px,1.8vw,26px);
-      padding: clamp(18px,2.2vw,28px);
+      padding: clamp(18px,2.2vw,28px) clamp(18px,2.2vw,28px);
     }
-    .section-gap { margin-bottom: clamp(18px,2.5vw,28px); }
 
+    /* ═══════════════════════════════════
+       SALES CHART CARD
+    ═══════════════════════════════════ */
+    .chart-card { padding-bottom: clamp(14px,1.8vw,22px); }
     .chart-header {
       display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin-bottom: clamp(16px,2vw,24px);
+      flex-wrap: wrap; gap: 12px;
+      margin-bottom: clamp(16px,2vw,24px);
     }
     .chart-title {
       font-family: 'Golos Text', sans-serif;
-      font-size: clamp(14px,1.1vw,17px); font-weight: 700; color: #fff;
+      font-size: clamp(15px,1.2vw,18px); font-weight: 700; color: #fff;
     }
-    .chart-legend { display: flex; align-items: center; gap: clamp(12px,1.5vw,20px); flex-wrap: wrap; }
-    .legend-item { display: flex; align-items: center; gap: 7px; font-size: clamp(11px,.85vw,13px); color: var(--c-muted); }
-    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .chart-legend {
+      display: flex; align-items: center; gap: clamp(14px,1.8vw,24px);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 7px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.85vw,13px); font-weight: 400; color: var(--c-muted);
+    }
+    .legend-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
 
-    .chart-days-btn {
-      display: flex; gap: 6px;
+    .chart-svg-wrap {
+      width: 100%; overflow: hidden;
+      margin-bottom: clamp(6px,.8vw,10px);
     }
-    .days-btn {
-      padding: 5px 12px; border-radius: 100px;
-      font-family: 'Golos Text', sans-serif; font-size: 12px; font-weight: 500;
-      color: var(--c-muted); background: rgba(255,255,255,.05);
-      border: 1px solid transparent; cursor: pointer; transition: all .2s;
-    }
-    .days-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .chart-svg { width: 100%; height: auto; display: block; }
 
+    .chart-xaxis {
+      display: flex; justify-content: space-between;
+      padding-inline: 2px;
+    }
+    .chart-xaxis span {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(9px,.65vw,11px); color: var(--c-dim);
+    }
+
+    /* Tooltip (main chart) */
     .chart-wrap { position: relative; }
-    .chart-svg-wrap { width: 100%; overflow: hidden; margin-bottom: 6px; }
-    .chart-svg { width: 100%; height: auto; display: block; cursor: crosshair; }
-    .chart-xaxis { display: flex; justify-content: space-between; padding-inline: 2px; }
-    .chart-xaxis span { font-size: clamp(9px,.65vw,11px); color: var(--c-dim); }
-
     .chart-tooltip {
-      position: absolute; top: 8px;
+      position: absolute; top: 0;
       pointer-events: none; display: none;
-      background: rgba(15,19,23,.96); border: 1px solid rgba(255,255,255,.13);
-      border-radius: 12px; padding: 10px 14px; white-space: nowrap;
-      z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      background: rgba(15,19,23,.96);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 12px;
+      padding: 10px 14px;
+      white-space: nowrap;
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transition: opacity .1s;
     }
-    .chart-tooltip__date { font-size: 11px; color: var(--c-dim); margin-bottom: 8px; }
-    .chart-tooltip__row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+    .chart-tooltip__date {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 400; color: var(--c-dim);
+      margin-bottom: 8px;
+    }
+    .chart-tooltip__row {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 12px; font-weight: 500; color: #fff;
+      margin-bottom: 4px;
+    }
     .chart-tooltip__row:last-child { margin-bottom: 0; }
-    .chart-tooltip__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chart-tooltip__dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
     .chart-tooltip__val { margin-left: auto; padding-left: 14px; font-weight: 600; }
 
-    .chart-empty {
-      height: 160px; display: flex; align-items: center; justify-content: center;
-      font-family: 'Golos Text', sans-serif; font-size: 14px; color: var(--c-dim);
+    /* Tooltip (sparkline) */
+    .spark-wrap { position: relative; }
+    .spark-tooltip {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      pointer-events: none; display: none;
+      background: rgba(15,19,23,.96);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 10px;
+      padding: 8px 12px;
+      white-space: nowrap; z-index: 10;
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    }
+    .spark-tooltip__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 10px; color: var(--c-dim); margin-bottom: 3px;
+    }
+    .spark-tooltip__val {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 13px; font-weight: 700; color: #fff;
+    }
+    .spark-tooltip__delta {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; font-weight: 400; color: #22C55E;
     }
 
-    /* ── SECTION TITLE ── */
+    /* mobile hint */
+    .chart-touch-hint {
+      display: none;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 11px; color: var(--c-dim);
+      text-align: center; margin-top: 6px;
+    }
+    @media (hover: none) { .chart-touch-hint { display: block; } }
+
+    /* ═══════════════════════════════════
+       METRIC CARDS
+    ═══════════════════════════════════ */
+    .metrics-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: clamp(12px,1.5vw,20px);
+    }
+    .metric-card { display: flex; flex-direction: column; gap: 0; }
+    .metric-title {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(12px,.9vw,14px); font-weight: 600; color: #fff;
+      margin-bottom: clamp(12px,1.5vw,18px);
+    }
+    .metric-spark { width: 100%; overflow: hidden; margin-bottom: clamp(12px,1.5vw,18px); }
+    .metric-spark svg { width: 100%; height: auto; display: block; }
+    .metric-value-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .metric-value {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(22px,2.2vw,32px); font-weight: 700; color: #fff; line-height: 1;
+    }
+    .metric-delta {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.85vw,13px); font-weight: 400;
+      color: #22C55E;
+    }
+
+    @media (max-width: 560px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════
+       ORDERS SECTION
+    ═══════════════════════════════════ */
     .section-title {
       font-family: 'Unbounded', sans-serif;
-      font-size: clamp(15px,1.3vw,20px); font-weight: 800;
+      font-size: clamp(16px,1.4vw,22px); font-weight: 800;
       letter-spacing: -0.02em; color: #fff;
-      margin-bottom: clamp(14px,1.8vw,20px);
+      margin-bottom: clamp(14px,1.8vw,22px);
     }
 
-    /* ── ORDERS TABLE ── */
-    .orders-table {
-      background: var(--c-surf2); border: 1px solid var(--c-border);
-      border-radius: clamp(16px,1.6vw,24px); overflow: hidden;
-    }
-    .orders-table-head {
-      display: grid; grid-template-columns: 2fr 2fr 1.2fr 1fr 1fr 1.2fr;
-      gap: 12px; padding: 12px 22px;
-      border-bottom: 1px solid var(--c-border);
-      background: rgba(255,255,255,.02);
-    }
-    .th { font-size: 11px; font-weight: 600; color: var(--c-dim); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
-    .th--right { text-align: right; }
+    .orders-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
 
     .order-row {
-      display: grid; grid-template-columns: 2fr 2fr 1.2fr 1fr 1fr 1.2fr;
-      gap: 12px; padding: 13px 22px; align-items: center;
-      border-bottom: 1px solid var(--c-border); transition: background .15s;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: clamp(10px,1.5vw,20px);
+      align-items: start;
     }
-    .order-row:last-child { border-bottom: none; }
-    .order-row:hover { background: rgba(255,255,255,.02); }
-
-    .order-buyer { min-width: 0; }
-    .order-buyer__name { font-size: 13px; font-weight: 600; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .order-buyer__email { font-size: 12px; color: var(--c-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .order-product { font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .order-amount  { font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; }
-    .order-date    { font-size: 12px; color: var(--c-dim); white-space: nowrap; }
-    .order-promo   { font-size: 12px; color: var(--c-cyan); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .order-field {}
+    .order-field__label {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(9px,.7vw,11px); font-weight: 400;
+      color: var(--c-muted); margin-bottom: 4px;
+      white-space: nowrap;
+    }
+    .order-field__value {
+      font-family: 'Golos Text', sans-serif;
+      font-size: clamp(11px,.9vw,14px); font-weight: 600; color: #fff;
+      line-height: 1.3;
+    }
+    .order-field__value--muted { color: var(--c-muted); font-weight: 400; }
+    .order-field__value--price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 
     .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 3px 10px; border-radius: 100px;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
+      font-size: 11px; font-weight: 600;
     }
-    .status-pill::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; }
-    .status-pill--paid     { background: rgba(34,197,94,.10); border: 1px solid rgba(34,197,94,.22); color: #22C55E; }
-    .status-pill--paid::before { background: #22C55E; }
-    .status-pill--pending  { background: rgba(251,191,36,.10); border: 1px solid rgba(251,191,36,.22); color: #FBBF24; }
-    .status-pill--pending::before { background: #FBBF24; }
-    .status-pill--refunded { background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.22); color: #F87171; }
-    .status-pill--refunded::before { background: #F87171; }
+    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; }
+    .status-pill--paid    { background:rgba(34,197,94,.10); border:1px solid rgba(34,197,94,.22); color:#22C55E; }
+    .status-pill--paid::before { background:#22C55E; }
+    .status-pill--pending { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
+    .status-pill--pending::before { background:#FBBF24; }
 
-    .table-empty { padding: 32px; text-align: center; font-size: 14px; color: var(--c-dim); }
-
-    @media (max-width: 900px) {
-      .orders-table-head { grid-template-columns: 2fr 1.5fr 1fr 1fr; }
-      .orders-table-head .th:nth-child(4),
-      .orders-table-head .th:nth-child(6) { display: none; }
-      .order-row { grid-template-columns: 2fr 1.5fr 1fr 1fr; }
-      .order-row > *:nth-child(4),
-      .order-row > *:nth-child(6) { display: none; }
-    }
-    @media (max-width: 600px) {
-      .orders-table-head { display: none; }
-      .order-row { grid-template-columns: 1fr auto; gap: 8px; padding: 12px 16px; }
-      .order-row > *:nth-child(2),
-      .order-row > *:nth-child(3),
-      .order-row > *:nth-child(4),
-      .order-row > *:nth-child(6) { display: none; }
+    .orders-empty {
+      font-family: 'Golos Text', sans-serif;
+      font-size: 14px; color: var(--c-dim); padding: 8px 0;
     }
 
-    /* ── FOOTER ── */
+    @media (max-width: 700px) {
+      .order-row {
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(10px,3vw,16px);
+      }
+    }
+    @media (max-width: 420px) {
+      .order-row { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    /* ═══════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════ */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
-    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
-    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); row-gap: 0; align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
     .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
     .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
     .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+    .footer__brand-logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: .02em; line-height: 1.25; }
     .footer__legal { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 12px; padding-top: 22px; }
     .footer__legal a { font-size: 12px; color: var(--c-dim); transition: color .2s; }
     .footer__legal a:hover { color: var(--c-muted); }
     .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; cursor: pointer; }
+    .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
+    .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
+    .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+    @media (max-width: 900px) {
+      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
+      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
+      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
+      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
+    }
+    @media (max-width: 540px) {
+      .footer__grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
+      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; }
+      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
+      .footer__nav a { font-size: 15px; }
+      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
+    }
 
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
@@ -303,7 +422,7 @@
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ██████ NAV ██████ -->
 <header class="nav" id="js-nav">
   <div class="nav__inner">
     <div class="nav__logo">
@@ -314,31 +433,39 @@
       <a href="index.html#hero">О курсе</a>
       <a href="index.html#curriculum">Программа</a>
       <a href="index.html#pricing">Тарифы</a>
+      <a href="index.html#partnership">Подписка</a>
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
       <span class="nav__user-name" id="js-nav-name"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
-        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
-    <button class="nav__burger" id="js-burger" aria-label="Меню">
+    <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
+    <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
+      <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
   </div>
 </header>
 <nav class="nav__drawer" id="js-drawer">
-  <a href="dashboard.html">Дашборд</a>
+  <a href="index.html#hero">О курсе</a>
+  <a href="index.html#curriculum">Программа</a>
+  <a href="index.html#pricing">Тарифы</a>
+  <a href="index.html#partnership">Подписка</a>
+  <a href="index.html#faq">Ответы на вопросы</a>
   <a href="profile.html">Профиль</a>
 </nav>
 
-<!-- MAIN -->
+<!-- ██████ MAIN ██████ -->
 <main>
   <div class="page-wrap">
 
     <h1 class="page-title">Панель управления</h1>
 
-    <!-- TABS -->
+    <!-- TAB NAV -->
     <nav class="tab-nav">
       <a class="tab-btn active" href="dashboard.html">Дашборд</a>
       <a class="tab-btn" href="admin-users.html">Пользователи</a>
@@ -349,84 +476,90 @@
       <a class="tab-btn" href="content.html">Контент</a>
     </nav>
 
-    <!-- STAT CARDS -->
-    <div class="stats-grid section-gap">
-      <div class="stat-card">
-        <span class="stat-card__label">Выручка (всего)</span>
-        <span class="stat-card__value" id="js-stat-revenue">—</span>
-        <span class="stat-card__sub stat-card__sub--green" id="js-stat-revenue-sub"></span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__label">Продажи (оплачено)</span>
-        <span class="stat-card__value" id="js-stat-sales">—</span>
-        <span class="stat-card__sub" id="js-stat-sales-sub"></span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__label">Пользователи</span>
-        <span class="stat-card__value" id="js-stat-users">—</span>
-        <span class="stat-card__sub stat-card__sub--green" id="js-stat-users-sub"></span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__label">Ожидают выплат</span>
-        <span class="stat-card__value" id="js-stat-payouts">—</span>
-        <span class="stat-card__sub stat-card__sub--yellow" id="js-stat-apps-sub"></span>
-      </div>
-    </div>
-
-    <!-- CHART -->
-    <div class="card section-gap">
-      <div class="chart-header">
-        <span class="chart-title">Продажи по дням</span>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div class="chart-legend" id="js-legend"></div>
-          <div class="chart-days-btn">
-            <button class="days-btn active" data-days="7">7 дней</button>
-            <button class="days-btn" data-days="14">14 дней</button>
-            <button class="days-btn" data-days="30">30 дней</button>
+    <!-- ── SALES CHART ── -->
+    <div class="dash-section">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Продажи</span>
+          <div class="chart-legend" id="js-chart-legend"></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-svg-wrap">
+            <svg class="chart-svg" id="js-chart-main" viewBox="0 0 900 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
+              <line x1="0" y1="40"  x2="900" y2="40"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="90"  x2="900" y2="90"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="140" x2="900" y2="140" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <line x1="0" y1="190" x2="900" y2="190" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+              <g id="js-chart-lines"></g>
+              <g id="js-chart-ind" style="display:none; pointer-events:none">
+                <line id="js-ind-line" x1="0" y1="0" x2="0" y2="200" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="5,3"/>
+                <g id="js-ind-dots"></g>
+              </g>
+              <rect id="js-chart-overlay" x="0" y="0" width="900" height="200" fill="transparent"/>
+            </svg>
           </div>
+          <div class="chart-xaxis" id="js-xaxis"></div>
+          <div class="chart-tooltip" id="js-chart-tip"></div>
+          <p class="chart-touch-hint">Нажмите на график для просмотра статистики</p>
         </div>
-      </div>
-      <div class="chart-wrap" id="js-chart-wrap">
-        <div class="chart-empty" id="js-chart-empty" style="display:none">Нет данных за выбранный период</div>
-        <div class="chart-svg-wrap" id="js-chart-svg-wrap">
-          <svg class="chart-svg" id="js-chart-svg" viewBox="0 0 900 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="0" y1="50"  x2="900" y2="50"  stroke="rgba(255,255,255,.05)" stroke-width="1"/>
-            <line x1="0" y1="100" x2="900" y2="100" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
-            <line x1="0" y1="150" x2="900" y2="150" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
-            <line x1="0" y1="195" x2="900" y2="195" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
-            <g id="js-chart-lines"></g>
-            <g id="js-chart-ind" style="display:none;pointer-events:none">
-              <line id="js-ind-line" x1="0" y1="0" x2="0" y2="200" stroke="rgba(255,255,255,.2)" stroke-width="1" stroke-dasharray="4,3"/>
-              <g id="js-ind-dots"></g>
-            </g>
-            <rect id="js-chart-overlay" x="0" y="0" width="900" height="200" fill="transparent" style="cursor:crosshair"/>
-          </svg>
-        </div>
-        <div class="chart-xaxis" id="js-chart-xaxis"></div>
-        <div class="chart-tooltip" id="js-chart-tip"></div>
       </div>
     </div>
 
-    <!-- RECENT ORDERS -->
-    <h2 class="section-title">Последние заказы</h2>
-    <div class="orders-table">
-      <div class="orders-table-head">
-        <span class="th">Покупатель</span>
-        <span class="th">Продукт</span>
-        <span class="th">Сумма</span>
-        <span class="th">Статус</span>
-        <span class="th">Промокод</span>
-        <span class="th th--right">Дата</span>
+    <!-- ── METRIC CARDS ── -->
+    <div class="dash-section metrics-grid">
+
+      <!-- Выручка -->
+      <div class="card metric-card">
+        <p class="metric-title">Выручка</p>
+        <div class="metric-spark spark-wrap" id="js-rev-wrap">
+          <svg viewBox="0 0 400 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
+            <path id="js-spark-revenue" fill="none" stroke="#3BCFFE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="js-spark-rev-ind" style="display:none; pointer-events:none">
+              <line id="js-spark-rev-line" x1="0" y1="0" x2="0" y2="70" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="4,3"/>
+              <circle id="js-spark-rev-dot" r="5" fill="#3BCFFE" stroke="#0F1317" stroke-width="2"/>
+            </g>
+            <rect id="js-rev-overlay" x="0" y="0" width="400" height="70" fill="transparent"/>
+          </svg>
+          <div class="spark-tooltip" id="js-rev-tip"></div>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="js-rev-val">—</span>
+          <span class="metric-delta" id="js-rev-delta"></span>
+        </div>
       </div>
-      <div id="js-orders-body">
-        <div class="table-empty">Загрузка…</div>
+
+      <!-- Продажи -->
+      <div class="card metric-card">
+        <p class="metric-title">Продажи</p>
+        <div class="metric-spark spark-wrap" id="js-sub-wrap">
+          <svg viewBox="0 0 400 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
+            <path id="js-spark-subs" fill="none" stroke="#3BCFFE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="js-spark-sub-ind" style="display:none; pointer-events:none">
+              <line id="js-spark-sub-line" x1="0" y1="0" x2="0" y2="70" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="4,3"/>
+              <circle id="js-spark-sub-dot" r="5" fill="#3BCFFE" stroke="#0F1317" stroke-width="2"/>
+            </g>
+            <rect id="js-sub-overlay" x="0" y="0" width="400" height="70" fill="transparent"/>
+          </svg>
+          <div class="spark-tooltip" id="js-sub-tip"></div>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="js-sub-val">—</span>
+          <span class="metric-delta" id="js-sub-delta"></span>
+        </div>
       </div>
+
+    </div>
+
+    <!-- ── RECENT ORDERS ── -->
+    <div class="dash-section">
+      <h2 class="section-title">Последние заказы</h2>
+      <div class="orders-list" id="js-orders"></div>
     </div>
 
   </div>
 </main>
 
-<!-- FOOTER -->
+<!-- ██████ FOOTER ██████ -->
 <footer class="footer">
   <div class="wrap">
     <hr class="footer__rule" />
@@ -442,12 +575,23 @@
         <a href="privacy.html">Политика конфиденциальности</a>
         <a href="terms.html">Пользовательское соглашение</a>
       </div>
-      <nav class="footer__nav">
+      <nav class="footer__nav" aria-label="Навигация сайта">
         <a href="index.html#advantages">О курсе</a>
+        <a href="index.html#partnership">Подписка</a>
         <a href="index.html#curriculum">Программа</a>
-        <a href="index.html#pricing">Тарифы</a>
         <a href="index.html#faq">Ответы на вопросы</a>
+        <a href="index.html#pricing">Тарифы</a>
+        <a href="partner.html">Партнёрка</a>
       </nav>
+      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+        <div class="footer__tg-capsule-text">
+          <span class="footer__tg-capsule-sub">Вступайте в группу</span>
+          <span class="footer__tg-capsule-name">Телеграм</span>
+        </div>
+        <div class="footer__tg-icon" aria-hidden="true">
+          <img src="фотографии/telegram.png" alt="Telegram" width="42" height="42" />
+        </div>
+      </a>
     </div>
   </div>
 </footer>
@@ -456,137 +600,100 @@
 <script>
 'use strict';
 
-/* ── Nav ── */
+/* ── Nav scroll ── */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
-burger.addEventListener('click', () => {
-  const open = drawer.classList.toggle('open');
-  burger.classList.toggle('open', open);
-});
+let drawerOpen = false;
+function setDrawer(v) {
+  drawerOpen = v; burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v)); document.body.style.overflow = v ? 'hidden' : '';
+}
+burger.addEventListener('click', () => setDrawer(!drawerOpen));
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
 /* ── Helpers ── */
-function fmt(n)    { return Number(n).toLocaleString('ru-RU'); }
-function fmtR(n)   { return fmt(n) + ' ₽'; }
+function fmtPrice(n) { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
+function fmtNum(n)   { return Number(n).toLocaleString('ru-RU'); }
 function fmtDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 function fmtDateShort(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return (d.getDate()) + '.' + String(d.getMonth()+1).padStart(2,'0');
+  return d.getDate() + '.' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 /* ── Smooth curve (Catmull-Rom → Bezier) ── */
-function smoothPath(pts, tension = 0.3) {
+function smoothPath(pts, tension = 0.35) {
   if (pts.length < 2) return '';
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(i-1,0)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(i+2,pts.length-1)];
     const cp1x = p1[0] + (p2[0]-p0[0])*tension, cp1y = p1[1] + (p2[1]-p0[1])*tension;
     const cp2x = p2[0] - (p3[0]-p1[0])*tension, cp2y = p2[1] - (p3[1]-p1[1])*tension;
-    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)},${cp2x.toFixed(1)} ${cp2y.toFixed(1)},${p2[0]} ${p2[1]}`;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
   }
   return d;
 }
 
-/* ── Chart state ── */
+const COLORS = ['#F59E0B','#22C55E','#EF4444','#3BCFFE','#A78BFA','#F472B6'];
 const VW = 900, VH = 200;
-const PRODUCT_COLORS = ['#3BCFFE','#F59E0B','#22C55E','#EF4444','#A78BFA','#F472B6'];
-let chartDays = 7;
-let chartData = [];
 
-/* ── Build chart from raw API rows ── */
-function buildChart(rows, days) {
-  // Build date list for last N days
+/* ── Build main chart from API data ── */
+function renderMainChart(chartRows) {
+  const N = 14;
   const dates = [];
-  for (let i = days - 1; i >= 0; i--) {
+  for (let i = N-1; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
     dates.push(d.toISOString().slice(0,10));
   }
 
-  // Get all unique products
-  const products = [...new Set(rows.map(r => r.product))].sort();
-
-  // Group by date+product
+  const products = [...new Set(chartRows.map(r => r.product))].sort();
   const map = {};
-  rows.forEach(r => {
-    const key = r.day.slice(0,10) + '|' + r.product;
-    map[key] = { count: r.count, revenue: parseFloat(r.revenue) };
-  });
+  chartRows.forEach(r => { map[r.day.slice(0,10) + '|' + r.product] = { count: +r.count, revenue: +r.revenue }; });
 
-  // Build per-product series
   const series = products.map(prod => ({
     product: prod,
-    values: dates.map(d => map[d + '|' + prod]?.count || 0),
-    revenues: dates.map(d => map[d + '|' + prod]?.revenue || 0),
+    counts:   dates.map(d => map[d+'|'+prod]?.count   || 0),
+    revenues: dates.map(d => map[d+'|'+prod]?.revenue || 0),
   }));
 
-  return { dates, series };
-}
+  const xs = dates.map((_, i) => Math.round(i * VW / (N-1)));
+  const allCounts = series.flatMap(s => s.counts);
+  const maxVal = Math.max(...allCounts, 1);
+  const PAD = 14;
+  function toY(v) { return VH - PAD - (v / maxVal) * (VH - PAD*2); }
 
-function renderChart(rows) {
-  const { dates, series } = buildChart(rows, chartDays);
+  /* legend */
+  const legendEl = document.getElementById('js-chart-legend');
+  legendEl.innerHTML = '';
+  series.forEach((s, si) => {
+    legendEl.insertAdjacentHTML('beforeend',
+      `<div class="legend-item"><span class="legend-dot" style="background:${COLORS[si%COLORS.length]}"></span>${s.product}</div>`);
+  });
 
-  const emptyEl   = document.getElementById('js-chart-empty');
-  const svgWrapEl = document.getElementById('js-chart-svg-wrap');
+  /* lines */
   const linesEl   = document.getElementById('js-chart-lines');
-  const xaxisEl   = document.getElementById('js-chart-xaxis');
-  const legendEl  = document.getElementById('js-legend');
   const indDotsEl = document.getElementById('js-ind-dots');
-
   linesEl.innerHTML = '';
   indDotsEl.innerHTML = '';
-  xaxisEl.innerHTML  = '';
-  legendEl.innerHTML = '';
 
-  const totalSales = rows.reduce((s, r) => s + r.count, 0);
-  if (!totalSales) {
-    emptyEl.style.display = '';
-    svgWrapEl.style.display = 'none';
-    return;
-  }
-  emptyEl.style.display = 'none';
-  svgWrapEl.style.display = '';
-
-  const N = dates.length;
-  const xs = dates.map((_, i) => N === 1 ? VW/2 : Math.round(i * VW / (N - 1)));
-
-  // Find global max for Y scaling
-  const allVals = series.flatMap(s => s.values);
-  const maxVal  = Math.max(...allVals, 1);
-
-  const PAD_TOP = 10, PAD_BOT = 10;
-  function toY(v) { return VH - PAD_BOT - (v / maxVal) * (VH - PAD_TOP - PAD_BOT); }
-
-  // Draw lines + dots per product
   series.forEach((s, si) => {
-    const color = PRODUCT_COLORS[si % PRODUCT_COLORS.length];
-    const pts   = xs.map((x, i) => [x, toY(s.values[i])]);
+    const color = COLORS[si % COLORS.length];
+    const pts   = xs.map((x, i) => [x, toY(s.counts[i])]);
 
-    // Filled area
-    const areaPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    let areaD = `M ${pts[0][0]} ${VH} L ${pts[0][0]} ${pts[0][1]}`;
-    areaD += smoothPath(pts).slice(1); // append curve without leading M
-    areaD += ` L ${pts[pts.length-1][0]} ${VH} Z`;
-    areaPath.setAttribute('d', areaD);
-    areaPath.setAttribute('fill', color);
-    areaPath.setAttribute('fill-opacity', '0.06');
-    linesEl.appendChild(areaPath);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', smoothPath(pts));
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    linesEl.appendChild(path);
 
-    // Line
-    const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    linePath.setAttribute('d', smoothPath(pts));
-    linePath.setAttribute('fill', 'none');
-    linePath.setAttribute('stroke', color);
-    linePath.setAttribute('stroke-width', '2.2');
-    linePath.setAttribute('stroke-linecap', 'round');
-    linePath.setAttribute('stroke-linejoin', 'round');
-    linesEl.appendChild(linePath);
-
-    // Indicator dot (hidden by default)
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     dot.setAttribute('r', '5');
     dot.setAttribute('fill', color);
@@ -594,143 +701,192 @@ function renderChart(rows) {
     dot.setAttribute('stroke-width', '2');
     dot.id = `js-dot-${si}`;
     indDotsEl.appendChild(dot);
-
-    // Legend
-    legendEl.insertAdjacentHTML('beforeend',
-      `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span>${s.product}</div>`);
   });
 
-  // X-axis labels (show max 7)
+  /* x-axis */
+  const xaxisEl = document.getElementById('js-xaxis');
+  xaxisEl.innerHTML = '';
   const step = Math.ceil(N / 7);
   dates.forEach((d, i) => {
-    if (i % step !== 0 && i !== N - 1) return;
+    if (i % step !== 0 && i !== N-1) return;
     const span = document.createElement('span');
     span.textContent = fmtDateShort(d);
     xaxisEl.appendChild(span);
   });
 
-  // Hover tooltip
+  /* hover */
+  const chartSvg = document.getElementById('js-chart-main');
   const overlay  = document.getElementById('js-chart-overlay');
   const indG     = document.getElementById('js-chart-ind');
   const indLine  = document.getElementById('js-ind-line');
   const tipEl    = document.getElementById('js-chart-tip');
-  const chartSvg = document.getElementById('js-chart-svg');
 
   function getIdx(clientX) {
     const rect = chartSvg.getBoundingClientRect();
-    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    return Math.round(frac * (N - 1));
+    return Math.round(Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * (N-1));
   }
   function showTip(clientX) {
     const idx  = getIdx(clientX);
     const svgX = xs[idx];
-
     indLine.setAttribute('x1', svgX); indLine.setAttribute('x2', svgX);
     series.forEach((s, si) => {
-      const pts = xs.map((x, i) => [x, toY(s.values[i])]);
       const dot = document.getElementById(`js-dot-${si}`);
+      const pts = xs.map((x, i) => [x, toY(s.counts[i])]);
       if (dot) { dot.setAttribute('cx', svgX); dot.setAttribute('cy', pts[idx][1]); }
     });
     indG.style.display = '';
 
     let html = `<div class="chart-tooltip__date">${fmtDateShort(dates[idx])}</div>`;
     series.forEach((s, si) => {
-      const color = PRODUCT_COLORS[si % PRODUCT_COLORS.length];
       html += `<div class="chart-tooltip__row">
-        <span class="chart-tooltip__dot" style="background:${color}"></span>
+        <span class="chart-tooltip__dot" style="background:${COLORS[si%COLORS.length]}"></span>
         ${s.product}
-        <span class="chart-tooltip__val">${s.values[idx]} шт. · ${fmtR(s.revenues[idx])}</span>
+        <span class="chart-tooltip__val">${s.counts[idx]} шт.</span>
       </div>`;
     });
     tipEl.innerHTML = html;
 
     const rect   = chartSvg.getBoundingClientRect();
     const screenX = (svgX / VW) * rect.width;
-    const tipW    = tipEl.offsetWidth || 200;
-    const wrapW   = rect.width;
-    tipEl.style.left = (screenX + 14 + tipW > wrapW ? screenX - tipW - 10 : screenX + 14) + 'px';
+    const tipW    = tipEl.offsetWidth || 180;
+    tipEl.style.left = (screenX + 14 + tipW > rect.width ? screenX - tipW - 10 : screenX + 14) + 'px';
     tipEl.style.display = 'block';
   }
   function hideTip() { indG.style.display = 'none'; tipEl.style.display = 'none'; }
 
-  // Remove old listeners by cloning
-  const newOverlay = overlay.cloneNode(false);
-  overlay.parentNode.replaceChild(newOverlay, overlay);
-  newOverlay.id = 'js-chart-overlay';
-  newOverlay.addEventListener('mousemove', e => showTip(e.clientX));
-  newOverlay.addEventListener('mouseleave', hideTip);
-  newOverlay.addEventListener('touchstart', e => { e.preventDefault(); showTip(e.touches[0].clientX); }, {passive:false});
-  newOverlay.addEventListener('touchmove',  e => { e.preventDefault(); showTip(e.touches[0].clientX); }, {passive:false});
-  newOverlay.addEventListener('touchend', hideTip);
+  overlay.addEventListener('mousemove', e => showTip(e.clientX));
+  overlay.addEventListener('mouseleave', hideTip);
+  overlay.addEventListener('touchstart', e => { e.preventDefault(); showTip(e.touches[0].clientX); }, {passive:false});
+  overlay.addEventListener('touchmove', e => { e.preventDefault(); showTip(e.touches[0].clientX); }, {passive:false});
+  overlay.addEventListener('touchend', hideTip);
 }
 
-/* ── Load chart data ── */
-async function loadChart() {
-  try {
-    const res = await apiFetch(`/api/admin/chart?days=${chartDays}`);
-    if (!res.ok) return;
-    const { chart } = await res.json();
-    chartData = chart;
-    renderChart(chart);
-  } catch {}
+/* ── Sparkline helper ── */
+function renderSparkline(pathId, overlayId, indGId, indLineId, indDotId, tipId, wrapId, values, dates, formatVal) {
+  const sparkW = 400, sparkH = 70, PAD = 8;
+  const N   = values.length;
+  const xs  = values.map((_, i) => N===1 ? sparkW/2 : Math.round(i * sparkW / (N-1)));
+  const min = Math.min(...values), max = Math.max(...values), rng = max - min || 1;
+  const pts = xs.map((x, i) => [x, sparkH - PAD - ((values[i]-min)/rng)*(sparkH - PAD*2)]);
+
+  document.getElementById(pathId).setAttribute('d', smoothPath(pts));
+
+  const svgEl   = document.querySelector(`#${wrapId} svg`);
+  const indGEl  = document.getElementById(indGId);
+  const indLnEl = document.getElementById(indLineId);
+  const indDtEl = document.getElementById(indDotId);
+  const tipEl   = document.getElementById(tipId);
+  const overlay = document.getElementById(overlayId);
+
+  function show(clientX) {
+    const rect = svgEl.getBoundingClientRect();
+    const idx  = Math.round(Math.max(0, Math.min(1, (clientX-rect.left)/rect.width)) * (N-1));
+    const svgX = pts[idx][0], svgY = pts[idx][1];
+    indLnEl.setAttribute('x1', svgX); indLnEl.setAttribute('x2', svgX);
+    indDtEl.setAttribute('cx', svgX); indDtEl.setAttribute('cy', svgY);
+    indGEl.style.display = '';
+    tipEl.innerHTML = `
+      <div class="spark-tooltip__label">${dates[idx] || ''}</div>
+      <div class="spark-tooltip__val">${formatVal(values[idx])}</div>`;
+    const screenX = (svgX / sparkW) * rect.width;
+    const tipW    = 110;
+    const wrapW   = svgEl.parentElement.offsetWidth;
+    tipEl.style.left = (screenX + 12 + tipW > wrapW ? screenX - tipW - 8 : screenX + 12) + 'px';
+    tipEl.style.display = 'block';
+  }
+  function hide() { indGEl.style.display = 'none'; tipEl.style.display = 'none'; }
+
+  overlay.addEventListener('mousemove', e => show(e.clientX));
+  overlay.addEventListener('mouseleave', hide);
+  overlay.addEventListener('touchstart', e => { e.preventDefault(); show(e.touches[0].clientX); }, {passive:false});
+  overlay.addEventListener('touchmove', e => { e.preventDefault(); show(e.touches[0].clientX); }, {passive:false});
+  overlay.addEventListener('touchend', hide);
 }
 
-/* ── Days buttons ── */
-document.querySelectorAll('.days-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.days-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    chartDays = parseInt(btn.dataset.days, 10);
-    loadChart();
+/* ── Render metrics from chart data ── */
+function renderMetrics(chartRows, stats) {
+  const N = 14;
+  const dates = [];
+  for (let i = N-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    dates.push(d.toISOString().slice(0,10));
+  }
+
+  const map = {};
+  chartRows.forEach(r => {
+    const day = r.day.slice(0,10);
+    if (!map[day]) map[day] = { revenue: 0, count: 0 };
+    map[day].revenue += +r.revenue;
+    map[day].count   += +r.count;
   });
-});
 
-/* ── Load stats ── */
-async function loadStats() {
-  try {
-    const res = await apiFetch('/api/admin/stats');
-    if (!res.ok) return;
-    const s = await res.json();
+  const revValues   = dates.map(d => map[d]?.revenue || 0);
+  const countValues = dates.map(d => map[d]?.count   || 0);
+  const dateLabels  = dates.map(d => fmtDateShort(d));
 
-    document.getElementById('js-stat-revenue').textContent     = fmtR(s.orders.revenue);
-    document.getElementById('js-stat-revenue-sub').textContent = `${fmt(s.orders.paidCount)} оплаченных заказов`;
-    document.getElementById('js-stat-sales').textContent       = fmt(s.orders.paidCount);
-    document.getElementById('js-stat-sales-sub').textContent   = `Всего заказов: ${fmt(s.orders.total)}`;
-    document.getElementById('js-stat-users').textContent       = fmt(s.users.total);
-    document.getElementById('js-stat-users-sub').textContent   = `+${fmt(s.users.last30d)} за 30 дней`;
-    document.getElementById('js-stat-payouts').textContent     = fmtR(s.pendingPayouts);
-    document.getElementById('js-stat-apps-sub').textContent    = `Заявок в ожидании: ${s.pendingApplications}`;
-  } catch {}
+  // Revenue sparkline
+  renderSparkline('js-spark-revenue','js-rev-overlay','js-spark-rev-ind','js-spark-rev-line','js-spark-rev-dot','js-rev-tip','js-rev-wrap',
+    revValues, dateLabels, v => fmtPrice(v));
+
+  // Sales sparkline
+  renderSparkline('js-spark-subs','js-sub-overlay','js-spark-sub-ind','js-spark-sub-line','js-spark-sub-dot','js-sub-tip','js-sub-wrap',
+    countValues, dateLabels, v => v + ' продаж');
+
+  // Values
+  const totalRevenue  = stats?.orders?.revenue  ?? revValues.reduce((a,b)=>a+b,0);
+  const totalSales    = stats?.orders?.paidCount ?? countValues.reduce((a,b)=>a+b,0);
+  const todayRevenue  = revValues[revValues.length-1]   || 0;
+  const todaySales    = countValues[countValues.length-1] || 0;
+
+  document.getElementById('js-rev-val').textContent   = fmtPrice(totalRevenue);
+  document.getElementById('js-rev-delta').textContent = todayRevenue ? '+' + fmtPrice(todayRevenue) + ' сегодня' : '';
+  document.getElementById('js-sub-val').textContent   = fmtNum(totalSales);
+  document.getElementById('js-sub-delta').textContent = todaySales ? '+' + todaySales + ' сегодня' : '';
 }
 
-/* ── Load recent orders ── */
-async function loadOrders() {
-  const body = document.getElementById('js-orders-body');
-  try {
-    const res = await apiFetch('/api/admin/sales?limit=10');
-    if (!res.ok) { body.innerHTML = '<div class="table-empty">Ошибка загрузки.</div>'; return; }
-    const { sales } = await res.json();
+/* ── Render recent orders ── */
+function renderOrders(sales) {
+  const el = document.getElementById('js-orders');
+  if (!sales.length) {
+    el.innerHTML = '<p class="orders-empty">Заказов пока нет.</p>';
+    return;
+  }
 
-    if (!sales.length) { body.innerHTML = '<div class="table-empty">Заказов пока нет.</div>'; return; }
+  const statusMap = {
+    paid:     'Оплачено',
+    pending:  'В ожидании',
+    refunded: 'Возврат',
+  };
 
-    const statusMap = { paid: ['paid','Оплачено'], pending: ['pending','В ожидании'], refunded: ['refunded','Возврат'] };
-    body.innerHTML = '';
-    sales.forEach(o => {
-      const [cls, label] = statusMap[o.status] || ['pending', o.status];
-      body.insertAdjacentHTML('beforeend', `
-        <div class="order-row">
-          <div class="order-buyer">
-            <div class="order-buyer__name">${o.buyer_name || 'Без имени'}</div>
-            <div class="order-buyer__email">${o.buyer_email}</div>
-          </div>
-          <span class="order-product">${o.product || '—'}</span>
-          <span class="order-amount">${fmtR(o.amount)}</span>
-          <span class="status-pill status-pill--${cls}">${label}</span>
-          <span class="order-promo">${o.promo_code || '—'}</span>
-          <span class="order-date" style="text-align:right">${fmtDate(o.created_at)}</span>
-        </div>`);
-    });
-  } catch { body.innerHTML = '<div class="table-empty">Ошибка загрузки.</div>'; }
+  el.innerHTML = '';
+  sales.forEach(o => {
+    const statusLabel = statusMap[o.status] || o.status;
+    const statusCls   = o.status === 'paid' ? 'status-pill--paid' : 'status-pill--pending';
+    el.insertAdjacentHTML('beforeend', `
+      <div class="card order-row">
+        <div class="order-field">
+          <p class="order-field__label">Покупатель</p>
+          <p class="order-field__value">${o.buyer_name || '—'}</p>
+          <p class="order-field__value order-field__value--muted" style="font-size:12px;margin-top:2px">${o.buyer_email}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Статус</p>
+          <p class="order-field__value"><span class="status-pill ${statusCls}">${statusLabel}</span></p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Продукт</p>
+          <p class="order-field__value">${o.product || '—'}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Промокод</p>
+          <p class="order-field__value ${o.promo_code ? '' : 'order-field__value--muted'}">${o.promo_code || '—'}</p>
+        </div>
+        <div class="order-field">
+          <p class="order-field__label">Дата</p>
+          <p class="order-field__value">${fmtDate(o.created_at)}</p>
+        </div>
+      </div>`);
+  });
 }
 
 /* ── Init ── */
@@ -739,14 +895,28 @@ async function init() {
 
   let canShow = false;
   try {
-    const res = await apiFetch('/api/auth/me');
-    if (!res.ok) { window.Auth.logout(); return; }
-    const user = await res.json();
+    const meRes = await apiFetch('/api/auth/me');
+    if (!meRes.ok) { window.Auth.logout(); return; }
+    const user = await meRes.json();
     if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
     canShow = true;
+
     document.getElementById('js-nav-name').textContent = user.name || 'Админ';
 
-    await Promise.all([loadStats(), loadChart(), loadOrders()]);
+    const [chartRes, statsRes, salesRes] = await Promise.all([
+      apiFetch('/api/admin/chart?days=14'),
+      apiFetch('/api/admin/stats'),
+      apiFetch('/api/admin/sales?limit=10'),
+    ]);
+
+    const chartRows = chartRes.ok ? (await chartRes.json()).chart : [];
+    const stats     = statsRes.ok ? (await statsRes.json())      : null;
+    const sales     = salesRes.ok ? (await salesRes.json()).sales : [];
+
+    renderMainChart(chartRows);
+    renderMetrics(chartRows, stats);
+    renderOrders(sales);
+
   } catch (e) {
     console.error(e);
     canShow = true;
