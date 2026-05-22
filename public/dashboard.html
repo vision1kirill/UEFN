@@ -904,6 +904,9 @@ function renderOrders(sales) {
     pending:  'В ожидании',
     refunded: 'Возврат',
   };
+  const productMap = {
+    Partnership: 'Подписка Сотрудничество',
+  };
 
   el.innerHTML = '';
   sales.forEach(o => {
@@ -922,7 +925,7 @@ function renderOrders(sales) {
         </div>
         <div class="order-field">
           <p class="order-field__label">Продукт</p>
-          <p class="order-field__value">${o.product || '—'}</p>
+          <p class="order-field__value">${productMap[o.product] || o.product || '—'}</p>
         </div>
         <div class="order-field">
           <p class="order-field__label">Промокод</p>
