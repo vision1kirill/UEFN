@@ -616,11 +616,11 @@
         <!-- Reg date -->
         <div>
           <p class="profile-field__label">Дата регистрации</p>
-          <p class="profile-date">28 апреля 2026</p>
+          <p class="profile-date" id="js-reg-date">—</p>
         </div>
 
         <!-- Logout -->
-        <button class="profile-logout" onclick="window.location.href='login.html'">Выйти</button>
+        <button class="profile-logout" id="js-logout-btn">Выйти</button>
 
       </div>
 
@@ -645,7 +645,7 @@
         </div>
 
         <!-- Progress -->
-        <div class="course-progress">
+        <div class="course-progress" id="js-progress-steps">
           <div class="progress-step progress-step--done">
             <div class="progress-step__circle progress-step__circle--done">
               <svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>
@@ -686,39 +686,10 @@
     <!-- 4. ORDER HISTORY -->
     <section class="orders">
       <h2 class="orders__title">История заказов</h2>
-      <div class="orders__list">
-
-        <!-- Order with promo -->
-        <div class="order-row">
-          <span class="order-price">1&nbsp;499&nbsp;₽</span>
-          <span class="order-old-price">1&nbsp;499&nbsp;₽</span>
-          <div class="order-plan-promo">
-            <span class="order-plan">Essential</span>
-            <span class="order-promo">HappyNewYear</span>
-          </div>
-          <span class="order-date">28 апреля 2026</span>
-        </div>
-
-        <!-- Order without promo -->
-        <div class="order-row">
-          <span class="order-price">1&nbsp;499&nbsp;₽</span>
-          <span class="order-old-price" style="visibility:hidden">—</span>
-          <div class="order-plan-promo">
-            <span class="order-plan">Essential</span>
-          </div>
-          <span class="order-date">28 апреля 2026</span>
-        </div>
-
-        <div class="order-row">
-          <span class="order-price">1&nbsp;499&nbsp;₽</span>
-          <span class="order-old-price" style="visibility:hidden">—</span>
-          <div class="order-plan-promo">
-            <span class="order-plan">Essential</span>
-          </div>
-          <span class="order-date">28 апреля 2026</span>
-        </div>
-
-      </div>
+      <div class="orders__list" id="js-orders-list"></div>
+      <p id="js-orders-empty" style="display:none;color:var(--c-muted);font-size:15px;margin-top:16px;">
+        Заказов пока нет.
+      </p>
     </section>
 
   </div>
@@ -761,16 +732,17 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
-/* Nav scroll shadow */
+/* ── Nav scroll ── */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => {
   navEl.classList.toggle('scrolled', window.scrollY > 8);
 }, { passive: true });
 
-/* Burger */
+/* ── Burger ── */
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
 let drawerOpen = false;
@@ -786,38 +758,156 @@ document.querySelectorAll('.nav__drawer a').forEach(a => {
   a.addEventListener('click', () => setDrawer(false));
 });
 
-/* ── Inline edit ── */
-function startEdit(fieldId, valId, inputId) {
-  const field = document.getElementById(fieldId);
-  const input = document.getElementById(inputId);
-  field.classList.add('editing');
-  input.focus();
-  input.select();
+/* ── Helpers ── */
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
-function saveEdit(fieldId, valId, inputId) {
-  const field = document.getElementById(fieldId);
-  const val   = document.getElementById(valId);
-  const input = document.getElementById(inputId);
-  const newVal = input.value.trim();
-  if (newVal) {
-    val.textContent = newVal;
-    /* Update greeting if name changed */
-    if (inputId === 'input-name') {
-      const greeting = document.getElementById('js-greeting');
-      if (greeting) greeting.textContent = 'Здравствуйте, ' + newVal;
+function formatPrice(n) {
+  return Number(n).toLocaleString('ru-RU') + ' ₽';
+}
+
+/* ── Load profile ── */
+async function loadProfile() {
+  if (!window.Auth?.isLoggedIn()) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const res = await apiFetch('/api/auth/me');
+  if (!res.ok) { window.Auth.logout(); return; }
+  const user = await res.json();
+
+  // Greeting
+  document.getElementById('js-greeting').textContent = 'Здравствуйте, ' + (user.name || 'пользователь');
+
+  // Profile fields
+  document.getElementById('val-name').textContent  = user.name  || '—';
+  document.getElementById('val-email').textContent = user.email || '—';
+  document.getElementById('input-name').value      = user.name  || '';
+  document.getElementById('input-email').value     = user.email || '';
+  document.getElementById('js-reg-date').textContent = formatDate(user.created_at);
+
+  // Nav plan badge
+  const planBadges = document.querySelectorAll('.nav__plan-badge');
+  planBadges.forEach(b => b.textContent = user.plan || 'Без тарифа');
+}
+
+/* ── Load course progress ── */
+async function loadProgress() {
+  try {
+    const res = await apiFetch('/api/courses/progress');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const pct = data.percentage || 0;
+    document.getElementById('js-progress-pct').textContent = pct + '%';
+
+    // Render steps
+    const container = document.getElementById('js-progress-steps');
+    if (!container || !data.progress) return;
+    container.innerHTML = '';
+
+    const { rows: lessons } = { rows: data.progress };
+    // Just show done/todo for each lesson in progress
+    data.progress.forEach(p => {
+      const done = p.completed;
+      const el = document.createElement('div');
+      el.className = 'progress-step' + (done ? ' progress-step--done' : '');
+      el.innerHTML = `
+        <div class="progress-step__circle ${done ? 'progress-step__circle--done' : 'progress-step__circle--todo'}">
+          ${done ? '<svg viewBox="0 0 20 20"><polyline points="4 10 8 14 16 6"/></svg>' : ''}
+        </div>
+        <span class="progress-step__label">${p.sort_order} занятие</span>`;
+      container.appendChild(el);
+    });
+  } catch {}
+}
+
+/* ── Load orders ── */
+async function loadOrders() {
+  try {
+    const res = await apiFetch('/api/courses/orders');
+    if (!res.ok) return;
+    const { orders } = await res.json();
+
+    const list = document.getElementById('js-orders-list');
+    const empty = document.getElementById('js-orders-empty');
+    if (!list) return;
+
+    if (!orders.length) {
+      list.style.display = 'none';
+      if (empty) empty.style.display = '';
+      return;
     }
+
+    list.innerHTML = '';
+    orders.forEach(o => {
+      const hasDiscount = o.original_amount && o.original_amount !== o.amount;
+      list.insertAdjacentHTML('beforeend', `
+        <div class="order-row">
+          <span class="order-price">${formatPrice(o.amount)}</span>
+          <span class="order-old-price" style="${hasDiscount ? '' : 'visibility:hidden'}">
+            ${hasDiscount ? formatPrice(o.original_amount) : '—'}
+          </span>
+          <div class="order-plan-promo">
+            <span class="order-plan">${o.plan || '—'}</span>
+            ${o.promo_code ? `<span class="order-promo">${o.promo_code}</span>` : ''}
+          </div>
+          <span class="order-date">${formatDate(o.created_at)}</span>
+        </div>`);
+    });
+  } catch {}
+}
+
+/* ── Inline edit name ── */
+function startEdit(fieldId, valId, inputId) {
+  document.getElementById(fieldId).classList.add('editing');
+  const input = document.getElementById(inputId);
+  input.focus(); input.select();
+}
+async function saveEdit(fieldId, valId, inputId) {
+  const field  = document.getElementById(fieldId);
+  const valEl  = document.getElementById(valId);
+  const input  = document.getElementById(inputId);
+  const newVal = input.value.trim();
+
+  if (!newVal) { input.value = valEl.textContent; field.classList.remove('editing'); return; }
+
+  // Save to API if it's name
+  if (inputId === 'input-name' && newVal !== valEl.textContent) {
+    try {
+      const res = await apiFetch('/api/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify({ name: newVal }),
+      });
+      if (res.ok) {
+        valEl.textContent = newVal;
+        document.getElementById('js-greeting').textContent = 'Здравствуйте, ' + newVal;
+        window.Auth.setUser({ ...window.Auth.getUser(), name: newVal });
+      } else {
+        input.value = valEl.textContent;
+      }
+    } catch { input.value = valEl.textContent; }
   } else {
-    input.value = val.textContent;
+    valEl.textContent = newVal;
   }
   field.classList.remove('editing');
 }
 function cancelEdit(fieldId, valId, inputId) {
-  const field = document.getElementById(fieldId);
-  const val   = document.getElementById(valId);
-  const input = document.getElementById(inputId);
-  input.value = val.textContent;
-  field.classList.remove('editing');
+  document.getElementById(inputId).value = document.getElementById(valId).textContent;
+  document.getElementById(fieldId).classList.remove('editing');
 }
+
+/* ── Logout ── */
+document.getElementById('js-logout-btn').addEventListener('click', () => {
+  window.Auth.logout();
+});
+
+/* ── Init ── */
+loadProfile();
+loadProgress();
+loadOrders();
 </script>
 </body>
 </html>

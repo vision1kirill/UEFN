@@ -264,9 +264,65 @@ router.post('/logout', async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/auth/me
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/me', requireAuth, (req, res) => {
-  const { id, email, name, role, email_verified } = req.user;
-  res.json({ id, email, name, role, email_verified });
+router.get('/me', requireAuth, async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT id, email, name, role, email_verified, created_at FROM users WHERE id = $1',
+      [req.user.id],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
+    res.json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PATCH /api/auth/me
+//  Body: { name?, currentPassword?, newPassword? }
+// ─────────────────────────────────────────────────────────────────────────────
+router.patch('/me', requireAuth, authLimiter, async (req, res, next) => {
+  try {
+    const { name, currentPassword, newPassword } = req.body;
+    const updates = [];
+    const vals    = [];
+
+    // Update name
+    if (name !== undefined) {
+      const trimmed = name.trim();
+      if (!trimmed) return res.status(400).json({ error: 'Имя не может быть пустым.' });
+      updates.push(`name = $${vals.length + 1}`);
+      vals.push(trimmed);
+    }
+
+    // Update password
+    if (newPassword !== undefined) {
+      if (!currentPassword) return res.status(400).json({ error: 'Укажите текущий пароль.' });
+      if (newPassword.length < 8) return res.status(400).json({ error: 'Новый пароль — минимум 8 символов.' });
+
+      const { rows } = await query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+      const match = await bcrypt.compare(currentPassword, rows[0].password_hash);
+      if (!match) return res.status(400).json({ error: 'Неверный текущий пароль.' });
+
+      const hash = await bcrypt.hash(newPassword, 12);
+      updates.push(`password_hash = $${vals.length + 1}`);
+      vals.push(hash);
+    }
+
+    if (!updates.length) return res.status(400).json({ error: 'Нет данных для обновления.' });
+
+    updates.push(`updated_at = NOW()`);
+    vals.push(req.user.id);
+
+    const { rows } = await query(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${vals.length} RETURNING id, email, name, role`,
+      vals,
+    );
+
+    res.json({ message: 'Профиль обновлён.', user: rows[0] });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

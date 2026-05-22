@@ -162,4 +162,23 @@ router.delete('/progress', async (req, res, next) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/courses/orders
+//  История заказов текущего пользователя
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/orders', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT id, plan, amount, original_amount, promo_code, status, created_at
+       FROM orders
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [req.user.id],
+    );
+    res.json({ orders: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
