@@ -659,8 +659,8 @@ function renderMainChart(chartRows) {
     dates.push(d.toISOString().slice(0,10));
   }
 
-  /* Объединяем статичные тарифы + тарифы из API (без дублей) */
-  const apiProducts = [...new Set(chartRows.map(r => r.product))];
+  /* Объединяем статичные тарифы + тарифы из API (без дублей, без Partnership) */
+  const apiProducts = [...new Set(chartRows.map(r => r.product))].filter(p => p !== 'Partnership');
   const products = [...new Set([...ALL_PRODUCTS, ...apiProducts])];
 
   const map = {};
