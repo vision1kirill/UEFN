@@ -217,12 +217,14 @@
     .chart-svg { width: 100%; height: auto; display: block; }
 
     .chart-xaxis {
-      display: flex; justify-content: space-between;
-      padding-inline: 2px;
+      position: relative;
+      height: 16px;
     }
     .chart-xaxis span {
+      position: absolute;
       font-family: 'Golos Text', sans-serif;
       font-size: clamp(9px,.65vw,11px); color: var(--c-dim);
+      white-space: nowrap;
     }
 
     /* Tooltip (main chart) */
@@ -742,14 +744,18 @@ function renderMainChart(chartRows) {
     indDotsEl.appendChild(dot);
   });
 
-  /* ── X-axis ── */
+  /* ── X-axis (абсолютное позиционирование = точное совпадение с SVG) ── */
   const xaxisEl = document.getElementById('js-xaxis');
   xaxisEl.innerHTML = '';
   const step = Math.ceil(N / 7);
   dates.forEach((d, i) => {
     if (i % step !== 0 && i !== N-1) return;
+    const pct = (xs[i] / VW) * 100;
     const span = document.createElement('span');
     span.textContent = fmtDateShort(d);
+    // первый — по левому краю, последний — по правому, остальные — по центру
+    const shift = i === 0 ? '0%' : i === N-1 ? '-100%' : '-50%';
+    span.style.cssText = `left:${pct}%; transform:translateX(${shift})`;
     xaxisEl.appendChild(span);
   });
 
