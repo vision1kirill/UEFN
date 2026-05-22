@@ -619,6 +619,10 @@
         <a href="forgot.html" class="login__forgot">Не помню пароль</a>
       </div>
 
+      <!-- Success banner (shown after password reset) -->
+      <p id="js-reset-success" style="display:none;color:#22C55E;font-size:14px;margin:0 0 4px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;">
+        ✓ Пароль успешно изменён. Войдите с новым паролем.
+      </p>
       <!-- Error -->
       <p id="js-login-error" style="display:none;color:#f87171;font-size:14px;margin:0 0 4px;"></p>
       <!-- Submit -->
@@ -677,6 +681,14 @@ const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => {
   navEl.classList.toggle('scrolled', window.scrollY > 8);
 }, { passive: true });
+
+/* ── Показать баннер после сброса пароля ── */
+if (new URLSearchParams(window.location.search).get('reset') === '1') {
+  const banner = document.getElementById('js-reset-success');
+  if (banner) banner.style.display = '';
+  // Убираем параметр из URL без перезагрузки
+  history.replaceState(null, '', 'login.html');
+}
 
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');

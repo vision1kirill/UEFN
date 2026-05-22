@@ -388,7 +388,7 @@
     <!-- Left: info -->
     <div class="forgot__info">
       <h1 class="forgot__title">Не помню<br>пароль</h1>
-      <p class="forgot__sub">Введите электронную почту и мы отправим вам ссылку для восстановления пароля.</p>
+      <p class="forgot__sub">Введите электронную почту — мы отправим код для сброса пароля.</p>
       <a href="login.html" class="forgot__back-link">
         <div class="forgot__back-arrow">
           <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -605,8 +605,8 @@ step2.addEventListener('submit', async e => {
       return;
     }
 
-    // Успех — редирект на вход
-    window.location.href = 'login.html';
+    // Успех — редирект на вход с флагом об успешном сбросе
+    window.location.href = 'login.html?reset=1';
   } catch {
     err2.textContent   = 'Нет соединения с сервером.';
     err2.style.display = '';
