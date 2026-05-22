@@ -3,18 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Продажи — UEFN с нуля</title>
-  <meta name="description" content="Страница продаж — UEFN с нуля." />
-
+  <title>Продажи — Панель управления</title>
   <link rel="icon" type="image/png" href="фотографии/uefnLogo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    /* ═══════════════════════════════════
-       RESET & TOKENS
-    ═══════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
     body {
@@ -22,6 +17,7 @@
       background: var(--c-bg); color: var(--c-text);
       overflow-x: hidden; -webkit-font-smoothing: antialiased;
       display: flex; flex-direction: column; min-height: 100vh;
+      opacity: 0; transition: opacity .18s ease;
     }
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
@@ -29,29 +25,19 @@
     ul, ol { list-style: none; }
 
     :root {
-      --c-bg:         #0F1317;
-      --c-surf:       #131920;
-      --c-surf2:      #161d24;
-      --c-cyan:       #3BCFFE;
-      --c-blue:       #0166C3;
-      --c-text:       #FFFFFF;
-      --c-muted:      rgba(255,255,255,.55);
-      --c-dim:        rgba(255,255,255,.30);
-      --c-border:     rgba(255,255,255,.08);
-      --c-border-mid: rgba(255,255,255,.13);
-      --g-accent:     linear-gradient(135deg, #0166C3 0%, #3BCFFE 100%);
-      --g-border:     linear-gradient(135deg, rgba(1,102,195,.55), rgba(59,207,254,.55));
-      --nav-h: 80px; --wrap: 1280px;
-      --px: clamp(16px, 3.125vw, 40px);
+      --c-bg: #0F1317; --c-surf: #131920; --c-surf2: #161d24;
+      --c-cyan: #3BCFFE; --c-blue: #0166C3;
+      --c-text: #FFFFFF; --c-muted: rgba(255,255,255,.55);
+      --c-dim: rgba(255,255,255,.30);
+      --c-border: rgba(255,255,255,.08); --c-border-mid: rgba(255,255,255,.13);
+      --nav-h: 80px; --wrap: 1280px; --px: clamp(16px,3.125vw,40px);
     }
     .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
 
-    /* ═══════════════════════════════════
-       NAV
-    ═══════════════════════════════════ */
+    /* NAV */
     .nav {
       position: fixed; inset: 0 0 auto; z-index: 200;
-      height: var(--nav-h); width: 100%; overflow: hidden;
+      height: var(--nav-h); width: 100%;
       display: flex; align-items: center;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
       background: rgba(15,19,23,.80); transition: box-shadow .3s;
@@ -64,25 +50,20 @@
     }
     .nav__logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-    .nav__logo-text {
-      font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800;
-      letter-spacing: .01em; color: #fff; white-space: nowrap;
-    }
+    .nav__logo-text { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 800; color: #fff; white-space: nowrap; }
     .nav__links { display: flex; align-items: center; gap: clamp(12px,1.8vw,26px); margin-inline: auto; }
     .nav__links a { font-size: 14px; color: #fff; white-space: nowrap; transition: opacity .2s; }
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .nav__user-name {
-      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
-      color: #fff; white-space: nowrap;
-    }
+    .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
     .nav__avatar {
       width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-      border: 2px solid rgba(255,255,255,.20);
-      background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s;
+      border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08);
+      cursor: pointer; transition: border-color .2s;
+      display: flex; align-items: center; justify-content: center;
     }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
     .nav__burger {
       display: none; flex-direction: column; justify-content: center;
       gap: 5px; width: 40px; height: 40px; padding: 8px;
@@ -96,313 +77,194 @@
     .nav__drawer {
       position: fixed; inset: var(--nav-h) 0 0; z-index: 190;
       background: rgba(15,19,23,.97); backdrop-filter: blur(24px);
-      display: flex; flex-direction: column; padding: 28px var(--px) 40px; gap: 4px;
+      display: flex; flex-direction: column;
+      padding: 28px var(--px) 40px; gap: 4px;
       transform: translateX(100%); transition: transform .32s cubic-bezier(.4,0,.2,1); overflow-y: auto;
     }
     .nav__drawer.open { transform: translateX(0); }
-    .nav__drawer a {
-      display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600;
-      color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s;
-    }
+    .nav__drawer a { display: block; font-family: 'Unbounded', sans-serif; font-size: 17px; font-weight: 600; color: var(--c-muted); padding: 13px 0; border-bottom: 1px solid var(--c-border); transition: color .2s; }
     .nav__drawer a:hover { color: #fff; }
     @media (max-width: 1100px) {
       .nav__links { display: none; } .nav__auth { display: none; }
       .nav__burger { display: flex; } .nav__avatar-mobile { display: flex; }
       .nav__inner { gap: 8px; padding-inline: 16px; }
     }
-    @media (max-width: 480px) { .nav__logo-text { font-size: 11px; } }
 
-    /* ═══════════════════════════════════
-       PAGE LAYOUT
-    ═══════════════════════════════════ */
-    main {
-      flex: 1;
-      padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px));
-      padding-bottom: clamp(64px,8vw,100px);
-    }
+    /* LAYOUT */
+    main { flex: 1; padding-top: calc(var(--nav-h) + clamp(28px,3.5vw,48px)); padding-bottom: clamp(64px,8vw,100px); }
     .page-wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--px); }
+    .page-title { font-family: 'Unbounded', sans-serif; font-size: clamp(22px,3vw,44px); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin-bottom: clamp(20px,2.5vw,32px); }
 
-    /* ═══════════════════════════════════
-       PAGE TITLE
-    ═══════════════════════════════════ */
-    .page-title {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(22px,3vw,44px); font-weight: 800;
-      letter-spacing: -0.03em; color: #fff;
-      margin-bottom: clamp(20px,2.5vw,32px);
-    }
-
-    /* ═══════════════════════════════════
-       TAB NAV
-    ═══════════════════════════════════ */
-    .tab-nav {
-      display: flex; align-items: center;
-      gap: clamp(6px,1vw,10px);
-      margin-bottom: clamp(24px,3vw,40px);
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-    }
+    /* TAB NAV */
+    .tab-nav { display: flex; align-items: center; gap: clamp(6px,1vw,10px); margin-bottom: clamp(24px,3vw,40px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .tab-nav::-webkit-scrollbar { display: none; }
     .tab-btn {
-      flex-shrink: 0;
-      padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px);
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.9vw,14px); font-weight: 500;
-      color: var(--c-muted);
-      background: rgba(255,255,255,.05);
-      border: 1.5px solid transparent;
-      cursor: pointer;
-      transition: color .2s, border-color .2s, background .2s;
-      white-space: nowrap;
+      flex-shrink: 0; padding: clamp(9px,1vw,12px) clamp(16px,1.8vw,24px); border-radius: 100px;
+      font-family: 'Golos Text', sans-serif; font-size: clamp(12px,.9vw,14px); font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1.5px solid transparent;
+      cursor: pointer; transition: color .2s, border-color .2s, background .2s; white-space: nowrap;
     }
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
-    .tab-btn.active {
-      color: #fff;
-      border-color: var(--c-cyan);
-      background: rgba(59,207,254,.06);
-    }
+    .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ═══════════════════════════════════
-       SECTION SPACING
-    ═══════════════════════════════════ */
-    .dash-section { margin-bottom: clamp(20px,3vw,36px); }
-
-    /* ═══════════════════════════════════
-       CARD BASE
-    ═══════════════════════════════════ */
-    .card {
-      background: var(--c-surf2);
-      border: 1px solid var(--c-border);
-      border-radius: clamp(18px,1.8vw,26px);
-      padding: clamp(18px,2.2vw,28px) clamp(18px,2.2vw,28px);
-    }
-
-    /* ═══════════════════════════════════
-       DATE FILTER
-    ═══════════════════════════════════ */
-    .filter-bar {
-      display: flex; align-items: center; gap: clamp(10px,1.2vw,16px);
-      flex-wrap: wrap;
+    /* PERIOD SELECTOR */
+    .period-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       margin-bottom: clamp(20px,2.5vw,32px);
     }
-    .filter-label {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.9vw,14px); font-weight: 500;
-      color: var(--c-muted); flex-shrink: 0; white-space: nowrap;
-    }
-    .filter-pills {
-      display: flex; align-items: center; gap: 0;
-      background: var(--c-surf2);
-      border: 1px solid var(--c-border);
-      border-radius: 100px;
-      overflow: hidden;
-    }
-    .filter-sep {
-      width: 1px; height: 18px;
-      background: var(--c-border-mid);
-      flex-shrink: 0;
-    }
-    .date-pill {
-      position: relative;
+    .period-label { font-size: 14px; color: var(--c-muted); white-space: nowrap; margin-right: 4px; }
+    .date-input-wrap {
       display: flex; align-items: center; gap: 8px;
-      padding: clamp(10px,1vw,13px) clamp(16px,1.5vw,22px);
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(12px,.9vw,14px); font-weight: 500;
-      color: #fff; cursor: pointer; white-space: nowrap;
-      transition: background .2s;
+      background: var(--c-surf2); border: 1px solid var(--c-border-mid);
+      border-radius: 10px; padding: 8px 14px; cursor: pointer;
+      transition: border-color .2s;
     }
-    .date-pill:hover { background: rgba(255,255,255,.05); }
-    .date-pill svg { flex-shrink: 0; opacity: .55; }
-    .date-pill input[type="date"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    .date-input-wrap:focus-within { border-color: var(--c-cyan); }
+    .date-input-wrap svg { width: 15px; height: 15px; stroke: var(--c-muted); fill: none; flex-shrink: 0; }
+    .date-input-wrap input[type="date"] {
+      background: none; border: none; outline: none; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; width: 118px;
     }
-
-    .filter-presets {
-      display: flex; align-items: center; gap: clamp(6px,.8vw,10px); flex-wrap: wrap;
-    }
+    .date-input-wrap input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.6); cursor: pointer; }
+    .period-divider { font-size: 13px; color: var(--c-dim); }
+    .period-presets { display: flex; gap: 6px; flex-wrap: wrap; }
     .preset-btn {
-      padding: clamp(8px,.8vw,11px) clamp(12px,1.2vw,18px);
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(11px,.8vw,13px); font-weight: 500;
-      color: var(--c-muted);
-      background: rgba(255,255,255,.04);
-      border: 1.5px solid transparent;
-      cursor: pointer; white-space: nowrap;
-      transition: color .2s, background .2s, border-color .2s;
+      padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
+      cursor: pointer; transition: all .2s; white-space: nowrap;
     }
-    .preset-btn:hover { color: #fff; background: rgba(255,255,255,.07); }
-    .preset-btn.active {
-      color: #fff;
-      border-color: rgba(59,207,254,.45);
-      background: rgba(59,207,254,.06);
-    }
+    .preset-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .preset-btn.active { color: var(--c-cyan); border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* ═══════════════════════════════════
-       SALES CHART CARD
-    ═══════════════════════════════════ */
-    .chart-card { padding-bottom: clamp(14px,1.8vw,22px); }
-    .chart-header {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px;
-      margin-bottom: clamp(16px,2vw,24px);
+    /* STATS */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: clamp(10px,1.5vw,18px); margin-bottom: clamp(18px,2.5vw,28px);
     }
-    .chart-title {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(15px,1.2vw,18px); font-weight: 700; color: #fff;
+    .stat-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(14px,1.5vw,20px); padding: clamp(14px,1.8vw,22px) clamp(16px,2vw,24px);
     }
-    .chart-legend {
-      display: flex; align-items: center; gap: clamp(14px,1.8vw,24px);
-    }
-    .legend-item {
-      display: flex; align-items: center; gap: 7px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(11px,.85vw,13px); font-weight: 400; color: var(--c-muted);
-    }
-    .legend-dot {
-      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
-    }
-    .legend-dot--essential { background: #F59E0B; }
-    .legend-dot--extra     { background: #22C55E; }
-    .legend-dot--deluxe    { background: #EF4444; }
+    .stat-card__label { font-size: 12px; color: var(--c-muted); margin-bottom: 8px; }
+    .stat-card__value { font-size: clamp(20px,2vw,28px); font-weight: 700; color: #fff; }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 380px) { .stats-row { grid-template-columns: 1fr; } }
 
-    .chart-svg-wrap {
-      width: 100%; overflow: hidden;
-      margin-bottom: clamp(6px,.8vw,10px);
+    /* FILTER ROW */
+    .filter-row {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: clamp(14px,2vw,22px);
     }
-    .chart-svg { width: 100%; height: auto; display: block; }
+    .filter-tabs { display: flex; gap: 6px; }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
+      cursor: pointer; transition: all .2s;
+    }
+    .filter-tab:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .filter-tab.active { color: #fff; background: rgba(255,255,255,.10); border-color: var(--c-border-mid); }
+    .search-wrap {
+      display: flex; align-items: center; gap: 8px; margin-left: auto;
+      background: var(--c-surf2); border: 1px solid var(--c-border-mid);
+      border-radius: 10px; padding: 8px 14px; min-width: 220px;
+      transition: border-color .2s;
+    }
+    .search-wrap:focus-within { border-color: var(--c-cyan); }
+    .search-wrap svg { width: 15px; height: 15px; stroke: var(--c-muted); fill: none; flex-shrink: 0; }
+    .search-wrap input {
+      background: none; border: none; outline: none; color: #fff;
+      font-family: 'Golos Text', sans-serif; font-size: 13px; width: 100%;
+    }
+    .search-wrap input::placeholder { color: var(--c-dim); }
 
-    .chart-xaxis {
-      display: flex; justify-content: space-between;
-      padding-inline: 2px;
+    /* TABLE */
+    .table-card {
+      background: var(--c-surf2); border: 1px solid var(--c-border);
+      border-radius: clamp(16px,1.8vw,24px); overflow: hidden;
     }
-    .chart-xaxis span {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(9px,.65vw,11px); color: var(--c-dim);
-    }
-
-    /* ── Tooltip ── */
-    .chart-wrap { position: relative; }
-    .chart-tooltip {
-      position: absolute; top: 0;
-      pointer-events: none; display: none;
-      background: rgba(15,19,23,.96);
-      border: 1px solid rgba(255,255,255,.13);
-      border-radius: 12px;
-      padding: 10px 14px;
-      white-space: nowrap; z-index: 10;
-      box-shadow: 0 8px 32px rgba(0,0,0,.5);
-      transition: opacity .1s;
-    }
-    .chart-tooltip__date {
-      font-family: 'Golos Text', sans-serif;
-      font-size: 11px; font-weight: 400; color: var(--c-dim);
-      margin-bottom: 8px;
-    }
-    .chart-tooltip__row {
-      display: flex; align-items: center; gap: 8px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: 12px; font-weight: 500; color: #fff;
-      margin-bottom: 4px;
-    }
-    .chart-tooltip__row:last-child { margin-bottom: 0; }
-    .chart-tooltip__dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
-    .chart-tooltip__val { margin-left: auto; padding-left: 14px; font-weight: 600; }
-
-    /* mobile hint */
-    .chart-touch-hint {
-      display: none;
-      font-family: 'Golos Text', sans-serif;
-      font-size: 11px; color: var(--c-dim);
-      text-align: center; margin-top: 6px;
-    }
-    @media (hover: none) { .chart-touch-hint { display: block; } }
-
-    /* ═══════════════════════════════════
-       SALES TABLE SECTION
-    ═══════════════════════════════════ */
-    .section-title {
-      font-family: 'Unbounded', sans-serif;
-      font-size: clamp(16px,1.4vw,22px); font-weight: 800;
-      letter-spacing: -0.02em; color: #fff;
-      margin-bottom: clamp(14px,1.8vw,22px);
-    }
-
-    .sales-list { display: flex; flex-direction: column; gap: clamp(8px,1vw,12px); }
-
-    .sale-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: clamp(10px,1.5vw,20px);
-      align-items: start;
-    }
-    .sale-field {}
-    .sale-field__label {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(9px,.7vw,11px); font-weight: 400;
-      color: var(--c-muted); margin-bottom: 4px;
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    thead th {
+      padding: 14px 18px; text-align: left;
+      font-size: 11px; font-weight: 600; color: var(--c-muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      border-bottom: 1px solid var(--c-border);
       white-space: nowrap;
     }
-    .sale-field__value {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(11px,.9vw,14px); font-weight: 600; color: #fff;
-      line-height: 1.3;
+    tbody tr { border-bottom: 1px solid var(--c-border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,.025); }
+    tbody td { padding: 14px 18px; font-size: 13px; color: #fff; vertical-align: middle; }
+    .td-buyer { display: flex; align-items: center; gap: 10px; }
+    .td-avatar {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(59,207,254,.12); border: 1px solid rgba(59,207,254,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--c-cyan);
     }
-    .sale-field__value--price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-    .sale-price-old {
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(10px,.75vw,12px); font-weight: 400;
-      color: var(--c-dim); text-decoration: line-through;
+    .td-name { font-weight: 600; line-height: 1.2; }
+    .td-email { font-size: 11px; color: var(--c-muted); margin-top: 2px; }
+    .td-muted { color: var(--c-muted); }
+    .product-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.10); color: #fff;
     }
+    .product-badge--partnership { background: rgba(59,207,254,.10); border-color: rgba(59,207,254,.20); color: var(--c-cyan); }
+    .amount-val { font-weight: 700; }
+    .amount-free { color: var(--c-dim); font-size: 12px; }
 
-    /* Status badges */
-    .status-badge {
+    .status-pill {
       display: inline-flex; align-items: center; gap: 5px;
-      padding: 3px 10px 3px 7px;
-      border-radius: 100px;
-      font-family: 'Golos Text', sans-serif;
-      font-size: clamp(10px,.75vw,12px); font-weight: 600;
-      line-height: 1.4;
+      padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
     }
-    .status-badge::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-    }
-    .status-badge--paid {
-      background: rgba(34,197,94,.12);
-      color: #22C55E;
-    }
-    .status-badge--paid::before { background: #22C55E; }
-    .status-badge--pending {
-      background: rgba(245,158,11,.12);
-      color: #F59E0B;
-    }
-    .status-badge--pending::before { background: #F59E0B; }
-    .status-badge--refund {
-      background: rgba(239,68,68,.12);
-      color: #EF4444;
-    }
-    .status-badge--refund::before { background: #EF4444; }
+    .status-pill::before { content:''; display:block; width:6px; height:6px; border-radius:50%; }
+    .status-pill--paid    { background:rgba(34,197,94,.10); border:1px solid rgba(34,197,94,.22); color:#22C55E; }
+    .status-pill--paid::before { background:#22C55E; }
+    .status-pill--pending { background:rgba(251,191,36,.10); border:1px solid rgba(251,191,36,.22); color:#FBBF24; }
+    .status-pill--pending::before { background:#FBBF24; }
+    .status-pill--refunded { background:rgba(239,68,68,.10); border:1px solid rgba(239,68,68,.22); color:#EF4444; }
+    .status-pill--refunded::before { background:#EF4444; }
 
-    @media (max-width: 700px) {
-      .sale-row {
-        grid-template-columns: 1fr 1fr;
-        gap: clamp(10px,3vw,16px);
-      }
-    }
-    @media (max-width: 420px) {
-      .sale-row { grid-template-columns: 1fr; gap: 8px; }
-    }
+    .td-date { color: var(--c-muted); font-size: 12px; white-space: nowrap; }
 
-    /* ═══════════════════════════════════
-       FOOTER
-    ═══════════════════════════════════ */
+    /* EMPTY / LOADING */
+    .table-empty {
+      padding: 48px 24px; text-align: center;
+      font-size: 14px; color: var(--c-dim);
+    }
+    .table-loading { padding: 48px 24px; text-align: center; }
+    .spinner {
+      width: 28px; height: 28px; border: 3px solid rgba(255,255,255,.08);
+      border-top-color: var(--c-cyan); border-radius: 50%;
+      animation: spin .7s linear infinite; margin-inline: auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-top: 1px solid var(--c-border);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .pagination__info { font-size: 13px; color: var(--c-muted); }
+    .pagination__btns { display: flex; gap: 6px; }
+    .page-btn {
+      width: 34px; height: 34px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.05); border: 1px solid transparent;
+      cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center;
+    }
+    .page-btn:hover:not(:disabled) { color: #fff; background: rgba(255,255,255,.10); }
+    .page-btn.active { color: var(--c-cyan); border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
+    .page-btn:disabled { opacity: .35; cursor: default; }
+    .page-btn--arrow { width: auto; padding: 0 12px; }
+
+    /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
-    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); align-items: start; }
-    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+    .footer__grid { display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: clamp(32px,5vw,80px); row-gap: 0; align-items: start; }
+    .footer__brand { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 0; }
     .footer__copy { font-size: 11.5px; color: var(--c-dim); margin-bottom: 8px; }
     .footer__brand-logo { display: flex; align-items: center; gap: 10px; }
     .footer__brand-logo img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
@@ -413,36 +275,22 @@
     .footer__nav { grid-column: 2; grid-row: 1 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px clamp(24px,3vw,48px); align-content: center; align-self: center; justify-self: center; }
     .footer__nav a { font-size: 13px; color: var(--c-muted); transition: color .2s; white-space: nowrap; }
     .footer__nav a:hover { color: #fff; }
-    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; }
+    .footer__tg-capsule { grid-column: 3; grid-row: 1 / 3; align-self: center; display: flex; align-items: center; justify-content: space-between; gap: clamp(16px,2vw,32px); padding: clamp(14px,2.3vw,26px) clamp(16px,1.8vw,28px); width: clamp(200px,16.25vw,303px); height: clamp(64px,5.75vw,96px); background: rgba(255,255,255,.03); border: 1px solid var(--c-border-mid); border-radius: clamp(22px,2.4vw,46px); text-decoration: none; transition: background .2s, border-color .2s; cursor: pointer; }
     .footer__tg-capsule:hover { background: rgba(255,255,255,.07); border-color: rgba(59,207,254,.28); }
     .footer__tg-capsule-text { display: flex; flex-direction: column; gap: 3px; }
-    .footer__tg-capsule-sub { font-size: 10.5px; color: var(--c-dim); white-space: nowrap; }
-    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; white-space: nowrap; }
+    .footer__tg-capsule-sub { font-size: 10.5px; font-weight: 400; color: var(--c-dim); white-space: nowrap; }
+    .footer__tg-capsule-name { font-size: 12px; font-weight: 500; color: var(--c-text); white-space: nowrap; }
     .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
-    .footer__tg-icon img { width: 33px; height: 33px; }
-    @media (max-width: 900px) {
-      .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); }
-      .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; }
-      .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; }
-      .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; }
-    }
-    @media (max-width: 540px) {
-      .footer__grid { display: flex; flex-direction: column; gap: 0; }
-      .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; }
-      .footer__copy { margin-bottom: 10px; }
-      .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; }
-      .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; }
-      .footer__nav a { font-size: 15px; }
-      .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
-    }
-    ::-webkit-scrollbar { width: 5px; }
+    .footer__tg-icon img { width: 33px; height: 33px; display: block; }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
   </style>
 </head>
 <body>
 
-<!-- ██████ NAV ██████ -->
+<!-- NAV -->
 <header class="nav" id="js-nav">
   <div class="nav__inner">
     <div class="nav__logo">
@@ -457,17 +305,16 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
+      <span class="nav__user-name" id="js-nav-name"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
-        <img src="фотографии/avatar.png" alt="Татьяна"
-             onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
     <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
-      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     </a>
   </div>
 </header>
@@ -480,7 +327,7 @@
   <a href="profile.html">Профиль</a>
 </nav>
 
-<!-- ██████ MAIN ██████ -->
+<!-- MAIN -->
 <main>
   <div class="page-wrap">
 
@@ -489,6 +336,7 @@
     <!-- TAB NAV -->
     <nav class="tab-nav">
       <a class="tab-btn" href="dashboard.html">Дашборд</a>
+      <a class="tab-btn" href="admin-users.html">Пользователи</a>
       <a class="tab-btn active" href="sales.html">Продажи</a>
       <a class="tab-btn" href="subscriptions.html">Подписки</a>
       <a class="tab-btn" href="referrals.html">Рефералы</a>
@@ -496,23 +344,19 @@
       <a class="tab-btn" href="content.html">Контент</a>
     </nav>
 
-    <!-- ── DATE FILTER ── -->
-    <div class="filter-bar">
-      <span class="filter-label">Период:</span>
-      <div class="filter-pills">
-        <label class="date-pill" id="js-pill-from" title="Начальная дата">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="js-from-label">1 марта 2026</span>
-          <input type="date" id="js-date-from" value="2026-03-01" />
-        </label>
-        <div class="filter-sep"></div>
-        <label class="date-pill" id="js-pill-to" title="Конечная дата">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="js-to-label">30 марта 2026</span>
-          <input type="date" id="js-date-to" value="2026-03-30" />
-        </label>
+    <!-- PERIOD -->
+    <div class="period-bar">
+      <span class="period-label">Период:</span>
+      <div class="date-input-wrap">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <input type="date" id="js-from" />
       </div>
-      <div class="filter-presets">
+      <span class="period-divider">—</span>
+      <div class="date-input-wrap">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <input type="date" id="js-to" />
+      </div>
+      <div class="period-presets">
         <button class="preset-btn" data-days="7">7 дней</button>
         <button class="preset-btn active" data-days="30">30 дней</button>
         <button class="preset-btn" data-days="90">3 месяца</button>
@@ -520,57 +364,62 @@
       </div>
     </div>
 
-    <!-- ── SALES CHART ── -->
-    <div class="dash-section">
-      <div class="card chart-card">
-        <div class="chart-header">
-          <span class="chart-title">Продажи</span>
-          <div class="chart-legend">
-            <div class="legend-item"><span class="legend-dot legend-dot--essential"></span>Essential</div>
-            <div class="legend-item"><span class="legend-dot legend-dot--extra"></span>Extra</div>
-            <div class="legend-item"><span class="legend-dot legend-dot--deluxe"></span>Deluxe</div>
-          </div>
-        </div>
-        <div class="chart-wrap">
-          <div class="chart-svg-wrap">
-            <svg class="chart-svg" id="js-chart-main" viewBox="0 0 900 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="cursor:crosshair">
-              <!-- Grid lines -->
-              <line x1="0" y1="40"  x2="900" y2="40"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="90"  x2="900" y2="90"  stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="140" x2="900" y2="140" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <line x1="0" y1="190" x2="900" y2="190" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
-              <!-- Data lines -->
-              <path id="js-line-essential" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path id="js-line-extra"     fill="none" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path id="js-line-deluxe"    fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <!-- Hover indicator -->
-              <g id="js-ind" style="display:none; pointer-events:none">
-                <line id="js-ind-line" x1="0" y1="0" x2="0" y2="200" stroke="rgba(255,255,255,.25)" stroke-width="1" stroke-dasharray="5,3"/>
-                <circle id="js-ind-e" r="5" fill="#F59E0B" stroke="#0F1317" stroke-width="2"/>
-                <circle id="js-ind-x" r="5" fill="#22C55E" stroke="#0F1317" stroke-width="2"/>
-                <circle id="js-ind-d" r="5" fill="#EF4444" stroke="#0F1317" stroke-width="2"/>
-              </g>
-              <!-- Transparent overlay for events -->
-              <rect id="js-chart-overlay" x="0" y="0" width="900" height="200" fill="transparent"/>
-            </svg>
-          </div>
-          <div class="chart-xaxis" id="js-xaxis"></div>
-          <div class="chart-tooltip" id="js-chart-tip"></div>
-          <p class="chart-touch-hint">Нажмите на график для просмотра статистики</p>
-        </div>
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <p class="stat-card__label">Всего заказов</p>
+        <p class="stat-card__value" id="js-total">—</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card__label">Выручка</p>
+        <p class="stat-card__value" id="js-revenue">—</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card__label">Средний чек</p>
+        <p class="stat-card__value" id="js-avg">—</p>
       </div>
     </div>
 
-    <!-- ── SALES TABLE ── -->
-    <div class="dash-section">
-      <h2 class="section-title">Продажи</h2>
-      <div class="sales-list" id="js-sales"></div>
+    <!-- FILTERS + SEARCH -->
+    <div class="filter-row">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-status="">Все</button>
+        <button class="filter-tab" data-status="paid">Оплачено</button>
+        <button class="filter-tab" data-status="pending">Ожидание</button>
+        <button class="filter-tab" data-status="refunded">Возврат</button>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="js-search" placeholder="Поиск по имени или email…" />
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Покупатель</th>
+              <th>Продукт</th>
+              <th>Сумма</th>
+              <th>Промокод</th>
+              <th>Статус</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody id="js-tbody">
+            <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="js-pagination" style="display:none"></div>
     </div>
 
   </div>
 </main>
 
-<!-- ██████ FOOTER ██████ -->
+<!-- FOOTER -->
 <footer class="footer">
   <div class="wrap">
     <hr class="footer__rule" />
@@ -594,7 +443,7 @@
         <a href="index.html#pricing">Тарифы</a>
         <a href="partner.html">Партнёрка</a>
       </nav>
-      <a href="#" class="footer__tg-capsule" aria-label="Telegram">
+      <a href="#" class="footer__tg-capsule">
         <div class="footer__tg-capsule-text">
           <span class="footer__tg-capsule-sub">Вступайте в группу</span>
           <span class="footer__tg-capsule-name">Телеграм</span>
@@ -607,12 +456,13 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
-/* ── Nav ── */
+/* Nav */
 const navEl = document.getElementById('js-nav');
-window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), {passive:true});
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
 let drawerOpen = false;
@@ -623,208 +473,212 @@ function setDrawer(v) {
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
-/* ════════════════════════════════════
-   DATE FILTER
-════════════════════════════════════ */
-const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-
-function formatDate(iso) {
-  const [y, m, d] = iso.split('-').map(Number);
-  return `${d} ${months[m-1]} ${y}`;
+/* Helpers */
+function fmtPrice(n) { return Number(n).toLocaleString('ru-RU') + ' ₽'; }
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+}
+function initials(name) {
+  if (!name) return '?';
+  return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
 }
 
-const dateFrom = document.getElementById('js-date-from');
-const dateTo   = document.getElementById('js-date-to');
-const fromLabel = document.getElementById('js-from-label');
-const toLabel   = document.getElementById('js-to-label');
+const PRODUCT_NAMES = { Partnership: 'Подписка сотрудничество' };
+const STATUS_LABELS = { paid: 'Оплачено', pending: 'В ожидании', refunded: 'Возврат' };
+const STATUS_CLS    = { paid: 'status-pill--paid', pending: 'status-pill--pending', refunded: 'status-pill--refunded' };
 
-dateFrom.addEventListener('change', () => { fromLabel.textContent = formatDate(dateFrom.value); });
-dateTo.addEventListener('change',   () => { toLabel.textContent   = formatDate(dateTo.value);   });
+/* State */
+let currentPage   = 1;
+const PAGE_LIMIT  = 20;
+let currentStatus = '';
+let searchQuery   = '';
+let fromDate      = '';
+let toDate        = '';
+let searchTimer   = null;
 
-/* Preset buttons */
-const presetBtns = document.querySelectorAll('.preset-btn');
-presetBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    presetBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const days = parseInt(btn.dataset.days, 10);
-    const to = new Date(); to.setHours(0,0,0,0);
-    const from = new Date(to); from.setDate(from.getDate() - days + 1);
-    const toISO   = to.toISOString().slice(0,10);
-    const fromISO = from.toISOString().slice(0,10);
-    dateTo.value   = toISO;   toLabel.textContent   = formatDate(toISO);
-    dateFrom.value = fromISO; fromLabel.textContent = formatDate(fromISO);
-  });
-});
+/* ── Set default period: last 30 days ── */
+function setPreset(days) {
+  const to   = new Date();
+  const from = new Date(); from.setDate(from.getDate() - (days - 1));
+  fromDate = from.toISOString().slice(0,10);
+  toDate   = to.toISOString().slice(0,10);
+  document.getElementById('js-from').value = fromDate;
+  document.getElementById('js-to').value   = toDate;
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', +b.dataset.days === days));
+}
 
-/* ════════════════════════════════════
-   SMOOTH CURVE (Catmull-Rom → Bezier)
-════════════════════════════════════ */
-function smoothPath(pts, tension = 0.35) {
-  if (pts.length < 2) return '';
-  let d = `M ${pts[0][0]} ${pts[0][1]}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(i-1,0)], p1 = pts[i], p2 = pts[i+1], p3 = pts[Math.min(i+2,pts.length-1)];
-    const cp1x = p1[0] + (p2[0]-p0[0])*tension, cp1y = p1[1] + (p2[1]-p0[1])*tension;
-    const cp2x = p2[0] - (p3[0]-p1[0])*tension, cp2y = p2[1] - (p3[1]-p1[1])*tension;
-    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+/* ── Build API URL ── */
+function buildUrl(page) {
+  const p = new URLSearchParams({ page, limit: PAGE_LIMIT });
+  if (currentStatus) p.set('status', currentStatus);
+  if (fromDate)      p.set('from', fromDate);
+  if (toDate)        p.set('to', toDate);
+  if (searchQuery)   p.set('search', searchQuery);
+  return `/api/admin/sales?${p}`;
+}
+
+/* ── Render table ── */
+function renderTable(sales) {
+  const tbody = document.getElementById('js-tbody');
+  if (!sales.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty">Заказов не найдено.</div></td></tr>`;
+    return;
   }
-  return d;
+  tbody.innerHTML = '';
+  sales.forEach(o => {
+    const productLabel = PRODUCT_NAMES[o.product] || o.product || '—';
+    const isPartner    = o.product === 'Partnership';
+    const statusLabel  = STATUS_LABELS[o.status] || o.status;
+    const statusCls    = STATUS_CLS[o.status] || 'status-pill--pending';
+    const amountHtml   = +o.amount > 0
+      ? `<span class="amount-val">${fmtPrice(o.amount)}</span>`
+      : `<span class="amount-free">Бесплатно</span>`;
+
+    tbody.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>
+          <div class="td-buyer">
+            <div class="td-avatar">${initials(o.buyer_name)}</div>
+            <div>
+              <div class="td-name">${o.buyer_name || '—'}</div>
+              <div class="td-email">${o.buyer_email}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="product-badge ${isPartner ? 'product-badge--partnership' : ''}">${productLabel}</span></td>
+        <td>${amountHtml}</td>
+        <td class="${o.promo_code ? '' : 'td-muted'}">${o.promo_code || '—'}</td>
+        <td><span class="status-pill ${statusCls}">${statusLabel}</span></td>
+        <td class="td-date">${fmtDate(o.created_at)}</td>
+      </tr>`);
+  });
 }
 
-/* ════════════════════════════════════
-   MAIN SALES CHART
-════════════════════════════════════ */
-const N = 14, VW = 900, VH = 200;
-const xs = Array.from({length: N}, (_, i) => Math.round(i * (VW / (N-1))));
+/* ── Render pagination ── */
+function renderPagination(total, page) {
+  const pagEl = document.getElementById('js-pagination');
+  const pages = Math.ceil(total / PAGE_LIMIT);
+  if (pages <= 1) { pagEl.style.display = 'none'; return; }
+  pagEl.style.display = 'flex';
 
-const essentialY = [108,62,132,48,88,44,76,118,48,92,56,128,66,84];
-const extraY     = [52,88,66,108,54,76,60,42,74,50,84,46,70,50];
-const deluxeY    = [154,164,148,168,144,160,154,172,146,158,166,152,162,154];
+  const from = (page - 1) * PAGE_LIMIT + 1;
+  const to   = Math.min(page * PAGE_LIMIT, total);
 
-const essentialCnt = [5,12,3,18,8,20,11,2,17,7,15,3,13,9];
-const extraCnt     = [20,7,14,3,19,11,17,25,12,21,8,23,16,21];
-const deluxeCnt    = [2,1,3,0,4,1,2,0,3,2,1,3,1,2];
+  let btns = '';
+  const range = [];
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - page) <= 1) range.push(i);
+    else if (range[range.length-1] !== '…') range.push('…');
+  }
+  range.forEach(p => {
+    if (p === '…') btns += `<span class="page-btn" style="cursor:default">…</span>`;
+    else btns += `<button class="page-btn ${p===page?'active':''}" data-page="${p}">${p}</button>`;
+  });
 
-const dates = ['5.03','7.03','9.03','11.03','13.03','15.03','17.03','19.03','21.03','23.03','25.03','27.03','29.03','30.03'];
-
-document.getElementById('js-line-essential').setAttribute('d', smoothPath(xs.map((x,i)=>[x,essentialY[i]])));
-document.getElementById('js-line-extra').setAttribute('d',     smoothPath(xs.map((x,i)=>[x,extraY[i]])));
-document.getElementById('js-line-deluxe').setAttribute('d',    smoothPath(xs.map((x,i)=>[x,deluxeY[i]])));
-
-const xaxisEl = document.getElementById('js-xaxis');
-dates.forEach(d => { const s=document.createElement('span'); s.textContent=d; xaxisEl.appendChild(s); });
-
-/* ── Indicator elements ── */
-const indG    = document.getElementById('js-ind');
-const indLine = document.getElementById('js-ind-line');
-const indE    = document.getElementById('js-ind-e');
-const indX    = document.getElementById('js-ind-x');
-const indD    = document.getElementById('js-ind-d');
-const chartTip = document.getElementById('js-chart-tip');
-const chartSvg = document.getElementById('js-chart-main');
-const overlay  = document.getElementById('js-chart-overlay');
-
-function getChartIndex(clientX) {
-  const rect = chartSvg.getBoundingClientRect();
-  const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  return Math.round(frac * (N-1));
-}
-
-function showChartTip(clientX, idx) {
-  const rect = chartSvg.getBoundingClientRect();
-  const svgX = xs[idx];
-
-  indLine.setAttribute('x1', svgX); indLine.setAttribute('x2', svgX);
-  indE.setAttribute('cx', svgX); indE.setAttribute('cy', essentialY[idx]);
-  indX.setAttribute('cx', svgX); indX.setAttribute('cy', extraY[idx]);
-  indD.setAttribute('cx', svgX); indD.setAttribute('cy', deluxeY[idx]);
-  indG.style.display = '';
-
-  chartTip.innerHTML = `
-    <div class="chart-tooltip__date">${dates[idx]}</div>
-    <div class="chart-tooltip__row">
-      <span class="chart-tooltip__dot" style="background:#F59E0B"></span>
-      Essential
-      <span class="chart-tooltip__val">${essentialCnt[idx]} шт.</span>
-    </div>
-    <div class="chart-tooltip__row">
-      <span class="chart-tooltip__dot" style="background:#22C55E"></span>
-      Extra
-      <span class="chart-tooltip__val">${extraCnt[idx]} шт.</span>
-    </div>
-    <div class="chart-tooltip__row">
-      <span class="chart-tooltip__dot" style="background:#EF4444"></span>
-      Deluxe
-      <span class="chart-tooltip__val">${deluxeCnt[idx]} шт.</span>
+  pagEl.innerHTML = `
+    <span class="pagination__info">${from}–${to} из ${total}</span>
+    <div class="pagination__btns">
+      <button class="page-btn page-btn--arrow" data-page="${page-1}" ${page<=1?'disabled':''}>← Назад</button>
+      ${btns}
+      <button class="page-btn page-btn--arrow" data-page="${page+1}" ${page>=pages?'disabled':''}>Вперёд →</button>
     </div>`;
 
-  const screenX = (svgX / VW) * rect.width;
-  const tipW = 160;
-  const chartWrapW = rect.width;
-  let left = screenX + 14;
-  if (left + tipW > chartWrapW) left = screenX - tipW - 10;
-  chartTip.style.left = left + 'px';
-  chartTip.style.display = 'block';
+  pagEl.querySelectorAll('[data-page]').forEach(b => {
+    b.addEventListener('click', () => { currentPage = +b.dataset.page; load(); });
+  });
 }
 
-function hideChartTip() {
-  indG.style.display = 'none';
-  chartTip.style.display = 'none';
+/* ── Load ── */
+async function load() {
+  document.getElementById('js-tbody').innerHTML =
+    `<tr><td colspan="6"><div class="table-loading"><div class="spinner"></div></div></td></tr>`;
+
+  try {
+    const res  = await apiFetch(buildUrl(currentPage));
+    const data = res.ok ? await res.json() : { sales:[], total:0, revenue:0 };
+
+    renderTable(data.sales || []);
+    renderPagination(data.total || 0, currentPage);
+
+    const total   = data.total   || 0;
+    const revenue = data.revenue || 0;
+    const paidCount = (data.sales || []).filter(o => o.status === 'paid').length;
+    const avg = total > 0 && revenue > 0 ? revenue / total : 0;
+
+    document.getElementById('js-total').textContent   = total.toLocaleString('ru-RU');
+    document.getElementById('js-revenue').textContent = fmtPrice(revenue);
+    document.getElementById('js-avg').textContent     = avg > 0 ? fmtPrice(Math.round(avg)) : '—';
+  } catch (e) {
+    console.error(e);
+    document.getElementById('js-tbody').innerHTML =
+      `<tr><td colspan="6"><div class="table-empty">Ошибка загрузки данных.</div></td></tr>`;
+  }
 }
 
-overlay.addEventListener('mousemove', e => showChartTip(e.clientX, getChartIndex(e.clientX)));
-overlay.addEventListener('mouseleave', hideChartTip);
+/* ── Init ── */
+async function init() {
+  if (!window.Auth?.isLoggedIn()) { window.location.href = 'login.html'; return; }
+  let canShow = false;
+  try {
+    const res  = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+    if (user.role !== 'admin') { window.location.href = 'profile.html'; return; }
+    canShow = true;
+    document.getElementById('js-nav-name').textContent = user.name || 'Админ';
 
-let touchActive = false;
-overlay.addEventListener('touchstart', e => {
-  e.preventDefault(); touchActive = true;
-  showChartTip(e.touches[0].clientX, getChartIndex(e.touches[0].clientX));
-}, {passive: false});
-overlay.addEventListener('touchmove', e => {
-  e.preventDefault();
-  showChartTip(e.touches[0].clientX, getChartIndex(e.touches[0].clientX));
-}, {passive: false});
-overlay.addEventListener('touchend', () => { touchActive = false; hideChartTip(); });
-document.addEventListener('touchstart', e => {
-  if (touchActive && !chartSvg.contains(e.target)) hideChartTip();
-});
+    /* Default period */
+    setPreset(30);
+    await load();
 
-/* ════════════════════════════════════
-   SALES TABLE
-════════════════════════════════════ */
-const sales = [
-  { price: '2 990 ₽', oldPrice: '3 990 ₽', status: 'paid',    product: 'Extra',      promo: 'SPRING25',      date: '30 марта 2026' },
-  { price: '4 990 ₽', oldPrice: '4 990 ₽', status: 'paid',    product: 'Deluxe',     promo: '—',             date: '29 марта 2026' },
-  { price: '1 499 ₽', oldPrice: '1 499 ₽', status: 'paid',    product: 'Essential',  promo: 'HappyNewYear',  date: '28 марта 2026' },
-  { price: '2 990 ₽', oldPrice: '2 990 ₽', status: 'pending', product: 'Extra',      promo: '—',             date: '27 марта 2026' },
-  { price: '1 499 ₽', oldPrice: '1 999 ₽', status: 'paid',    product: 'Essential',  promo: 'LAUNCH10',      date: '26 марта 2026' },
-  { price: '4 990 ₽', oldPrice: '5 990 ₽', status: 'paid',    product: 'Deluxe',     promo: 'VIP30',         date: '25 марта 2026' },
-  { price: '1 499 ₽', oldPrice: '1 499 ₽', status: 'refund',  product: 'Essential',  promo: '—',             date: '24 марта 2026' },
-  { price: '2 990 ₽', oldPrice: '2 990 ₽', status: 'paid',    product: 'Extra',      promo: 'SPRING25',      date: '23 марта 2026' },
-  { price: '4 990 ₽', oldPrice: '4 990 ₽', status: 'paid',    product: 'Deluxe',     promo: '—',             date: '22 марта 2026' },
-  { price: '1 499 ₽', oldPrice: '1 499 ₽', status: 'pending', product: 'Essential',  promo: 'FRIEND15',      date: '21 марта 2026' },
-  { price: '2 990 ₽', oldPrice: '3 490 ₽', status: 'paid',    product: 'Extra',      promo: 'SALE15',        date: '20 марта 2026' },
-  { price: '4 990 ₽', oldPrice: '4 990 ₽', status: 'paid',    product: 'Deluxe',     promo: '—',             date: '18 марта 2026' },
-  { price: '1 499 ₽', oldPrice: '1 499 ₽', status: 'paid',    product: 'Essential',  promo: 'HappyNewYear',  date: '15 марта 2026' },
-  { price: '2 990 ₽', oldPrice: '2 990 ₽', status: 'refund',  product: 'Extra',      promo: '—',             date: '12 марта 2026' },
-  { price: '4 990 ₽', oldPrice: '5 990 ₽', status: 'paid',    product: 'Deluxe',     promo: 'VIP30',         date: '8 марта 2026'  },
-];
+    /* Preset buttons */
+    document.querySelectorAll('.preset-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        setPreset(+b.dataset.days);
+        currentPage = 1; load();
+      });
+    });
 
-const statusLabels = { paid: 'Оплачено', pending: 'В обработке', refund: 'Возврат' };
+    /* Date pickers */
+    document.getElementById('js-from').addEventListener('change', e => {
+      fromDate = e.target.value; currentPage = 1;
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      load();
+    });
+    document.getElementById('js-to').addEventListener('change', e => {
+      toDate = e.target.value; currentPage = 1;
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      load();
+    });
 
-const salesEl = document.getElementById('js-sales');
-sales.forEach(s => {
-  salesEl.insertAdjacentHTML('beforeend', `
-    <div class="card sale-row">
-      <div class="sale-field">
-        <p class="sale-field__label">Стоимость</p>
-        <div class="sale-field__value sale-field__value--price">
-          <span>${s.price}</span>
-          ${s.price !== s.oldPrice ? `<span class="sale-price-old">${s.oldPrice}</span>` : ''}
-        </div>
-      </div>
-      <div class="sale-field">
-        <p class="sale-field__label">Статус</p>
-        <p class="sale-field__value">
-          <span class="status-badge status-badge--${s.status}">${statusLabels[s.status]}</span>
-        </p>
-      </div>
-      <div class="sale-field">
-        <p class="sale-field__label">Продукт</p>
-        <p class="sale-field__value">${s.product}</p>
-      </div>
-      <div class="sale-field">
-        <p class="sale-field__label">Промокод</p>
-        <p class="sale-field__value">${s.promo}</p>
-      </div>
-      <div class="sale-field">
-        <p class="sale-field__label">Дата</p>
-        <p class="sale-field__value">${s.date}</p>
-      </div>
-    </div>
-  `);
-});
+    /* Status filter */
+    document.querySelectorAll('.filter-tab').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        currentStatus = b.dataset.status;
+        currentPage = 1; load();
+      });
+    });
+
+    /* Search */
+    document.getElementById('js-search').addEventListener('input', e => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        searchQuery = e.target.value.trim();
+        currentPage = 1; load();
+      }, 350);
+    });
+
+  } catch (e) {
+    console.error(e); canShow = true;
+  } finally {
+    if (canShow) document.body.style.opacity = '1';
+  }
+}
+
+init();
 </script>
 </body>
 </html>

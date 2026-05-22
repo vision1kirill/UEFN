@@ -263,15 +263,24 @@ router.get('/stats', async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/sales', async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, status } = req.query;
+    const { page = 1, limit = 20, status, from, to, search } = req.query;
     const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
     const params = [];
-    let where = '';
+    const conds  = [];
 
-    if (status) {
-      params.push(status);
-      where = `WHERE o.status = $${params.length}`;
-    }
+    if (status) { params.push(status);        conds.push(`o.status = $${params.length}`); }
+    if (from)   { params.push(from);           conds.push(`o.created_at >= $${params.length}::date`); }
+    if (to)     { params.push(to);             conds.push(`o.created_at < ($${params.length}::date + interval '1 day')`); }
+    if (search) { params.push(`%${search}%`);  conds.push(`(u.email ILIKE $${params.length} OR u.name ILIKE $${params.length})`); }
+
+    const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
+
+    const { rows: countRows } = await query(
+      `SELECT COUNT(*) AS total,
+              COALESCE(SUM(o.amount) FILTER (WHERE o.status='paid'), 0) AS revenue
+       FROM orders o JOIN users u ON u.id = o.user_id ${where}`,
+      params,
+    );
 
     params.push(parseInt(limit, 10));
     params.push(offset);
@@ -289,7 +298,13 @@ router.get('/sales', async (req, res, next) => {
       params,
     );
 
-    res.json({ sales: rows });
+    res.json({
+      sales:   rows,
+      total:   parseInt(countRows[0].total, 10),
+      revenue: parseFloat(countRows[0].revenue),
+      page:    parseInt(page, 10),
+      limit:   parseInt(limit, 10),
+    });
   } catch (err) {
     next(err);
   }
