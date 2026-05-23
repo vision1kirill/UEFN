@@ -39,9 +39,9 @@
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s; }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
     .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
     .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -154,6 +154,19 @@
       .purchase-row { grid-template-columns: 1fr; }
     }
 
+    /* ── LOGOUT BTN ── */
+    .nav-logout-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 13px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.65);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: border-color .2s, color .2s;
+    }
+    .nav-logout-btn:hover { border-color: rgba(248,113,113,.45); color: #f87171; }
+
     /* ── FOOTER ── */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
@@ -196,10 +209,14 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
+      <span class="nav__user-name" id="js-nav-name"></span>
       <a href="partner-dashboard.html" class="nav__avatar" aria-label="Партнёрский дашборд">
-        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
+      <button onclick="window.Auth.logout()" title="Выйти из аккаунта" class="nav-logout-btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
     <a href="partner-dashboard.html" class="nav__avatar nav__avatar-mobile" aria-label="Партнёрский дашборд">
@@ -245,6 +262,7 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
@@ -258,38 +276,41 @@ burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
 /* ════════════════════════════════════
-   PRODUCT HELPERS
+   HELPERS
 ════════════════════════════════════ */
-const PRODUCT_DOTS = {
-  'Подписка Essential': 'essential',
-  'Подписка Extra':     'extra',
-  'Подписка Deluxe':    'deluxe',
-};
+const COMMISSION_RATE = 0.20;
+
 function productDotClass(name) {
-  return PRODUCT_DOTS[name] || 'other';
+  if (!name) return 'other';
+  const n = name.toLowerCase();
+  if (n.includes('essential')) return 'essential';
+  if (n.includes('extra'))     return 'extra';
+  if (n.includes('deluxe'))    return 'deluxe';
+  return 'other';
 }
 
-/* ════════════════════════════════════
-   DATA
-════════════════════════════════════ */
-const purchases = [
-  { id: 1,  date: '10 апр 2026, 15:54', product: 'Essential', plan: 'Essential', qty: 1, amount: '1 499 ₽', commission: '149 ₽', payStatus: 'paid',    ref: 'ALEX10' },
-  { id: 2,  date: '10 апр 2026, 14:20', product: 'Extra',     plan: 'Extra',     qty: 1, amount: '2 749 ₽', commission: '274 ₽', payStatus: 'paid',    ref: 'ref_a8x2' },
-  { id: 3,  date: '09 апр 2026, 22:05', product: 'Essential', plan: 'Essential', qty: 1, amount: '1 499 ₽', commission: '149 ₽', payStatus: 'paid',    ref: 'ALEX10' },
-  { id: 4,  date: '09 апр 2026, 18:37', product: 'Deluxe',    plan: 'Deluxe',    qty: 1, amount: '3 749 ₽', commission: '374 ₽', payStatus: 'pending', ref: 'ref_a8x2' },
-  { id: 5,  date: '08 апр 2026, 11:12', product: 'Essential', plan: 'Essential', qty: 1, amount: '1 499 ₽', commission: '149 ₽', payStatus: 'paid',    ref: 'ALEX10' },
-  { id: 6,  date: '07 апр 2026, 09:44', product: 'Extra',     plan: 'Extra',     qty: 1, amount: '2 749 ₽', commission: '274 ₽', payStatus: 'paid',    ref: 'ref_a8x2' },
-  { id: 7,  date: '06 апр 2026, 20:58', product: 'Essential', plan: 'Essential', qty: 1, amount: '1 499 ₽', commission: '149 ₽', payStatus: 'refunded',ref: 'ALEX10' },
-  { id: 8,  date: '05 апр 2026, 16:30', product: 'Deluxe',    plan: 'Deluxe',    qty: 1, amount: '3 749 ₽', commission: '374 ₽', payStatus: 'paid',    ref: 'ref_a8x2' },
-];
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('ru-RU', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function fmtRub(n) {
+  return Number(n).toLocaleString('ru-RU') + ' ₽';
+}
 
 /* ════════════════════════════════════
    RENDER
 ════════════════════════════════════ */
-function renderList() {
-  const listEl = document.getElementById('js-purchase-list');
+const STATUS_LABEL = { paid: 'Оплачено', pending: 'Ожидает', refunded: 'Возврат' };
 
-  if (purchases.length === 0) {
+function renderList(purchases) {
+  const listEl = document.getElementById('js-purchase-list');
+  listEl.innerHTML = '';
+
+  if (!purchases.length) {
     listEl.innerHTML = `
       <div class="empty-state">
         <svg class="empty-state__icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -298,55 +319,85 @@ function renderList() {
           <path d="M16 10a4 4 0 0 1-8 0"/>
         </svg>
         <p class="empty-state__text">Покупок пока нет</p>
-        <p class="empty-state__sub">Здесь появятся покупки, совершённые по вашему промокоду</p>
+        <p class="empty-state__sub">Здесь появятся покупки, совершённые по вашей ссылке или промокоду</p>
       </div>`;
     return;
   }
 
-  const STATUS_LABEL = { paid: 'Оплачено', pending: 'Ожидает', refunded: 'Возврат' };
   purchases.forEach(p => {
-    const dotCls = productDotClass(p.plan);
-    const statusCls = { paid:'paid', pending:'pending', refunded:'refunded' }[p.payStatus] || 'pending';
+    const amount     = parseFloat(p.amount) || 0;
+    const commission = +(amount * COMMISSION_RATE).toFixed(2);
+    const dotCls     = productDotClass(p.product);
+    const statusKey  = p.status || 'pending';
+    const statusCls  = ['paid','pending','refunded'].includes(statusKey) ? statusKey : 'pending';
+    const source     = p.promo_code || p.buyer_email || '—';
+    const dateStr    = formatDate(p.created_at);
+
     const row = document.createElement('div');
     row.className = 'purchase-row';
     row.innerHTML = `
       <div class="purchase-field">
         <span class="purchase-field__label">Дата</span>
-        <span class="purchase-field__value">${p.date}</span>
+        <span class="purchase-field__value">${dateStr}</span>
       </div>
       <div class="purchase-field">
         <span class="purchase-field__label">Товар / Тариф</span>
         <span class="purchase-field__value">
           <span class="product-badge">
             <span class="product-dot product-dot--${dotCls}"></span>
-            ${p.product}
+            ${p.product || '—'}
           </span>
         </span>
       </div>
       <div class="purchase-field">
         <span class="purchase-field__label">Кол-во</span>
-        <span class="purchase-field__value"><span class="qty-chip">${p.qty}</span></span>
+        <span class="purchase-field__value"><span class="qty-chip">1</span></span>
       </div>
       <div class="purchase-field">
         <span class="purchase-field__label">Сумма заказа</span>
-        <span class="purchase-field__value">${p.amount}</span>
+        <span class="purchase-field__value">${fmtRub(amount)}</span>
       </div>
       <div class="purchase-field">
         <span class="purchase-field__label">Комиссия</span>
-        <span class="purchase-field__value" style="color:var(--c-cyan)">${p.commission}</span>
+        <span class="purchase-field__value" style="color:var(--c-cyan)">${fmtRub(commission)}</span>
       </div>
       <div class="purchase-field">
         <span class="purchase-field__label">Статус / Источник</span>
         <span class="purchase-field__value" style="display:flex;flex-direction:column;gap:5px">
-          <span class="pay-badge pay-badge--${statusCls}">${STATUS_LABEL[p.payStatus]}</span>
-          <span class="ref-chip">${p.ref}</span>
+          <span class="pay-badge pay-badge--${statusCls}">${STATUS_LABEL[statusKey] || statusKey}</span>
+          <span class="ref-chip">${source}</span>
         </span>
       </div>`;
     listEl.appendChild(row);
   });
 }
 
-renderList();
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+async function init() {
+  // Auth check
+  const user = window.Auth?.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  const nameEl = document.getElementById('js-nav-name');
+  if (nameEl) nameEl.textContent = user.name || user.email || '';
+
+  const listEl = document.getElementById('js-purchase-list');
+  listEl.innerHTML = '<p style="color:var(--c-muted);padding:32px 0;text-align:center">Загрузка...</p>';
+
+  try {
+    const data = await apiFetch('/api/partners/purchases');
+    renderList(data.purchases || []);
+  } catch (err) {
+    if (err.status === 404) {
+      listEl.innerHTML = `<p style="color:#f87171;padding:32px 0;text-align:center">Партнёрский профиль не найден. <a href="partner.html" style="color:var(--c-cyan)">Подайте заявку на сотрудничество.</a></p>`;
+    } else {
+      listEl.innerHTML = `<p style="color:#f87171;padding:32px 0;text-align:center">Ошибка загрузки данных</p>`;
+    }
+  }
+}
+
+init();
 </script>
 </body>
 </html>
