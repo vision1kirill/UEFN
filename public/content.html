@@ -583,7 +583,11 @@ const viewLessons = document.getElementById('view-lessons');
 function openLessonsView() {
   viewGrid.style.display    = 'none';
   viewLessons.style.display = 'block';
-  if (!lessonsLoaded) loadLessons();
+  if (!lessonsLoaded) {
+    loadLessons();
+  } else {
+    renderLessons();
+  }
 }
 function openGridView() {
   viewLessons.style.display = 'none';
