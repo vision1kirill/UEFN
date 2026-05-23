@@ -39,9 +39,11 @@
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s; }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
+    .nav-logout-btn { display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: border-color .2s, color .2s; }
+    .nav-logout-btn:hover { border-color: rgba(248,113,113,.45); color: #f87171; }
     .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
     .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -437,10 +439,14 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
+      <span class="nav__user-name" id="js-nav-name"></span>
       <a href="partner-dashboard.html" class="nav__avatar" aria-label="Партнёрский дашборд">
-        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
+      <button onclick="window.Auth.logout()" title="Выйти из аккаунта" class="nav-logout-btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
     <a href="partner-dashboard.html" class="nav__avatar nav__avatar-mobile" aria-label="Партнёрский дашборд">
@@ -471,21 +477,21 @@
     <div class="balance-grid">
       <div class="balance-card balance-card--available">
         <span class="balance-card__label">Доступный баланс</span>
-        <span class="balance-card__amount">3 748 ₽</span>
+        <span class="balance-card__amount" id="js-balance-available">—</span>
         <span class="balance-card__sub">Готово к выводу</span>
-        <button class="btn-withdraw" onclick="openModal()">
+        <button class="btn-withdraw" id="js-btn-withdraw" onclick="openModal()">
           <svg viewBox="0 0 16 16"><path d="M8 2v10M4 8l4 4 4-4"/><line x1="2" y1="14" x2="14" y2="14"/></svg>
           Вывести средства
         </button>
       </div>
       <div class="balance-card">
         <span class="balance-card__label">Ожидают выплаты</span>
-        <span class="balance-card__amount">374 ₽</span>
+        <span class="balance-card__amount" id="js-balance-pending">—</span>
         <span class="balance-card__sub">Обрабатываются</span>
       </div>
       <div class="balance-card">
         <span class="balance-card__label">Уже выплачено</span>
-        <span class="balance-card__amount">20 483 ₽</span>
+        <span class="balance-card__amount" id="js-balance-paid">—</span>
         <span class="balance-card__sub">За всё время</span>
       </div>
     </div>
@@ -678,6 +684,7 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
@@ -691,37 +698,66 @@ burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
 /* ════════════════════════════════════
-   DATA
+   HELPERS
 ════════════════════════════════════ */
-const accruals = [
-  { amount: '1 499 ₽', date: '30 апреля 2026 в 15:54' },
-  { amount: '1 499 ₽', date: '28 апреля 2026 в 11:20' },
-  { amount: '2 998 ₽', date: '25 апреля 2026 в 09:05' },
-  { amount: '1 499 ₽', date: '22 апреля 2026 в 18:40' },
-  { amount: '4 497 ₽', date: '19 апреля 2026 в 14:15' },
-  { amount: '1 499 ₽', date: '15 апреля 2026 в 10:32' },
-  { amount: '2 998 ₽', date: '10 апреля 2026 в 15:54' },
-  { amount: '1 499 ₽', date: '07 апреля 2026 в 08:17' },
-  { amount: '1 499 ₽', date: '04 апреля 2026 в 21:50' },
-  { amount: '2 998 ₽', date: '01 апреля 2026 в 12:00' },
-];
+const COMMISSION_RATE = 0.20;
+const MIN_PAYOUT = 500;
 
-const payouts = [
-  { amount: '5 996 ₽', date: '28 апр 2026', method: 'Банковская карта', status: 'paid' },
-  { amount: '4 497 ₽', date: '21 апр 2026', method: 'Банковская карта', status: 'paid' },
-  { amount: '7 495 ₽', date: '14 апр 2026', method: 'USDT (TRC-20)',    status: 'paid' },
-  { amount: '374 ₽',   date: '10 апр 2026', method: 'Банковская карта', status: 'pending' },
-  { amount: '2 998 ₽', date: '07 апр 2026', method: 'USDT (TRC-20)',    status: 'approved' },
-  { amount: '4 497 ₽', date: '01 апр 2026', method: 'Банковская карта', status: 'paid' },
-];
+let currentBalance = 0;
 
-/* Chart data — accruals (blue, lower) and payouts (green, higher) */
-const CHART_LABELS  = ['1.04','4.04','7.04','10.04','13.04','16.04','19.04','22.04','25.04','28.04','30.04'];
-const CHART_ACCRUAL = [1499, 2998, 1499, 2998, 1499, 4497, 4497, 1499, 2998, 1499, 1499];
-const CHART_PAYOUT  = [0,    0,    4497, 0,    0,    7495, 0,    4497, 0,    5996, 0   ];
-/* Smoothed payout for visual (use cumulative-style values for a nicer curve) */
-const CHART_PAYOUT_VIS = [3200, 4800, 6200, 5100, 6800, 8400, 7200, 9100, 6500, 8800, 7400];
-const CHART_ACCRUAL_VIS= [1200, 1800, 1500, 2200, 1700, 2800, 2100, 1600, 2400, 1900, 1500];
+function fmtRub(n) {
+  return Number(n).toLocaleString('ru-RU') + ' ₽';
+}
+
+function formatDate(iso, opts) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('ru-RU', opts || {
+    day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function formatDateShort(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const METHOD_LABELS = { card: 'Банковская карта', usdt: 'USDT (TRC-20)', sbp: 'СБП' };
+
+/* ════════════════════════════════════
+   CHART DATA (built from API)
+════════════════════════════════════ */
+let CHART_LABELS = [], CHART_ACCRUAL_VIS = [], CHART_PAYOUT_VIS = [];
+
+function buildChartData(purchases, payouts) {
+  /* Last 30 days, grouped by day */
+  const days = 30;
+  const now = new Date();
+  const labels = [], accrVals = [], payVals = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
+    const label = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' });
+
+    const accrSum = purchases
+      .filter(p => p.status === 'paid' && (p.paid_at || p.created_at || '').slice(0, 10) === key)
+      .reduce((s, p) => s + parseFloat(p.amount) * COMMISSION_RATE, 0);
+
+    const paySum = payouts
+      .filter(p => (p.created_at || '').slice(0, 10) === key)
+      .reduce((s, p) => s + parseFloat(p.amount), 0);
+
+    labels.push(label);
+    accrVals.push(Math.round(accrSum));
+    payVals.push(Math.round(paySum));
+  }
+
+  CHART_LABELS = labels;
+  CHART_ACCRUAL_VIS = accrVals;
+  CHART_PAYOUT_VIS  = payVals;
+}
 
 /* ════════════════════════════════════
    SMOOTH PATH (Catmull-Rom → Bezier)
@@ -843,50 +879,132 @@ overlay.addEventListener('touchend',   () => { touchActive=false; hideChartTip()
 ════════════════════════════════════ */
 const POUT_STATUS_LABEL = { paid:'Выплачено', pending:'Ожидает', approved:'Одобрена', rejected:'Отклонена', cancelled:'Отменена' };
 
-function renderEntries(data, containerId, type) {
-  const el = document.getElementById(containerId);
-  data.forEach(item => {
-    if (type === 'payout') {
-      const sc = item.status || 'pending';
-      el.insertAdjacentHTML('beforeend', `
-        <div class="entry-row entry-row--${type}">
-          <div class="entry-field">
-            <span class="entry-field__label">Сумма</span>
-            <span class="entry-field__value">${item.amount}</span>
-          </div>
-          <div class="entry-field">
-            <span class="entry-field__label">Дата</span>
-            <span class="entry-field__value" style="font-weight:500">${item.date}</span>
-          </div>
-          <div class="entry-field">
-            <span class="entry-field__label">Способ</span>
-            <span class="entry-field__value" style="font-size:clamp(11px,.78vw,13px);font-weight:500">${item.method}</span>
-          </div>
-          <div class="entry-field">
-            <span class="entry-field__label">Статус</span>
-            <span class="entry-field__value"><span class="pout-badge pout-badge--${sc}">${POUT_STATUS_LABEL[sc]}</span></span>
-          </div>
-        </div>`);
-    } else {
-      el.insertAdjacentHTML('beforeend', `
-        <div class="entry-row entry-row--${type}">
-          <div class="entry-field">
-            <span class="entry-field__label">Начислено</span>
-            <span class="entry-field__value">${item.amount}</span>
-          </div>
-          <div class="entry-field">
-            <span class="entry-field__label">Дата</span>
-            <span class="entry-field__value" style="font-weight:500">${item.date}</span>
-          </div>
-        </div>`);
-    }
+function emptyState(text) {
+  return `<p style="color:var(--c-muted);font-size:13px;padding:20px 0;text-align:center">${text}</p>`;
+}
+
+function renderAccruals(purchases) {
+  const el = document.getElementById('js-accruals');
+  const paid = purchases.filter(p => p.status === 'paid');
+  if (!paid.length) { el.innerHTML = emptyState('Начислений пока нет'); return; }
+  paid.forEach(p => {
+    const commission = parseFloat(p.amount) * COMMISSION_RATE;
+    el.insertAdjacentHTML('beforeend', `
+      <div class="entry-row entry-row--accrual">
+        <div class="entry-field">
+          <span class="entry-field__label">Начислено</span>
+          <span class="entry-field__value">${fmtRub(commission)}</span>
+        </div>
+        <div class="entry-field">
+          <span class="entry-field__label">Дата</span>
+          <span class="entry-field__value" style="font-weight:500">${formatDate(p.paid_at || p.created_at)}</span>
+        </div>
+      </div>`);
   });
 }
 
-/* Init */
-renderChart();
-renderEntries(accruals, 'js-accruals', 'accrual');
-renderEntries(payouts,  'js-payouts',  'payout');
+function renderPayouts(payouts) {
+  const el = document.getElementById('js-payouts');
+  if (!payouts.length) { el.innerHTML = emptyState('Выплат пока нет'); return; }
+  payouts.forEach(p => {
+    const sc = p.status || 'pending';
+    el.insertAdjacentHTML('beforeend', `
+      <div class="entry-row entry-row--payout">
+        <div class="entry-field">
+          <span class="entry-field__label">Сумма</span>
+          <span class="entry-field__value">${fmtRub(p.amount)}</span>
+        </div>
+        <div class="entry-field">
+          <span class="entry-field__label">Дата</span>
+          <span class="entry-field__value" style="font-weight:500">${formatDateShort(p.created_at)}</span>
+        </div>
+        <div class="entry-field">
+          <span class="entry-field__label">Способ</span>
+          <span class="entry-field__value" style="font-size:clamp(11px,.78vw,13px);font-weight:500">${METHOD_LABELS[p.method] || p.method}</span>
+        </div>
+        <div class="entry-field">
+          <span class="entry-field__label">Статус</span>
+          <span class="entry-field__value"><span class="pout-badge pout-badge--${sc}">${POUT_STATUS_LABEL[sc] || sc}</span></span>
+        </div>
+      </div>`);
+  });
+}
+
+function updateModalBalance() {
+  document.getElementById('js-balance-available').textContent = fmtRub(currentBalance);
+  const amtInput = document.getElementById('js-withdraw-amount');
+  amtInput.max   = currentBalance;
+  amtInput.value = currentBalance > 0 ? currentBalance : '';
+  document.querySelector('.modal-amount__hint').textContent =
+    `Доступно: ${fmtRub(currentBalance)} · Мин. ${fmtRub(MIN_PAYOUT)}`;
+  document.querySelector('.modal-amount__all').onclick =
+    () => { amtInput.value = currentBalance; renderCommission(); };
+  renderCommission();
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+async function init() {
+  const user = window.Auth?.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  const nameEl = document.getElementById('js-nav-name');
+  if (nameEl) nameEl.textContent = user.name || user.email || '';
+
+  try {
+    const [payoutsData, purchasesData] = await Promise.all([
+      apiFetch('/api/partners/payouts'),
+      apiFetch('/api/partners/purchases'),
+    ]);
+
+    const balance  = parseFloat(payoutsData.balance) || 0;
+    const payouts  = payoutsData.payouts  || [];
+    const purchases= purchasesData.purchases || [];
+
+    currentBalance = balance;
+
+    // Balance cards
+    const pendingSum = payouts
+      .filter(p => p.status === 'pending' || p.status === 'approved')
+      .reduce((s, p) => s + parseFloat(p.amount), 0);
+    const paidSum = payouts
+      .filter(p => p.status === 'paid')
+      .reduce((s, p) => s + parseFloat(p.amount_to_receive || p.amount), 0);
+
+    document.getElementById('js-balance-available').textContent = fmtRub(balance);
+    document.getElementById('js-balance-pending').textContent   = fmtRub(pendingSum);
+    document.getElementById('js-balance-paid').textContent      = fmtRub(paidSum);
+
+    // Disable withdraw if balance too low
+    if (balance < MIN_PAYOUT) {
+      const btn = document.getElementById('js-btn-withdraw');
+      btn.disabled = true;
+      btn.style.opacity = '.45';
+      btn.title = `Минимальная сумма вывода — ${fmtRub(MIN_PAYOUT)}`;
+    }
+
+    // Chart
+    buildChartData(purchases, payouts);
+    renderChart();
+
+    // Lists
+    renderAccruals(purchases);
+    renderPayouts(payouts);
+
+    // Modal defaults
+    updateModalBalance();
+
+  } catch (err) {
+    if (err.status === 404) {
+      document.querySelector('main').innerHTML =
+        `<div class="page-wrap" style="padding-top:60px;text-align:center;color:#f87171">
+           Партнёрский профиль не найден. <a href="partner.html" style="color:var(--c-cyan)">Подайте заявку.</a>
+         </div>`;
+    }
+  }
+}
+
+init();
 
 /* ════════════════════════════════════
    WITHDRAW MODAL
@@ -916,12 +1034,21 @@ function renderCommission() {
 }
 
 function openModal() {
+  if (currentBalance < MIN_PAYOUT) return;
   formEl.style.display = '';
   successEl.style.display = 'none';
+  // Reset confirm button
+  const confirmBtn = document.querySelector('.btn-confirm');
+  confirmBtn.disabled = false;
+  confirmBtn.textContent = 'Подтвердить вывод';
   overlay2.classList.add('open');
   document.body.style.overflow = 'hidden';
+  // Set real balance
+  const amtInput = document.getElementById('js-withdraw-amount');
+  amtInput.max   = currentBalance;
+  amtInput.value = currentBalance;
   renderCommission();
-  document.getElementById('js-withdraw-amount').focus();
+  amtInput.focus();
 }
 
 function closeModal() {
@@ -969,17 +1096,19 @@ document.getElementById('js-req-input').addEventListener('keydown', function() {
   // basic formatting handled by placeholder, could expand if needed
 });
 
-function submitWithdraw() {
-  const amt   = +document.getElementById('js-withdraw-amount').value;
-  const req   = document.getElementById('js-req-input').value.trim();
-  const cfg   = METHOD_CONFIG[currentMethod];
+async function submitWithdraw() {
+  const amt = +document.getElementById('js-withdraw-amount').value;
+  const req = document.getElementById('js-req-input').value.trim();
+  const cfg = METHOD_CONFIG[currentMethod];
 
-  if (!amt || amt < 100 || amt > 3748) {
+  // Validate amount
+  if (!amt || amt < MIN_PAYOUT || amt > currentBalance) {
     const inp = document.getElementById('js-withdraw-amount');
     inp.closest('.modal-amount').style.borderColor = 'rgba(239,68,68,.55)';
     setTimeout(() => inp.closest('.modal-amount').style.borderColor = '', 1800);
     return;
   }
+  // Validate requisites
   if (!req) {
     const inp = document.getElementById('js-req-input');
     inp.closest('.modal-req').style.borderColor = 'rgba(239,68,68,.55)';
@@ -987,13 +1116,32 @@ function submitWithdraw() {
     return;
   }
 
-  // Show success
-  const fee = Math.round(amt * cfg.commission);
-  const net = amt - fee;
-  formEl.style.display    = 'none';
-  successEl.style.display = 'flex';
-  document.getElementById('js-success-desc').textContent =
-    `${net.toLocaleString('ru-RU')} ₽ поступят через ${cfg.hint}.`;
+  const confirmBtn = document.querySelector('.btn-confirm');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Отправка...';
+
+  try {
+    const result = await apiFetch('/api/partners/payouts', {
+      method: 'POST',
+      body: JSON.stringify({ amount: amt, method: currentMethod, requisites: req }),
+    });
+
+    const net = result.amountToReceive || (amt - Math.round(amt * cfg.commission));
+    formEl.style.display    = 'none';
+    successEl.style.display = 'flex';
+    document.getElementById('js-success-desc').textContent =
+      `${fmtRub(net)} поступят через ${cfg.hint}.`;
+
+    // Update balance display
+    currentBalance -= amt;
+    document.getElementById('js-balance-available').textContent = fmtRub(Math.max(0, currentBalance));
+
+  } catch (err) {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Подтвердить вывод';
+    const msg = err.data?.error || 'Ошибка при отправке заявки';
+    alert(msg);
+  }
 }
 </script>
 </body>
