@@ -775,27 +775,8 @@
       <!-- Right: videos -->
       <div class="lesson-videos">
 
-        <!-- Main video -->
-        <div class="video-card">
-          <div class="video-card__thumb">
-            <span class="video-card__badge">Текущий урок</span>
-            <div class="video-card__play">
-              <div class="video-card__play-btn">
-                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="video-card__body">
-            <h3 class="video-card__title" id="js-video-main-title">Выберите урок</h3>
-            <p class="video-card__desc" id="js-video-main-desc">Нажмите на карточку урока выше, чтобы начать просмотр.</p>
-          </div>
-        </div>
-
-        <!-- More in this module label -->
-        <p class="lesson-videos__more-label">Ещё в этом занятии</p>
-
-        <!-- Extra videos (рендерятся из API) -->
-        <div id="js-extra-videos"></div>
+        <!-- Videos (полностью рендерятся из API) -->
+        <div id="js-videos-wrap"></div>
 
       </div>
     </div>
@@ -960,22 +941,35 @@ function selectLesson(lesson) {
   const videos    = lesson.videos || [];
   const mainVideo = videos.find(v => v.is_main) || videos[0] || null;
   const extraVids = videos.filter(v => v !== mainVideo);
+  const wrap      = document.getElementById('js-videos-wrap');
 
-  const vTitle = document.getElementById('js-video-main-title');
-  const vDesc  = document.getElementById('js-video-main-desc');
-  const vMoreLabel = document.querySelector('.lesson-videos__more-label');
-  const vExtraWrap = document.getElementById('js-extra-videos');
+  if (!wrap) return;
 
-  if (mainVideo) {
-    if (vTitle) vTitle.textContent = mainVideo.title;
-    if (vDesc)  vDesc.textContent  = mainVideo.description || '';
-  } else {
-    if (vTitle) vTitle.textContent = lesson.title;
-    if (vDesc)  vDesc.textContent  = 'Видео для этого урока скоро появятся.';
+  if (!videos.length) {
+    // Нет видео — ничего не показываем
+    wrap.innerHTML = '';
+    return;
   }
 
-  if (vExtraWrap) {
-    vExtraWrap.innerHTML = extraVids.map(v => `
+  const mainHtml = `
+    <div class="video-card">
+      <div class="video-card__thumb">
+        <span class="video-card__badge">Текущий урок</span>
+        <div class="video-card__play">
+          <div class="video-card__play-btn">
+            <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="video-card__body">
+        <h3 class="video-card__title">${mainVideo.title}</h3>
+        <p class="video-card__desc">${mainVideo.description || ''}</p>
+      </div>
+    </div>`;
+
+  const extraHtml = extraVids.length ? `
+    <p class="lesson-videos__more-label">Ещё в этом занятии</p>
+    ${extraVids.map(v => `
       <div class="video-card">
         <div class="video-card__thumb">
           <div class="video-card__play">
@@ -988,9 +982,9 @@ function selectLesson(lesson) {
           <h3 class="video-card__title">${v.title}</h3>
           <p class="video-card__desc">${v.description || ''}</p>
         </div>
-      </div>`).join('');
-    if (vMoreLabel) vMoreLabel.style.display = extraVids.length ? '' : 'none';
-  }
+      </div>`).join('')}` : '';
+
+  wrap.innerHTML = mainHtml + extraHtml;
 
   /* Topics (из API) */
   const topics = lesson.topics || [];
