@@ -1164,20 +1164,31 @@ async function init() {
 
 init();
 
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
+</script>
+
+<!-- Video modal (must be in DOM before script references it) -->
+<div class="video-modal-overlay" id="js-video-modal">
+  <div class="video-modal">
+    <button class="video-modal__close" onclick="closeVideoModal()">✕</button>
+    <div class="video-modal__ratio">
+      <iframe id="js-video-modal-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
 /* ── Video modal ── */
-const videoModal = document.getElementById('js-video-modal');
+const videoModal       = document.getElementById('js-video-modal');
 const videoModalIframe = document.getElementById('js-video-modal-iframe');
 
 function openVideoModal(url) {
   if (!url) return;
-  // Convert youtu.be short links to embed
   let embedUrl = url;
   const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
   const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
-  if (shortMatch) embedUrl = `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
+  if (shortMatch)      embedUrl = `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
   else if (watchMatch) embedUrl = `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1`;
-  else if (!url.includes('/embed/')) embedUrl = url; // use as-is if already embed or other format
-
   videoModalIframe.src = embedUrl;
   videoModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -1190,17 +1201,6 @@ function closeVideoModal() {
 }
 
 videoModal.addEventListener('click', e => { if (e.target === videoModal) closeVideoModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
 </script>
-
-<!-- Video modal -->
-<div class="video-modal-overlay" id="js-video-modal">
-  <div class="video-modal">
-    <button class="video-modal__close" onclick="closeVideoModal()">✕</button>
-    <div class="video-modal__ratio">
-      <iframe id="js-video-modal-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-    </div>
-  </div>
-</div>
 </body>
 </html>
