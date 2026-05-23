@@ -102,8 +102,76 @@
     .tab-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
     .tab-btn.active { color: #fff; border-color: var(--c-cyan); background: rgba(59,207,254,.06); }
 
-    /* TOOLBAR */
-    .toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: clamp(20px,2.5vw,32px); }
+    /* ── CATEGORY GRID VIEW ── */
+    #view-grid { display: block; }
+    #view-lessons { display: none; }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(12px,1.5vw,20px);
+    }
+    @media (max-width: 640px) { .content-grid { grid-template-columns: 1fr; } }
+
+    .cat-card {
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: clamp(140px,13vw,190px);
+      background: var(--c-surf2);
+      border: 1px solid var(--c-border);
+      border-radius: clamp(20px,2vw,32px);
+      padding: clamp(20px,2.2vw,30px);
+      cursor: pointer; position: relative;
+      transition: border-color .25s, box-shadow .25s, background .25s;
+      text-decoration: none; color: inherit;
+    }
+    .cat-card:hover {
+      border-color: rgba(59,207,254,.22);
+      background: rgba(255,255,255,.03);
+      box-shadow: 0 8px 40px rgba(0,0,0,.35);
+    }
+    /* Уроки-карточка — выделяем акцентом */
+    .cat-card--lessons {
+      border-color: rgba(59,207,254,.15);
+      background: rgba(59,207,254,.03);
+    }
+    .cat-card--lessons:hover {
+      border-color: rgba(59,207,254,.35);
+      background: rgba(59,207,254,.07);
+    }
+    .cat-card__count {
+      font-size: clamp(10px,.8vw,12px); font-weight: 400; color: var(--c-muted);
+    }
+    .cat-card__bottom {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
+      margin-top: clamp(14px,2vw,22px);
+    }
+    .cat-card__name {
+      font-size: clamp(14px,1.3vw,20px); font-weight: 700; color: #fff;
+      line-height: 1.25; flex: 1;
+    }
+    .cat-card__icon {
+      width: clamp(40px,3.5vw,52px); height: clamp(40px,3.5vw,52px);
+      border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,.07);
+      border: 1.5px solid rgba(255,255,255,.13);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c-muted); transition: background .2s, border-color .2s, color .2s;
+    }
+    .cat-card:hover .cat-card__icon { background: rgba(59,207,254,.12); border-color: rgba(59,207,254,.4); color: var(--c-cyan); }
+    .cat-card__icon svg { width: 18px; height: 18px; pointer-events: none; }
+
+    /* ── LESSONS VIEW ── */
+    .lessons-header {
+      display: flex; align-items: center; gap: 16px; margin-bottom: clamp(20px,2.5vw,32px); flex-wrap: wrap;
+    }
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 100px; font-size: 13px; font-weight: 500;
+      color: var(--c-muted); background: rgba(255,255,255,.06); border: 1px solid var(--c-border-mid);
+      transition: color .2s, background .2s; flex-shrink: 0;
+    }
+    .btn-back:hover { color: #fff; background: rgba(255,255,255,.10); }
+    .btn-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; flex-shrink: 0; }
     .section-title { font-family: 'Unbounded', sans-serif; font-size: clamp(16px,1.6vw,22px); font-weight: 700; color: #fff; flex: 1; }
     .btn-add {
       display: inline-flex; align-items: center; gap: 8px;
@@ -112,9 +180,9 @@
       font-size: 14px; font-weight: 600; transition: opacity .2s; flex-shrink: 0;
     }
     .btn-add:hover { opacity: .85; }
-    .btn-add svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .btn-add svg { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; }
 
-    /* ADD LESSON FORM */
+    /* Add lesson form */
     .add-form {
       display: none; align-items: center; gap: 10px; flex-wrap: wrap;
       background: var(--c-surf); border: 1px solid var(--c-border-mid);
@@ -130,66 +198,47 @@
     .add-form input::placeholder { color: var(--c-dim); }
     .add-form input:focus { border-color: rgba(59,207,254,.4); }
     .add-form__actions { display: flex; gap: 8px; }
-    .btn-sm {
-      padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
-      transition: opacity .2s, background .2s;
-    }
+    .btn-sm { padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; transition: opacity .2s, background .2s; }
     .btn-sm--primary { background: var(--g-accent); color: #fff; }
     .btn-sm--primary:hover { opacity: .85; }
     .btn-sm--ghost { background: rgba(255,255,255,.07); color: var(--c-muted); border: 1px solid var(--c-border-mid); }
     .btn-sm--ghost:hover { color: #fff; background: rgba(255,255,255,.12); }
-    .btn-sm--danger { background: rgba(255,70,70,.12); color: #ff6b6b; border: 1px solid rgba(255,70,70,.2); }
-    .btn-sm--danger:hover { background: rgba(255,70,70,.22); }
 
-    /* LESSONS LIST */
+    /* Lessons list */
     .lessons-list { display: flex; flex-direction: column; gap: 10px; }
-
     .lesson-row {
       display: flex; align-items: center; gap: 14px;
       background: var(--c-surf); border: 1px solid var(--c-border);
       border-radius: 16px; padding: 16px 20px;
-      transition: border-color .2s, background .2s;
+      transition: border-color .2s;
     }
     .lesson-row:hover { border-color: var(--c-border-mid); }
-
-    /* drag handle */
     .lesson-row__drag {
       display: flex; flex-direction: column; gap: 3px;
-      padding: 4px 2px; cursor: grab; flex-shrink: 0; opacity: .4;
-      transition: opacity .2s;
+      padding: 4px 2px; cursor: grab; flex-shrink: 0; opacity: .4; transition: opacity .2s;
     }
     .lesson-row__drag:hover { opacity: .9; }
     .lesson-row__drag span { display: block; width: 16px; height: 2px; background: #fff; border-radius: 2px; }
     .lesson-row.dragging { opacity: .4; border-color: var(--c-cyan); }
     .lesson-row.drag-over { border-color: var(--c-cyan); background: rgba(59,207,254,.04); }
-
-    /* order badge */
     .lesson-row__num {
       width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
       background: rgba(255,255,255,.06); border: 1px solid var(--c-border);
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; font-weight: 700; color: var(--c-muted);
     }
-
-    /* title */
     .lesson-row__title { flex: 1; font-size: 15px; font-weight: 600; color: #fff; line-height: 1.3; }
     .lesson-row__title input {
       width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
       border-radius: 8px; color: #fff; font-family: 'Golos Text', sans-serif;
-      font-size: 15px; font-weight: 600; padding: 7px 12px; outline: none;
-      transition: border-color .2s;
+      font-size: 15px; font-weight: 600; padding: 7px 12px; outline: none; transition: border-color .2s;
     }
     .lesson-row__title input:focus { border-color: rgba(59,207,254,.4); }
-
-    /* stats */
-    .lesson-row__stats {
-      display: flex; align-items: center; gap: 16px; flex-shrink: 0;
-    }
+    .lesson-row__stats { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
     .lesson-stat { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--c-muted); }
     .lesson-stat svg { width: 13px; height: 13px; stroke: var(--c-dim); fill: none; flex-shrink: 0; }
-
-    /* actions */
     .lesson-row__actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .lesson-row__edit-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .icon-btn {
       width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
       background: rgba(255,255,255,.06); border: 1px solid var(--c-border);
@@ -199,27 +248,19 @@
     .icon-btn--danger:hover { background: rgba(255,70,70,.15); border-color: rgba(255,70,70,.3); color: #ff6b6b; }
     .icon-btn svg { width: 15px; height: 15px; }
 
-    /* inline edit actions */
-    .lesson-row__edit-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-
-    /* empty state */
-    .empty-state {
-      text-align: center; padding: clamp(40px,6vw,80px) 20px;
-      color: var(--c-muted); font-size: 15px;
-    }
-    .empty-state svg { width: 48px; height: 48px; stroke: rgba(255,255,255,.15); fill: none; margin: 0 auto 16px; }
-
-    /* error */
-    .error-banner {
-      background: rgba(255,70,70,.1); border: 1px solid rgba(255,70,70,.25);
-      border-radius: 12px; padding: 14px 18px; color: #ff8080; font-size: 14px;
-      margin-bottom: 20px; display: none;
-    }
-    .error-banner.visible { display: block; }
-
     /* skeleton */
     .skeleton { border-radius: 16px; background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; height: 66px; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* empty */
+    .empty-state { text-align: center; padding: clamp(40px,6vw,80px) 20px; color: var(--c-muted); font-size: 15px; }
+    .empty-state svg { width: 48px; height: 48px; stroke: rgba(255,255,255,.15); fill: none; margin: 0 auto 16px; }
+
+    /* error */
+    .error-banner { background: rgba(255,70,70,.1); border: 1px solid rgba(255,70,70,.25); border-radius: 12px; padding: 14px 18px; color: #ff8080; font-size: 14px; margin-bottom: 20px; display: none; }
+    .error-banner.visible { display: block; }
+
+    @media (max-width: 700px) { .lesson-row__stats { display: none; } }
 
     /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
@@ -244,7 +285,6 @@
     .footer__tg-icon { width: 40px; height: 42px; flex-shrink: 0; display: flex; align-items: center; }
     .footer__tg-icon img { width: 33px; height: 33px; }
     @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
-    @media (max-width: 700px) { .lesson-row__stats { display: none; } }
     @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
   </style>
@@ -264,9 +304,9 @@
       <a href="index.html#partnership">Подписка</a>
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
-    <div class="nav__auth" id="js-nav-auth">
+    <div class="nav__auth">
       <span class="nav__user-name" id="js-user-name"></span>
-      <a href="dashboard.html" class="nav__avatar" id="js-avatar" aria-label="Панель управления">
+      <a href="dashboard.html" class="nav__avatar" aria-label="Панель управления">
         <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
     </div>
@@ -295,33 +335,40 @@
       <a class="tab-btn active" href="content.html">Контент</a>
     </nav>
 
-    <!-- error banner -->
-    <div class="error-banner" id="js-error"></div>
-
-    <!-- toolbar -->
-    <div class="toolbar">
-      <h2 class="section-title" id="js-title">Уроки</h2>
-      <button class="btn-add" id="js-add-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Добавить урок
-      </button>
+    <!-- ══════════ VIEW: GRID (категории) ══════════ -->
+    <div id="view-grid">
+      <div class="content-grid" id="js-grid"></div>
     </div>
 
-    <!-- add form -->
-    <div class="add-form" id="js-add-form">
-      <input type="text" id="js-new-title" placeholder="Название урока…" maxlength="255" />
-      <div class="add-form__actions">
-        <button class="btn-sm btn-sm--primary" id="js-add-save">Добавить</button>
-        <button class="btn-sm btn-sm--ghost" id="js-add-cancel">Отмена</button>
+    <!-- ══════════ VIEW: LESSONS (управление уроками) ══════════ -->
+    <div id="view-lessons">
+      <div class="error-banner" id="js-error"></div>
+
+      <div class="lessons-header">
+        <button class="btn-back" id="js-back-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Назад
+        </button>
+        <h2 class="section-title" id="js-lessons-title">Уроки</h2>
+        <button class="btn-add" id="js-add-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить урок
+        </button>
       </div>
-    </div>
 
-    <!-- lessons list -->
-    <div class="lessons-list" id="js-list">
-      <!-- skeletons -->
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
+      <div class="add-form" id="js-add-form">
+        <input type="text" id="js-new-title" placeholder="Название урока…" maxlength="255" />
+        <div class="add-form__actions">
+          <button class="btn-sm btn-sm--primary" id="js-add-save">Добавить</button>
+          <button class="btn-sm btn-sm--ghost" id="js-add-cancel">Отмена</button>
+        </div>
+      </div>
+
+      <div class="lessons-list" id="js-list">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
     </div>
 
   </div>
@@ -342,7 +389,7 @@
         <a href="privacy.html">Политика конфиденциальности</a>
         <a href="terms.html">Пользовательское соглашение</a>
       </div>
-      <nav class="footer__nav" aria-label="Навигация">
+      <nav class="footer__nav">
         <a href="index.html#advantages">О курсе</a>
         <a href="index.html#partnership">Подписка</a>
         <a href="index.html#curriculum">Программа</a>
@@ -367,9 +414,6 @@
 <script>
 'use strict';
 
-/* ── Anti-flash: show page only after auth check ── */
-let canShow = false;
-
 /* ── Nav scroll ── */
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
@@ -389,40 +433,103 @@ burger.addEventListener('click', () => setDrawer(!drawerOpen));
 drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
 /* ── SVG icons ── */
-const ICON_EDIT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
-const ICON_DEL  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
-const ICON_UP   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>`;
-const ICON_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
-const ICON_DRAG = `<span></span><span></span><span></span>`;
+const ICON_PLUS  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+const ICON_BOOK  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`;
+const ICON_EDIT  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+const ICON_DEL   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;
+const ICON_UP    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="18 15 12 9 6 15"/></svg>`;
+const ICON_DOWN  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>`;
 const ICON_CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const ICON_CROSS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-const ICON_EYE  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const ICON_EYE   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 
-/* ── State ── */
-let lessons = [];
+/* ── Category grid ── */
+const CATS = [
+  { key: 'lessons',   name: 'Уроки',                                      isLessons: true },
+  { key: 'maps',      name: 'Готовые карты',                              count: '–' },
+  { key: 'assets',    name: 'Ассеты',                                     count: '–' },
+  { key: 'materials', name: 'Дополнительные материалы для создания карт', count: '–' },
+  { key: 'extra',     name: 'Дополнительные уроки',                       count: '–' },
+  { key: 'updates',   name: 'Обновления',                                 count: '–' },
+];
 
-/* ── DOM refs ── */
-const listEl    = document.getElementById('js-list');
-const titleEl   = document.getElementById('js-title');
-const errEl     = document.getElementById('js-error');
-const addForm   = document.getElementById('js-add-form');
-const newTitleI = document.getElementById('js-new-title');
-const addBtn    = document.getElementById('js-add-btn');
-const addSave   = document.getElementById('js-add-save');
-const addCancel = document.getElementById('js-add-cancel');
+let lessonCount = 0; // заполним после загрузки
 
-function showError(msg) {
-  errEl.textContent = msg;
-  errEl.classList.add('visible');
+function renderGrid() {
+  const grid = document.getElementById('js-grid');
+  grid.innerHTML = '';
+  CATS.forEach(cat => {
+    const el = document.createElement('div');
+    el.className = 'cat-card' + (cat.isLessons ? ' cat-card--lessons' : '');
+
+    const countText = cat.isLessons
+      ? (lessonCount + ' уроков')
+      : (cat.count + ' материалов');
+
+    const icon = cat.isLessons ? ICON_BOOK : ICON_PLUS;
+
+    el.innerHTML = `
+      <p class="cat-card__count">${countText}</p>
+      <div class="cat-card__bottom">
+        <span class="cat-card__name">${cat.name}</span>
+        <span class="cat-card__icon">${icon}</span>
+      </div>`;
+
+    if (cat.isLessons) {
+      el.addEventListener('click', openLessonsView);
+    } else {
+      el.style.cursor = 'default'; // пока нет функционала для других категорий
+    }
+
+    grid.appendChild(el);
+  });
 }
-function clearError() { errEl.classList.remove('visible'); }
 
-/* ── Render ── */
-function render() {
+/* ── Views ── */
+const viewGrid    = document.getElementById('view-grid');
+const viewLessons = document.getElementById('view-lessons');
+
+function openLessonsView() {
+  viewGrid.style.display    = 'none';
+  viewLessons.style.display = 'block';
+  if (!lessonsLoaded) loadLessons();
+}
+function openGridView() {
+  viewLessons.style.display = 'none';
+  viewGrid.style.display    = 'block';
+  renderGrid(); // обновим счётчик уроков
+}
+
+document.getElementById('js-back-btn').addEventListener('click', openGridView);
+
+/* ── Lessons state ── */
+let lessons = [];
+let lessonsLoaded = false;
+
+const listEl     = document.getElementById('js-list');
+const titleEl    = document.getElementById('js-lessons-title');
+const errEl      = document.getElementById('js-error');
+const addForm    = document.getElementById('js-add-form');
+const newTitleI  = document.getElementById('js-new-title');
+const addBtn     = document.getElementById('js-add-btn');
+const addSave    = document.getElementById('js-add-save');
+const addCancel  = document.getElementById('js-add-cancel');
+
+function showError(msg) { errEl.textContent = msg; errEl.classList.add('visible'); }
+function clearError()   { errEl.classList.remove('visible'); }
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Render lessons ── */
+function renderLessons() {
+  lessonCount = lessons.length;
   titleEl.textContent = `Уроки (${lessons.length})`;
+
   if (!lessons.length) {
     listEl.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Уроков пока нет. Нажмите «Добавить урок».
     </div>`;
     return;
@@ -439,11 +546,9 @@ function render() {
     const completed = parseInt(lesson.completed_count, 10) || 0;
 
     row.innerHTML = `
-      <div class="lesson-row__drag" title="Перетащить">${ICON_DRAG}</div>
+      <div class="lesson-row__drag" title="Перетащить"><span></span><span></span><span></span></div>
       <div class="lesson-row__num">${lesson.sort_order}</div>
-      <div class="lesson-row__title" data-view="text">
-        <span>${escHtml(lesson.title)}</span>
-      </div>
+      <div class="lesson-row__title" data-view="text"><span>${escHtml(lesson.title)}</span></div>
       <div class="lesson-row__title" data-view="edit" style="display:none;">
         <input type="text" value="${escHtml(lesson.title)}" maxlength="255" />
       </div>
@@ -465,19 +570,12 @@ function render() {
         <button class="btn-sm btn-sm--ghost btn-edit-cancel">${ICON_CROSS} Отмена</button>
       </div>`;
 
-    /* Edit mode toggle */
-    row.querySelector('.btn-edit').addEventListener('click', () => enterEdit(row, lesson));
+    row.querySelector('.btn-edit').addEventListener('click', () => enterEdit(row));
     row.querySelector('.btn-edit-cancel').addEventListener('click', () => exitEdit(row));
     row.querySelector('.btn-save').addEventListener('click', () => saveEdit(row, lesson));
-
-    /* Delete */
     row.querySelector('.btn-delete').addEventListener('click', () => deleteLesson(lesson.id));
-
-    /* Order */
-    row.querySelector('.btn-up').addEventListener('click',   () => moveLesson(idx, -1));
+    row.querySelector('.btn-up').addEventListener('click', () => moveLesson(idx, -1));
     row.querySelector('.btn-down').addEventListener('click', () => moveLesson(idx, +1));
-
-    /* Drag-and-drop */
     row.addEventListener('dragstart', onDragStart);
     row.addEventListener('dragover',  onDragOver);
     row.addEventListener('drop',      onDrop);
@@ -487,27 +585,22 @@ function render() {
   });
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 /* ── Inline edit ── */
-function enterEdit(row, lesson) {
-  row.querySelector('[data-view="text"]').style.display    = 'none';
-  row.querySelector('[data-view="edit"]').style.display    = '';
-  row.querySelector('[data-view="actions"]').style.display = 'none';
+function enterEdit(row) {
+  row.querySelector('[data-view="text"]').style.display         = 'none';
+  row.querySelector('[data-view="edit"]').style.display         = '';
+  row.querySelector('[data-view="actions"]').style.display      = 'none';
   row.querySelector('[data-view="edit-actions"]').style.display = '';
   row.querySelector('[data-view="edit"] input').focus();
 }
 function exitEdit(row) {
-  row.querySelector('[data-view="text"]').style.display    = '';
-  row.querySelector('[data-view="edit"]').style.display    = 'none';
-  row.querySelector('[data-view="actions"]').style.display = '';
+  row.querySelector('[data-view="text"]').style.display         = '';
+  row.querySelector('[data-view="edit"]').style.display         = 'none';
+  row.querySelector('[data-view="actions"]').style.display      = '';
   row.querySelector('[data-view="edit-actions"]').style.display = 'none';
 }
 async function saveEdit(row, lesson) {
-  const input = row.querySelector('[data-view="edit"] input');
-  const title = input.value.trim();
+  const title = row.querySelector('[data-view="edit"] input').value.trim();
   if (!title) return;
   try {
     const data = await apiFetch(`/api/admin/lessons/${lesson.id}`, {
@@ -517,7 +610,7 @@ async function saveEdit(row, lesson) {
     if (data.lesson) {
       const idx = lessons.findIndex(l => l.id === lesson.id);
       lessons[idx] = { ...lessons[idx], ...data.lesson };
-      render();
+      renderLessons();
     }
   } catch (e) { showError('Ошибка сохранения: ' + e.message); }
 }
@@ -529,29 +622,22 @@ async function deleteLesson(id) {
     await apiFetch(`/api/admin/lessons/${id}`, { method: 'DELETE' });
     lessons = lessons.filter(l => l.id !== id);
     reorderLocally();
-    render();
+    renderLessons();
     clearError();
   } catch (e) { showError('Ошибка удаления: ' + e.message); }
 }
 
-/* ── Move up/down ── */
-async function moveLesson(idx, direction) {
-  const targetIdx = idx + direction;
-  if (targetIdx < 0 || targetIdx >= lessons.length) return;
-
-  // Swap locally
-  [lessons[idx], lessons[targetIdx]] = [lessons[targetIdx], lessons[idx]];
+/* ── Move ── */
+async function moveLesson(idx, dir) {
+  const ti = idx + dir;
+  if (ti < 0 || ti >= lessons.length) return;
+  [lessons[idx], lessons[ti]] = [lessons[ti], lessons[idx]];
   reorderLocally();
-  render();
+  renderLessons();
   await persistOrder();
 }
-
-function reorderLocally() {
-  lessons.forEach((l, i) => { l.sort_order = i + 1; });
-}
-
+function reorderLocally() { lessons.forEach((l, i) => { l.sort_order = i + 1; }); }
 async function persistOrder() {
-  // Save each lesson's new sort_order
   try {
     await Promise.all(lessons.map(l =>
       apiFetch(`/api/admin/lessons/${l.id}`, {
@@ -564,7 +650,6 @@ async function persistOrder() {
 
 /* ── Drag & Drop ── */
 let dragSrcIdx = null;
-
 function onDragStart(e) {
   dragSrcIdx = [...listEl.children].indexOf(e.currentTarget);
   e.currentTarget.classList.add('dragging');
@@ -572,30 +657,24 @@ function onDragStart(e) {
 }
 function onDragOver(e) {
   e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
   document.querySelectorAll('.lesson-row').forEach(r => r.classList.remove('drag-over'));
   e.currentTarget.classList.add('drag-over');
 }
 function onDrop(e) {
   e.preventDefault();
-  const targetIdx = [...listEl.children].indexOf(e.currentTarget);
-  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
-
+  const ti = [...listEl.children].indexOf(e.currentTarget);
+  if (dragSrcIdx === null || dragSrcIdx === ti) return;
   const moved = lessons.splice(dragSrcIdx, 1)[0];
-  lessons.splice(targetIdx, 0, moved);
-  reorderLocally();
-  render();
-  persistOrder();
+  lessons.splice(ti, 0, moved);
+  reorderLocally(); renderLessons(); persistOrder();
   dragSrcIdx = null;
 }
-function onDragEnd(e) {
-  document.querySelectorAll('.lesson-row').forEach(r => {
-    r.classList.remove('dragging'); r.classList.remove('drag-over');
-  });
+function onDragEnd() {
+  document.querySelectorAll('.lesson-row').forEach(r => { r.classList.remove('dragging'); r.classList.remove('drag-over'); });
   dragSrcIdx = null;
 }
 
-/* ── Add lesson form ── */
+/* ── Add form ── */
 addBtn.addEventListener('click', () => {
   addForm.classList.add('visible');
   newTitleI.focus();
@@ -607,7 +686,6 @@ addCancel.addEventListener('click', () => {
   addBtn.style.display = '';
 });
 newTitleI.addEventListener('keydown', e => { if (e.key === 'Enter') addSave.click(); });
-
 addSave.addEventListener('click', async () => {
   const title = newTitleI.value.trim();
   if (!title) { newTitleI.focus(); return; }
@@ -618,14 +696,12 @@ addSave.addEventListener('click', async () => {
     }).then(r => r.json());
     if (data.lesson) {
       lessons.push({ ...data.lesson, viewed_count: 0, completed_count: 0 });
-      reorderLocally();
-      render();
+      reorderLocally(); renderLessons();
       addForm.classList.remove('visible');
-      newTitleI.value = '';
-      addBtn.style.display = '';
+      newTitleI.value = ''; addBtn.style.display = '';
       clearError();
     }
-  } catch (e) { showError('Ошибка создания урока: ' + e.message); }
+  } catch (e) { showError('Ошибка создания: ' + e.message); }
 });
 
 /* ── Load lessons ── */
@@ -633,7 +709,8 @@ async function loadLessons() {
   try {
     const data = await apiFetch('/api/admin/lessons').then(r => r.json());
     lessons = data.lessons || [];
-    render();
+    lessonsLoaded = true;
+    renderLessons();
     clearError();
   } catch (e) {
     listEl.innerHTML = '';
@@ -641,7 +718,7 @@ async function loadLessons() {
   }
 }
 
-/* ── Init (auth check) ── */
+/* ── Init ── */
 async function init() {
   const user = window.Auth?.getUser();
   if (!user || user.role !== 'admin') {
@@ -651,9 +728,15 @@ async function init() {
   const nameEl = document.getElementById('js-user-name');
   if (nameEl) nameEl.textContent = user.name || user.email || 'Admin';
 
-  await loadLessons();
+  // Подгружаем кол-во уроков для счётчика на карточке
+  try {
+    const data = await apiFetch('/api/admin/lessons').then(r => r.json());
+    lessons = data.lessons || [];
+    lessonCount = lessons.length;
+    lessonsLoaded = true;
+  } catch (_) {}
 
-  canShow = true;
+  renderGrid();
   document.body.style.opacity = '1';
 }
 
