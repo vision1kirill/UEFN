@@ -262,6 +262,37 @@
 
     @media (max-width: 700px) { .lesson-row__stats { display: none; } }
 
+    /* ── Detail section (topics / videos) ── */
+    .detail-section { }
+    .detail-section__head {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .detail-section__label { font-size: 15px; font-weight: 700; color: #fff; }
+    .btn-add--sm { padding: 8px 16px; font-size: 13px; }
+    .detail-list { display: flex; flex-direction: column; gap: 8px; }
+    .detail-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--c-surf); border: 1px solid var(--c-border);
+      border-radius: 12px; padding: 12px 16px; transition: border-color .2s;
+    }
+    .detail-row:hover { border-color: var(--c-border-mid); }
+    .detail-row__num { font-size: 11px; font-weight: 700; color: var(--c-dim); flex-shrink: 0; min-width: 20px; }
+    .detail-row__text { flex: 1; font-size: 14px; color: #fff; line-height: 1.4; }
+    .detail-row__text input, .detail-row__text textarea {
+      width: 100%; background: rgba(255,255,255,.05); border: 1px solid var(--c-border-mid);
+      border-radius: 8px; color: #fff; font-family: 'Golos Text', sans-serif;
+      font-size: 14px; padding: 7px 10px; outline: none; resize: vertical;
+      transition: border-color .2s;
+    }
+    .detail-row__text input:focus, .detail-row__text textarea:focus { border-color: rgba(59,207,254,.4); }
+    .detail-row__badge {
+      font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px; flex-shrink: 0;
+      background: rgba(59,207,254,.12); color: var(--c-cyan); border: 1px solid rgba(59,207,254,.25);
+    }
+    .detail-row__actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .detail-empty { color: var(--c-muted); font-size: 14px; padding: 16px 0; }
+
     /* FOOTER */
     .footer { padding-bottom: clamp(48px,6vw,80px); }
     .footer__rule { border: none; border-top: 1px solid var(--c-border); margin: 0; margin-bottom: clamp(20px,2.5vw,32px); }
@@ -338,6 +369,66 @@
     <!-- ══════════ VIEW: GRID (категории) ══════════ -->
     <div id="view-grid">
       <div class="content-grid" id="js-grid"></div>
+    </div>
+
+    <!-- ══════════ VIEW: LESSON DETAIL (редактор одного урока) ══════════ -->
+    <div id="view-detail" style="display:none;">
+      <div class="lessons-header">
+        <button class="btn-back" id="js-detail-back-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          К урокам
+        </button>
+        <h2 class="section-title" id="js-detail-title">Урок</h2>
+      </div>
+
+      <!-- Topics section -->
+      <div class="detail-section">
+        <div class="detail-section__head">
+          <span class="detail-section__label">Темы урока <span style="color:var(--c-muted);font-weight:400;font-size:13px;">(буллеты слева на странице курса)</span></span>
+          <button class="btn-add btn-add--sm" id="js-topic-add-btn">
+            <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить тему
+          </button>
+        </div>
+        <div class="add-form" id="js-topic-form">
+          <input type="text" id="js-topic-input" placeholder="Текст темы урока…" />
+          <div class="add-form__actions">
+            <button class="btn-sm btn-sm--primary" id="js-topic-save">Добавить</button>
+            <button class="btn-sm btn-sm--ghost" id="js-topic-cancel">Отмена</button>
+          </div>
+        </div>
+        <div class="detail-list" id="js-topics-list">
+          <div class="skeleton" style="height:52px;"></div>
+        </div>
+      </div>
+
+      <!-- Videos section -->
+      <div class="detail-section" style="margin-top:32px;">
+        <div class="detail-section__head">
+          <span class="detail-section__label">Видео <span style="color:var(--c-muted);font-weight:400;font-size:13px;">(первое с флагом «Главное» — основной блок; остальные — «Ещё в этом занятии»)</span></span>
+          <button class="btn-add btn-add--sm" id="js-video-add-btn">
+            <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить видео
+          </button>
+        </div>
+        <div class="add-form" id="js-video-form">
+          <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:260px;">
+            <input type="text" id="js-video-title" placeholder="Название видео *" />
+            <input type="text" id="js-video-desc"  placeholder="Описание (необязательно)" />
+            <input type="text" id="js-video-url"   placeholder="Ссылка на видео (YouTube embed и т.д.)" />
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-muted);cursor:pointer;">
+              <input type="checkbox" id="js-video-main" /> Главное видео урока
+            </label>
+          </div>
+          <div class="add-form__actions">
+            <button class="btn-sm btn-sm--primary" id="js-video-save">Добавить</button>
+            <button class="btn-sm btn-sm--ghost" id="js-video-cancel">Отмена</button>
+          </div>
+        </div>
+        <div class="detail-list" id="js-videos-list">
+          <div class="skeleton" style="height:52px;"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ══════════ VIEW: LESSONS (управление уроками) ══════════ -->
@@ -576,6 +667,7 @@ function renderLessons() {
     row.querySelector('.btn-delete').addEventListener('click', () => deleteLesson(lesson.id));
     row.querySelector('.btn-up').addEventListener('click', () => moveLesson(idx, -1));
     row.querySelector('.btn-down').addEventListener('click', () => moveLesson(idx, +1));
+    addDetailBtn(row, lesson);
     row.addEventListener('dragstart', onDragStart);
     row.addEventListener('dragover',  onDragOver);
     row.addEventListener('drop',      onDrop);
@@ -717,6 +809,192 @@ async function loadLessons() {
     showError('Ошибка загрузки уроков: ' + e.message);
   }
 }
+
+/* ── Lesson Detail View ── */
+const viewDetail = document.getElementById('view-detail');
+let currentLessonId = null;
+let detailTopics = [], detailVideos = [];
+
+document.getElementById('js-detail-back-btn').addEventListener('click', () => {
+  viewDetail.style.display  = 'none';
+  viewLessons.style.display = 'block';
+  currentLessonId = null;
+});
+
+async function openDetailView(lesson) {
+  currentLessonId = lesson.id;
+  viewLessons.style.display = 'none';
+  viewDetail.style.display  = 'block';
+  document.getElementById('js-detail-title').textContent = lesson.title;
+
+  // Reset forms
+  closeTopicForm(); closeVideoForm();
+
+  // Load
+  try {
+    const data = await apiFetch(`/api/admin/lessons/${lesson.id}`).then(r => r.json());
+    detailTopics = data.topics || [];
+    detailVideos = data.videos || [];
+    renderTopics();
+    renderVideos();
+  } catch (e) { showError('Ошибка загрузки урока: ' + e.message); }
+}
+
+// Добавляем кнопку "открыть редактор" в каждую строку урока
+function addDetailBtn(row, lesson) {
+  const btn = document.createElement('button');
+  btn.className   = 'icon-btn';
+  btn.title       = 'Редактировать содержимое';
+  btn.innerHTML   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>`;
+  btn.style.background = 'rgba(59,207,254,.08)';
+  btn.style.borderColor = 'rgba(59,207,254,.2)';
+  btn.style.color = 'var(--c-cyan)';
+  btn.addEventListener('click', () => openDetailView(lesson));
+  row.querySelector('[data-view="actions"]').prepend(btn);
+}
+
+/* Topics */
+function renderTopics() {
+  const el = document.getElementById('js-topics-list');
+  if (!detailTopics.length) {
+    el.innerHTML = '<div class="detail-empty">Тем пока нет — добавьте первую.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  detailTopics.forEach((t, idx) => {
+    const row = document.createElement('div');
+    row.className = 'detail-row';
+    row.innerHTML = `
+      <span class="detail-row__num">${idx + 1}</span>
+      <div class="detail-row__text" data-view="text"><span>${escHtml(t.text)}</span></div>
+      <div class="detail-row__text" data-view="edit" style="display:none;">
+        <textarea rows="2">${escHtml(t.text)}</textarea>
+      </div>
+      <div class="detail-row__actions" data-view="actions">
+        <button class="icon-btn btn-t-edit" title="Редактировать">${ICON_EDIT}</button>
+        <button class="icon-btn icon-btn--danger btn-t-del" title="Удалить">${ICON_DEL}</button>
+      </div>
+      <div class="detail-row__actions" data-view="edit-actions" style="display:none;">
+        <button class="btn-sm btn-sm--primary btn-t-save">${ICON_CHECK}</button>
+        <button class="btn-sm btn-sm--ghost btn-t-cancel">${ICON_CROSS}</button>
+      </div>`;
+
+    row.querySelector('.btn-t-edit').addEventListener('click', () => {
+      row.querySelector('[data-view="text"]').style.display       = 'none';
+      row.querySelector('[data-view="edit"]').style.display       = '';
+      row.querySelector('[data-view="actions"]').style.display    = 'none';
+      row.querySelector('[data-view="edit-actions"]').style.display = '';
+      row.querySelector('textarea').focus();
+    });
+    row.querySelector('.btn-t-cancel').addEventListener('click', () => {
+      row.querySelector('[data-view="text"]').style.display       = '';
+      row.querySelector('[data-view="edit"]').style.display       = 'none';
+      row.querySelector('[data-view="actions"]').style.display    = '';
+      row.querySelector('[data-view="edit-actions"]').style.display = 'none';
+    });
+    row.querySelector('.btn-t-save').addEventListener('click', async () => {
+      const text = row.querySelector('textarea').value.trim();
+      if (!text) return;
+      const data = await apiFetch(`/api/admin/lessons/${currentLessonId}/topics/${t.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      }).then(r => r.json());
+      if (data.topic) { const i = detailTopics.findIndex(x => x.id === t.id); detailTopics[i] = data.topic; renderTopics(); }
+    });
+    row.querySelector('.btn-t-del').addEventListener('click', async () => {
+      if (!confirm('Удалить тему?')) return;
+      await apiFetch(`/api/admin/lessons/${currentLessonId}/topics/${t.id}`, { method: 'DELETE' });
+      detailTopics = detailTopics.filter(x => x.id !== t.id);
+      renderTopics();
+    });
+
+    el.appendChild(row);
+  });
+}
+
+/* Topic form */
+const topicAddBtn  = document.getElementById('js-topic-add-btn');
+const topicForm    = document.getElementById('js-topic-form');
+const topicInput   = document.getElementById('js-topic-input');
+const topicSave    = document.getElementById('js-topic-save');
+const topicCancel  = document.getElementById('js-topic-cancel');
+
+function closeTopicForm() { topicForm.classList.remove('visible'); topicInput.value = ''; topicAddBtn.style.display = ''; }
+topicAddBtn.addEventListener('click', () => { topicForm.classList.add('visible'); topicInput.focus(); topicAddBtn.style.display = 'none'; });
+topicCancel.addEventListener('click', closeTopicForm);
+topicInput.addEventListener('keydown', e => { if (e.key === 'Enter') topicSave.click(); });
+topicSave.addEventListener('click', async () => {
+  const text = topicInput.value.trim();
+  if (!text) { topicInput.focus(); return; }
+  const data = await apiFetch(`/api/admin/lessons/${currentLessonId}/topics`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  }).then(r => r.json());
+  if (data.topic) { detailTopics.push(data.topic); renderTopics(); closeTopicForm(); }
+});
+
+/* Videos */
+function renderVideos() {
+  const el = document.getElementById('js-videos-list');
+  if (!detailVideos.length) {
+    el.innerHTML = '<div class="detail-empty">Видео пока нет — добавьте первое.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  detailVideos.forEach((v, idx) => {
+    const row = document.createElement('div');
+    row.className = 'detail-row';
+    row.innerHTML = `
+      <span class="detail-row__num">${idx + 1}</span>
+      <div class="detail-row__text">
+        <strong style="display:block;margin-bottom:3px;">${escHtml(v.title)}</strong>
+        ${v.description ? `<span style="font-size:12px;color:var(--c-muted);">${escHtml(v.description)}</span>` : ''}
+        ${v.video_url   ? `<span style="font-size:11px;color:var(--c-dim);display:block;margin-top:2px;word-break:break-all;">${escHtml(v.video_url)}</span>` : ''}
+      </div>
+      ${v.is_main ? '<span class="detail-row__badge">Главное</span>' : ''}
+      <div class="detail-row__actions">
+        <button class="icon-btn icon-btn--danger btn-v-del" title="Удалить">${ICON_DEL}</button>
+      </div>`;
+    row.querySelector('.btn-v-del').addEventListener('click', async () => {
+      if (!confirm('Удалить видео?')) return;
+      await apiFetch(`/api/admin/lessons/${currentLessonId}/videos/${v.id}`, { method: 'DELETE' });
+      detailVideos = detailVideos.filter(x => x.id !== v.id);
+      renderVideos();
+    });
+    el.appendChild(row);
+  });
+}
+
+/* Video form */
+const videoAddBtn  = document.getElementById('js-video-add-btn');
+const videoForm    = document.getElementById('js-video-form');
+const videoSave    = document.getElementById('js-video-save');
+const videoCancel  = document.getElementById('js-video-cancel');
+
+function closeVideoForm() {
+  videoForm.classList.remove('visible');
+  document.getElementById('js-video-title').value = '';
+  document.getElementById('js-video-desc').value  = '';
+  document.getElementById('js-video-url').value   = '';
+  document.getElementById('js-video-main').checked = false;
+  videoAddBtn.style.display = '';
+}
+videoAddBtn.addEventListener('click', () => { videoForm.classList.add('visible'); document.getElementById('js-video-title').focus(); videoAddBtn.style.display = 'none'; });
+videoCancel.addEventListener('click', closeVideoForm);
+videoSave.addEventListener('click', async () => {
+  const title = document.getElementById('js-video-title').value.trim();
+  if (!title) { document.getElementById('js-video-title').focus(); return; }
+  const data = await apiFetch(`/api/admin/lessons/${currentLessonId}/videos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title,
+      description: document.getElementById('js-video-desc').value.trim() || null,
+      video_url:   document.getElementById('js-video-url').value.trim()  || null,
+      is_main:     document.getElementById('js-video-main').checked,
+    }),
+  }).then(r => r.json());
+  if (data.video) { detailVideos.push(data.video); renderVideos(); closeVideoForm(); }
+});
 
 /* ── Init ── */
 async function init() {

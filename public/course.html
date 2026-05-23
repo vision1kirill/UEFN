@@ -794,35 +794,8 @@
         <!-- More in this module label -->
         <p class="lesson-videos__more-label">Ещё в этом занятии</p>
 
-        <!-- Extra video 1 -->
-        <div class="video-card">
-          <div class="video-card__thumb">
-            <div class="video-card__play">
-              <div class="video-card__play-btn">
-                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="video-card__body">
-            <h3 class="video-card__title">Переменные и условия в Verse</h3>
-            <p class="video-card__desc">Разбираем синтаксис: как хранить данные, писать условия if/else и строить первую логику геймплея без готовых шаблонов.</p>
-          </div>
-        </div>
-
-        <!-- Extra video 2 -->
-        <div class="video-card">
-          <div class="video-card__thumb">
-            <div class="video-card__play">
-              <div class="video-card__play-btn">
-                <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
-              </div>
-            </div>
-          </div>
-          <div class="video-card__body">
-            <h3 class="video-card__title">ИИ-помощник в разработке на Verse</h3>
-            <p class="video-card__desc">Показываем, как использовать ChatGPT и Copilot для генерации кода, и главное — как проверять и адаптировать результат под свою карту.</p>
-          </div>
-        </div>
+        <!-- Extra videos (рендерятся из API) -->
+        <div id="js-extra-videos"></div>
 
       </div>
     </div>
@@ -891,57 +864,7 @@ function setDrawer(v) {
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
-/* ── Static lesson content (topics + video titles) ── */
-const LESSON_CONTENT = {
-  1: {
-    topics: [
-      'Скачиваем и устанавливаем UEFN, знакомимся с интерфейсом редактора.',
-      'Создаём первый проект: выбираем шаблон и настраиваем базовые параметры.',
-      'Учимся навигировать по сцене и работать с ассетами из библиотеки Fortnite.',
-      'Публикуем тестовую карту и открываем её для себя в игре.',
-    ],
-  },
-  2: {
-    topics: [
-      'Строим игровое пространство из готовых пропсов и ландшафтных инструментов.',
-      'Расставляем точки спавна, зоны и триггеры через визуальный редактор.',
-      'Настраиваем освещение и атмосферу: туман, небо, пост-эффекты.',
-      'Тестируем карту в соло и правим первые баги окружения.',
-    ],
-  },
-  3: {
-    topics: [
-      'Находим и импортируем ассеты из Fab-маркетплейса напрямую в UEFN.',
-      'Расставляем декорации, настраиваем коллизии и LOD-уровни.',
-      'Работаем с материалами: меняем цвета и текстуры без знания шейдеров.',
-      'Оптимизируем сцену под лимиты памяти Fortnite Creative.',
-    ],
-  },
-  4: {
-    topics: [
-      'Зачем нужен Verse и как «подключать» код к устройствам. Пишем первый скрипт.',
-      'Основы программирования в Verse: переменные, условия, циклы.',
-      'Создаём коды с помощью ИИ и учимся их правильно адаптировать.',
-      'Как заставить карту реагировать: условия, таймеры и счётчики.',
-    ],
-  },
-  5: {
-    topics: [
-      'Запускаем плейтест с друзьями: как пригласить игроков и собрать обратную связь.',
-      'Находим и исправляем баги геймплея, которые всплыли во время теста.',
-      'Оптимизируем карту: удаляем лишнее, снижаем нагрузку на память.',
-      'Финальный чеклист перед публикацией в Creative.',
-    ],
-  },
-  6: {
-    topics: [
-      'Публикуем карту: заполняем описание, выбираем теги и тип игры.',
-      'Как работает алгоритм продвижения в Fortnite Creative.',
-      'Анализируем первые метрики: просмотры, уникальные игроки, удержание.',
-      'Собираем обратную связь от сообщества и планируем следующее обновление.',
-    ],
-  },
-};
+/* LESSON_CONTENT теперь берётся из API (lesson.topics и lesson.videos) */
 
 /* ── State ── */
 let allLessons   = [];   // массив из API
@@ -1033,23 +956,54 @@ function selectLesson(lesson) {
   document.getElementById('js-lesson-num').textContent   = lesson.sort_order + ' занятие';
   document.getElementById('js-lesson-title').textContent = lesson.title;
 
-  /* Update main video title */
+  /* Videos (из API) */
+  const videos    = lesson.videos || [];
+  const mainVideo = videos.find(v => v.is_main) || videos[0] || null;
+  const extraVids = videos.filter(v => v !== mainVideo);
+
   const vTitle = document.getElementById('js-video-main-title');
   const vDesc  = document.getElementById('js-video-main-desc');
-  if (vTitle) vTitle.textContent = lesson.title;
-  if (vDesc)  vDesc.textContent  = 'Видео для этого урока скоро появятся.';
+  const vMoreLabel = document.querySelector('.lesson-videos__more-label');
+  const vExtraWrap = document.getElementById('js-extra-videos');
 
-  /* Topics */
-  const content = LESSON_CONTENT[lesson.sort_order] || {};
-  const topics  = content.topics || [];
+  if (mainVideo) {
+    if (vTitle) vTitle.textContent = mainVideo.title;
+    if (vDesc)  vDesc.textContent  = mainVideo.description || '';
+  } else {
+    if (vTitle) vTitle.textContent = lesson.title;
+    if (vDesc)  vDesc.textContent  = 'Видео для этого урока скоро появятся.';
+  }
+
+  if (vExtraWrap) {
+    vExtraWrap.innerHTML = extraVids.map(v => `
+      <div class="video-card">
+        <div class="video-card__thumb">
+          <div class="video-card__play">
+            <div class="video-card__play-btn">
+              <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="video-card__body">
+          <h3 class="video-card__title">${v.title}</h3>
+          <p class="video-card__desc">${v.description || ''}</p>
+        </div>
+      </div>`).join('');
+    if (vMoreLabel) vMoreLabel.style.display = extraVids.length ? '' : 'none';
+  }
+
+  /* Topics (из API) */
+  const topics = lesson.topics || [];
   const ul = document.getElementById('js-lesson-topics');
-  ul.innerHTML = topics.map(t => `
-    <li class="lesson-topic">
-      <span class="lesson-topic__icon">
-        <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-      </span>
-      <span class="lesson-topic__text">${t}</span>
-    </li>`).join('');
+  ul.innerHTML = topics.length
+    ? topics.map(t => `
+        <li class="lesson-topic">
+          <span class="lesson-topic__icon">
+            <svg viewBox="0 0 16 16"><polyline points="2.5 8.5 6 12 13.5 4.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </span>
+          <span class="lesson-topic__text">${t.text}</span>
+        </li>`).join('')
+    : '<li style="color:rgba(255,255,255,.35);font-size:14px;">Темы урока ещё не добавлены.</li>';
 
   /* Complete button */
   const btn = document.getElementById('js-complete-btn');

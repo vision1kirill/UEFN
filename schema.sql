@@ -64,6 +64,29 @@ INSERT INTO lessons (id, title, sort_order, is_free) VALUES
   (6, 'Публикация острова',                6, FALSE)
 ON CONFLICT (id) DO NOTHING;
 
+-- ── Lesson topics (bullet points shown on course page) ───────────────────────
+CREATE TABLE IF NOT EXISTS lesson_topics (
+  id         SERIAL PRIMARY KEY,
+  lesson_id  INTEGER REFERENCES lessons (id) ON DELETE CASCADE,
+  text       TEXT        NOT NULL,
+  sort_order INTEGER     NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_topics_lesson ON lesson_topics (lesson_id);
+
+-- ── Lesson videos ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS lesson_videos (
+  id          SERIAL PRIMARY KEY,
+  lesson_id   INTEGER REFERENCES lessons (id) ON DELETE CASCADE,
+  title       VARCHAR(255) NOT NULL,
+  description TEXT,
+  video_url   VARCHAR(500),   -- YouTube embed URL или прямая ссылка
+  is_main     BOOLEAN      NOT NULL DEFAULT FALSE,
+  sort_order  INTEGER      NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_videos_lesson ON lesson_videos (lesson_id);
+
 -- ── Course progress ───────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS course_progress (
   id           SERIAL PRIMARY KEY,

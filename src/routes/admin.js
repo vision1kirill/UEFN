@@ -587,6 +587,30 @@ router.delete('/promo-codes/:id', async (req, res, next) => {
 //  LESSONS (Content tab)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// GET /api/admin/lessons/:id  — full lesson detail (topics + videos)
+router.get('/lessons/:id', async (req, res, next) => {
+  try {
+    const { rows: lessonRows } = await query(
+      `SELECT l.*,
+              COUNT(cp.user_id) FILTER (WHERE cp.completed = true) AS completed_count,
+              COUNT(cp.user_id) AS viewed_count
+       FROM lessons l
+       LEFT JOIN course_progress cp ON cp.lesson_id = l.id
+       WHERE l.id = $1
+       GROUP BY l.id`,
+      [req.params.id],
+    );
+    if (!lessonRows.length) return res.status(404).json({ error: 'Урок не найден' });
+
+    const [{ rows: topics }, { rows: videos }] = await Promise.all([
+      query('SELECT * FROM lesson_topics WHERE lesson_id = $1 ORDER BY sort_order ASC', [req.params.id]),
+      query('SELECT * FROM lesson_videos WHERE lesson_id = $1 ORDER BY sort_order ASC', [req.params.id]),
+    ]);
+
+    res.json({ lesson: lessonRows[0], topics, videos });
+  } catch (err) { next(err); }
+});
+
 // GET /api/admin/lessons
 router.get('/lessons', async (req, res, next) => {
   try {
@@ -651,6 +675,108 @@ router.delete('/lessons/:id', async (req, res, next) => {
       [req.params.id],
     );
     if (!rows.length) return res.status(404).json({ error: 'Урок не найден' });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LESSON TOPICS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// POST /api/admin/lessons/:id/topics
+router.post('/lessons/:id/topics', async (req, res, next) => {
+  try {
+    const { text } = req.body;
+    if (!text?.trim()) return res.status(400).json({ error: 'text обязателен' });
+    const { rows: mx } = await query(
+      'SELECT COALESCE(MAX(sort_order), 0) AS max FROM lesson_topics WHERE lesson_id = $1',
+      [req.params.id],
+    );
+    const { rows } = await query(
+      'INSERT INTO lesson_topics (lesson_id, text, sort_order) VALUES ($1, $2, $3) RETURNING *',
+      [req.params.id, text.trim(), parseInt(mx[0].max, 10) + 1],
+    );
+    res.json({ topic: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/lessons/:id/topics/:topicId
+router.patch('/lessons/:id/topics/:topicId', async (req, res, next) => {
+  try {
+    const { text, sort_order } = req.body;
+    const sets = [], params = [];
+    if (text !== undefined)       { params.push(text.trim());         sets.push(`text = $${params.length}`); }
+    if (sort_order !== undefined) { params.push(parseInt(sort_order, 10)); sets.push(`sort_order = $${params.length}`); }
+    if (!sets.length) return res.status(400).json({ error: 'Нечего обновлять' });
+    params.push(req.params.topicId);
+    const { rows } = await query(
+      `UPDATE lesson_topics SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params,
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Не найдено' });
+    res.json({ topic: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/lessons/:id/topics/:topicId
+router.delete('/lessons/:id/topics/:topicId', async (req, res, next) => {
+  try {
+    await query('DELETE FROM lesson_topics WHERE id = $1', [req.params.topicId]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  LESSON VIDEOS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// POST /api/admin/lessons/:id/videos
+router.post('/lessons/:id/videos', async (req, res, next) => {
+  try {
+    const { title, description, video_url, is_main } = req.body;
+    if (!title?.trim()) return res.status(400).json({ error: 'title обязателен' });
+    const { rows: mx } = await query(
+      'SELECT COALESCE(MAX(sort_order), 0) AS max FROM lesson_videos WHERE lesson_id = $1',
+      [req.params.id],
+    );
+    const { rows } = await query(
+      `INSERT INTO lesson_videos (lesson_id, title, description, video_url, is_main, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [
+        req.params.id, title.trim(),
+        description?.trim() || null, video_url?.trim() || null,
+        Boolean(is_main), parseInt(mx[0].max, 10) + 1,
+      ],
+    );
+    res.json({ video: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/lessons/:id/videos/:videoId
+router.patch('/lessons/:id/videos/:videoId', async (req, res, next) => {
+  try {
+    const { title, description, video_url, is_main, sort_order } = req.body;
+    const sets = [], params = [];
+    if (title !== undefined)       { params.push(title.trim());            sets.push(`title = $${params.length}`); }
+    if (description !== undefined) { params.push(description?.trim()||null); sets.push(`description = $${params.length}`); }
+    if (video_url !== undefined)   { params.push(video_url?.trim()||null);  sets.push(`video_url = $${params.length}`); }
+    if (is_main !== undefined)     { params.push(Boolean(is_main));         sets.push(`is_main = $${params.length}`); }
+    if (sort_order !== undefined)  { params.push(parseInt(sort_order, 10)); sets.push(`sort_order = $${params.length}`); }
+    if (!sets.length) return res.status(400).json({ error: 'Нечего обновлять' });
+    params.push(req.params.videoId);
+    const { rows } = await query(
+      `UPDATE lesson_videos SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params,
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Не найдено' });
+    res.json({ video: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/lessons/:id/videos/:videoId
+router.delete('/lessons/:id/videos/:videoId', async (req, res, next) => {
+  try {
+    await query('DELETE FROM lesson_videos WHERE id = $1', [req.params.videoId]);
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

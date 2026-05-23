@@ -32,11 +32,35 @@ router.get('/lessons', async (req, res, next) => {
     const progressMap = {};
     for (const p of progress) progressMap[p.lesson_id] = p;
 
+    // Attach topics and videos for each lesson
+    const lessonIds = lessons.map(l => l.id);
+    let topicsMap = {}, videosMap = {};
+    if (lessonIds.length) {
+      const { rows: allTopics } = await query(
+        `SELECT * FROM lesson_topics WHERE lesson_id = ANY($1) ORDER BY lesson_id, sort_order`,
+        [lessonIds],
+      );
+      const { rows: allVideos } = await query(
+        `SELECT * FROM lesson_videos WHERE lesson_id = ANY($1) ORDER BY lesson_id, sort_order`,
+        [lessonIds],
+      );
+      for (const t of allTopics) {
+        if (!topicsMap[t.lesson_id]) topicsMap[t.lesson_id] = [];
+        topicsMap[t.lesson_id].push(t);
+      }
+      for (const v of allVideos) {
+        if (!videosMap[v.lesson_id]) videosMap[v.lesson_id] = [];
+        videosMap[v.lesson_id].push(v);
+      }
+    }
+
     const result = lessons.map(l => ({
       ...l,
-      unlocked: l.is_free || hasPurchased,
+      unlocked:  l.is_free || hasPurchased,
       viewed:    progressMap[l.id]?.viewed    ?? false,
       completed: progressMap[l.id]?.completed ?? false,
+      topics:    topicsMap[l.id]  || [],
+      videos:    videosMap[l.id]  || [],
     }));
 
     res.json({ lessons: result, hasPurchased });
