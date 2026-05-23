@@ -468,6 +468,16 @@
     }
     .course-card__btn:hover { opacity: .88; transform: translateY(-1px); }
     .course-card__btn:active { transform: translateY(0); }
+    .course-card__btn--outline {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,.22);
+    }
+    .course-card__btn--outline:hover { opacity:1; background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.40); }
+    .course-card__btns {
+      display: flex; flex-wrap: wrap;
+      gap: clamp(10px, 1.2vw, 14px);
+      align-items: center;
+    }
 
     /* ═══════════════════════════════════
        4. ORDER HISTORY
@@ -721,14 +731,17 @@
           </div>
           <div class="status-item">
             <span class="status-item__label">Подписка «Сотрудничество»</span>
-            <span class="status-badge status-badge--none">Нет подписки</span>
+            <span class="status-badge status-badge--none" id="js-sub-badge">Нет подписки</span>
           </div>
         </div>
 
         <!-- Progress -->
         <div class="course-progress" id="js-progress-steps"></div>
 
-        <a href="course.html" class="course-card__btn" id="js-course-btn">Продолжить обучение</a>
+        <div class="course-card__btns">
+          <a href="course.html" class="course-card__btn" id="js-course-btn">Продолжить обучение</a>
+          <a href="subscription.html" class="course-card__btn course-card__btn--outline" id="js-sub-btn" style="display:none;">Подписка</a>
+        </div>
       </div>
 
     </div>
@@ -875,6 +888,26 @@ async function loadProfile() {
     document.getElementById('val-email').textContent    = user.email || '—';
     document.getElementById('input-name').value         = user.name  || '';
     document.getElementById('js-reg-date').textContent  = formatDate(user.created_at);
+
+    // Subscription badge
+    const subBadgeEl = document.getElementById('js-sub-badge');
+    const subBtnEl   = document.getElementById('js-sub-btn');
+    const subActive  = user.subscription_status === 'active'
+                       && user.expires_at
+                       && new Date(user.expires_at) > new Date();
+    if (subActive) {
+      if (subBadgeEl) {
+        subBadgeEl.textContent = 'Активна до ' + formatDate(user.expires_at);
+        subBadgeEl.className   = 'status-badge status-badge--active';
+      }
+      if (subBtnEl) subBtnEl.style.display = '';
+    } else {
+      if (subBadgeEl) {
+        subBadgeEl.textContent = 'Нет подписки';
+        subBadgeEl.className   = 'status-badge status-badge--none';
+      }
+      if (subBtnEl) subBtnEl.style.display = 'none';
+    }
 
     // Nav plan badge — filled in by loadOrders based on purchases
   } catch (e) {

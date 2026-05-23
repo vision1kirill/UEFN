@@ -449,7 +449,7 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__plan-badge">Essential</span>
+      <span class="nav__plan-badge" id="js-nav-plan" style="display:none;"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" aria-hidden="true" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
@@ -474,7 +474,7 @@
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
   <div class="drawer-btns">
-    <a href="profile.html" class="nav__plan-badge">Essential</a>
+    <a href="profile.html" class="nav__plan-badge" id="js-drawer-plan" style="display:none;"></a>
   </div>
 </nav>
 
@@ -493,7 +493,7 @@
       <!-- Статус -->
       <div class="status-field">
         <span class="status-field__label">Статус</span>
-        <span class="status-field__value status-field__value--active">Активна</span>
+        <span class="status-field__value status-field__value--active" id="js-sub-status">—</span>
       </div>
 
       <div class="status-divider" aria-hidden="true"></div>
@@ -501,7 +501,7 @@
       <!-- Дата окончания -->
       <div class="status-field">
         <span class="status-field__label">Дата окончания</span>
-        <span class="status-field__value">28 апреля 2026</span>
+        <span class="status-field__value" id="js-sub-expiry">—</span>
       </div>
 
       <div class="status-divider" aria-hidden="true"></div>
@@ -635,6 +635,7 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
@@ -669,6 +670,49 @@ if (promoInput && promoClear) {
     promoInput.focus();
   });
 }
+
+/* Helper */
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+/* ── Init: auth check + load subscription data ── */
+async function initPage() {
+  if (!window.Auth?.isLoggedIn()) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) { window.Auth.logout(); return; }
+    const user = await res.json();
+
+    // Access control: must have active subscription that's not expired
+    const subActive = user.subscription_status === 'active'
+                      && user.expires_at
+                      && new Date(user.expires_at) > new Date();
+
+    if (!subActive) {
+      // No active subscription — redirect back to profile
+      window.location.href = 'profile.html';
+      return;
+    }
+
+    // Fill status bar
+    const statusEl = document.getElementById('js-sub-status');
+    const expiryEl = document.getElementById('js-sub-expiry');
+    if (statusEl) { statusEl.textContent = 'Активна'; statusEl.classList.add('status-field__value--active'); }
+    if (expiryEl) expiryEl.textContent = formatDate(user.expires_at);
+
+  } catch (e) {
+    // Network error — redirect to profile as safe fallback
+    window.location.href = 'profile.html';
+  }
+}
+
+initPage();
 </script>
 </body>
 </html>

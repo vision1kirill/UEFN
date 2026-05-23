@@ -267,7 +267,13 @@ router.post('/logout', async (req, res, next) => {
 router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await query(
-      'SELECT id, email, name, role, email_verified, created_at FROM users WHERE id = $1',
+      `SELECT u.id, u.name, u.email, u.role, u.email_verified, u.created_at,
+              s.plan AS subscription_plan, s.status AS subscription_status, s.expires_at
+       FROM users u
+       LEFT JOIN subscriptions s
+         ON s.user_id = u.id AND s.status = 'active'
+       WHERE u.id = $1
+       LIMIT 1`,
       [req.user.id],
     );
     if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
@@ -457,27 +463,5 @@ router.post('/reset-password', authLimiter, async (req, res, next) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  GET /api/auth/me
-//  Returns current user profile + active subscription plan
-// ─────────────────────────────────────────────────────────────────────────────
-router.get('/me', requireAuth, async (req, res, next) => {
-  try {
-    const { rows } = await query(
-      `SELECT u.id, u.name, u.email, u.role,
-              s.plan AS subscription_plan, s.status AS subscription_status, s.expires_at
-       FROM users u
-       LEFT JOIN subscriptions s
-         ON s.user_id = u.id AND s.status = 'active'
-       WHERE u.id = $1
-       LIMIT 1`,
-      [req.user.id],
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
-    res.json(rows[0]);
-  } catch (err) {
-    next(err);
-  }
-});
 
 module.exports = router;
