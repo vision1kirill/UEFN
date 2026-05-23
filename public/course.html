@@ -938,38 +938,18 @@ function selectLesson(lesson) {
   document.getElementById('js-lesson-title').textContent = lesson.title;
 
   /* Videos (из API) */
-  const videos    = lesson.videos || [];
-  const mainVideo = videos.find(v => v.is_main) || videos[0] || null;
-  const extraVids = videos.filter(v => v !== mainVideo);
-  const wrap      = document.getElementById('js-videos-wrap');
+  const videos = lesson.videos || [];
+  const wrap   = document.getElementById('js-videos-wrap');
 
   if (!wrap) return;
 
   if (!videos.length) {
-    // Нет видео — ничего не показываем
     wrap.innerHTML = '';
     return;
   }
 
-  const mainHtml = `
-    <div class="video-card">
-      <div class="video-card__thumb">
-        <span class="video-card__badge">Текущий урок</span>
-        <div class="video-card__play">
-          <div class="video-card__play-btn">
-            <svg viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14" fill="#fff"/></svg>
-          </div>
-        </div>
-      </div>
-      <div class="video-card__body">
-        <h3 class="video-card__title">${mainVideo.title}</h3>
-        <p class="video-card__desc">${mainVideo.description || ''}</p>
-      </div>
-    </div>`;
-
-  const extraHtml = extraVids.length ? `
-    <p class="lesson-videos__more-label">Ещё в этом занятии</p>
-    ${extraVids.map(v => `
+  wrap.innerHTML = `<div style="display:flex;flex-direction:column;gap:clamp(20px,2.5vw,32px);">${
+    videos.map(v => `
       <div class="video-card">
         <div class="video-card__thumb">
           <div class="video-card__play">
@@ -982,9 +962,8 @@ function selectLesson(lesson) {
           <h3 class="video-card__title">${v.title}</h3>
           <p class="video-card__desc">${v.description || ''}</p>
         </div>
-      </div>`).join('')}` : '';
-
-  wrap.innerHTML = mainHtml + extraHtml;
+      </div>`).join('')
+  }</div>`;
 
   /* Topics (из API) */
   const topics = lesson.topics || [];
