@@ -583,4 +583,76 @@ router.delete('/promo-codes/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  LESSONS (Content tab)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/lessons
+router.get('/lessons', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT l.*,
+              COUNT(cp.user_id) FILTER (WHERE cp.completed = true) AS completed_count,
+              COUNT(cp.user_id) AS viewed_count
+       FROM lessons l
+       LEFT JOIN course_progress cp ON cp.lesson_id = l.id
+       GROUP BY l.id
+       ORDER BY l.sort_order ASC`,
+    );
+    res.json({ lessons: rows, total: rows.length });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/lessons
+router.post('/lessons', async (req, res, next) => {
+  try {
+    const { title } = req.body;
+    if (!title?.trim()) return res.status(400).json({ error: 'title обязателен' });
+
+    // Получаем максимальный sort_order
+    const { rows: maxRows } = await query('SELECT COALESCE(MAX(sort_order), 0) AS max FROM lessons');
+    const nextOrder = parseInt(maxRows[0].max, 10) + 1;
+
+    const { rows } = await query(
+      `INSERT INTO lessons (title, sort_order, is_free) VALUES ($1, $2, false) RETURNING *`,
+      [title.trim(), nextOrder],
+    );
+    res.json({ lesson: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/lessons/:id
+router.patch('/lessons/:id', async (req, res, next) => {
+  try {
+    const { title, sort_order } = req.body;
+    const sets = [];
+    const params = [];
+
+    if (title !== undefined) { params.push(title.trim()); sets.push(`title = $${params.length}`); }
+    if (sort_order !== undefined) { params.push(parseInt(sort_order, 10)); sets.push(`sort_order = $${params.length}`); }
+
+    if (!sets.length) return res.status(400).json({ error: 'Нечего обновлять' });
+
+    params.push(req.params.id);
+    const { rows } = await query(
+      `UPDATE lessons SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params,
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Урок не найден' });
+    res.json({ lesson: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/lessons/:id
+router.delete('/lessons/:id', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'DELETE FROM lessons WHERE id = $1 RETURNING id',
+      [req.params.id],
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Урок не найден' });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
