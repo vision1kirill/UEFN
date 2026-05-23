@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       if (res.ok) {
         const me = await res.json();
-        const plan = me.subscription_plan;
+        const plan = me.course_plan;
         if (plan && PLAN_LABELS[plan]) {
           badges.forEach(b => { b.textContent = PLAN_LABELS[plan]; b.style.display = ''; });
         }

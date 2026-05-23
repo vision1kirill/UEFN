@@ -268,7 +268,10 @@ router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const { rows } = await query(
       `SELECT u.id, u.name, u.email, u.role, u.email_verified, u.created_at,
-              s.plan AS subscription_plan, s.status AS subscription_status, s.expires_at
+              s.plan AS subscription_plan, s.status AS subscription_status, s.expires_at,
+              (SELECT product FROM orders
+               WHERE user_id = u.id AND status = 'paid'
+               ORDER BY created_at DESC LIMIT 1) AS course_plan
        FROM users u
        LEFT JOIN subscriptions s
          ON s.user_id = u.id AND s.status = 'active'
