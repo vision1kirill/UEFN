@@ -374,11 +374,41 @@ router.patch('/users/:id/role', async (req, res, next) => {
     if (!['user', 'partner', 'admin'].includes(role)) {
       return res.status(400).json({ error: 'role: user | partner | admin' });
     }
+
     const { rows } = await query(
-      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id',
+      'UPDATE users SET role = $1, updated_at = NOW() WHERE id = $2 RETURNING id, name, email',
       [role, req.params.id],
     );
     if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
+
+    // Auto-create partner record when role is set to 'partner'
+    if (role === 'partner') {
+      const user = rows[0];
+      // Generate slug from name or email prefix
+      const base = (user.name || user.email.split('@')[0])
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .slice(0, 28) || 'partner';
+
+      // Find unique slug (append user id if base is taken)
+      let slug = base;
+      const { rows: existing } = await query(
+        `SELECT 1 FROM partners WHERE slug = $1
+         UNION SELECT 1 FROM partner_applications WHERE slug = $1 LIMIT 1`,
+        [slug],
+      );
+      if (existing.length) slug = `${base}${user.id}`;
+
+      const promoCode = slug.toUpperCase();
+
+      await query(
+        `INSERT INTO partners (user_id, slug, promo_code)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (user_id) DO NOTHING`,
+        [user.id, slug, promoCode],
+      );
+    }
+
     res.json({ message: 'Роль обновлена.' });
   } catch (err) {
     next(err);
