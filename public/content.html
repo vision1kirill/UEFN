@@ -323,6 +323,17 @@
     @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
     @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+    .nav-logout-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 13px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.65);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: border-color .2s, color .2s;
+    }
+    .nav-logout-btn:hover { border-color: rgba(248,113,113,.45); color: #f87171; }
   </style>
 </head>
 <body>
@@ -345,6 +356,10 @@
       <a href="dashboard.html" class="nav__avatar" aria-label="Панель управления">
         <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
+      <button onclick="window.Auth.logout()" title="Выйти из аккаунта" class="nav-logout-btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false">
       <span></span><span></span><span></span>
