@@ -39,9 +39,9 @@
     .nav__links a:hover { opacity: .65; }
     .nav__auth { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .nav__user-name { font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600; color: #fff; white-space: nowrap; }
-    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); cursor: pointer; transition: border-color .2s; }
+    .nav__avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,.20); background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .2s; }
     .nav__avatar:hover { border-color: var(--c-cyan); }
-    .nav__avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .nav__avatar svg { width: 20px; height: 20px; stroke: var(--c-muted); fill: none; }
     .nav__burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border: 1px solid var(--c-border-mid); border-radius: 8px; margin-left: auto; flex-shrink: 0; }
     .nav__burger span { display: block; height: 2px; background: #fff; border-radius: 2px; transition: transform .3s, opacity .2s; }
     .nav__burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
