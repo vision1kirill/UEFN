@@ -333,12 +333,32 @@ router.delete('/users/:id', async (req, res, next) => {
     if (String(req.params.id) === String(req.user.id)) {
       return res.status(400).json({ error: 'Нельзя удалить самого себя.' });
     }
-    const { rows } = await query(
-      'DELETE FROM users WHERE id = $1 RETURNING id',
-      [req.params.id],
-    );
-    if (!rows.length) return res.status(404).json({ error: 'Пользователь не найден.' });
-    res.json({ message: 'Пользователь удалён.' });
+    const client = await require('../db').getClient();
+    try {
+      await client.query('BEGIN');
+      // Delete dependent records first
+      await client.query('DELETE FROM referrals WHERE referred_user_id = $1', [req.params.id]);
+      await client.query('DELETE FROM referrals WHERE partner_id IN (SELECT id FROM partners WHERE user_id = $1)', [req.params.id]);
+      await client.query('DELETE FROM orders WHERE user_id = $1', [req.params.id]);
+      await client.query('DELETE FROM partner_payouts WHERE partner_id IN (SELECT id FROM partners WHERE user_id = $1)', [req.params.id]);
+      await client.query('DELETE FROM partners WHERE user_id = $1', [req.params.id]);
+      await client.query('DELETE FROM partner_applications WHERE user_id = $1', [req.params.id]);
+      const { rows } = await client.query(
+        'DELETE FROM users WHERE id = $1 RETURNING id',
+        [req.params.id],
+      );
+      if (!rows.length) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Пользователь не найден.' });
+      }
+      await client.query('COMMIT');
+      res.json({ message: 'Пользователь удалён.' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   } catch (err) {
     next(err);
   }
