@@ -502,19 +502,19 @@
         <!-- Имя -->
         <div class="field-card">
           <label class="field-card__label" for="f-name">Имя или никнейм</label>
-          <input id="f-name" name="name" type="text" placeholder="Александр" value="Александр" autocomplete="name" />
+          <input id="f-name" name="name" type="text" placeholder="Александр" autocomplete="name" />
         </div>
 
         <!-- Email -->
         <div class="field-card">
           <label class="field-card__label" for="f-email">Электронная почта</label>
-          <input id="f-email" name="email" type="email" placeholder="example@mail.ru" value="alexander8849@mail.ru" autocomplete="email" />
+          <input id="f-email" name="email" type="email" placeholder="example@mail.ru" autocomplete="email" />
         </div>
 
         <!-- Telegram -->
         <div class="field-card">
           <label class="field-card__label" for="f-tg">Телеграм для связи</label>
-          <input id="f-tg" name="telegram" type="text" placeholder="@username" value="alexander8849" autocomplete="off" />
+          <input id="f-tg" name="telegram" type="text" placeholder="@username" autocomplete="off" />
         </div>
 
         <!-- Партнёрский слаг -->
@@ -564,20 +564,19 @@
         <!-- Краткая информация о себе -->
         <div class="field-card">
           <label class="field-card__label" for="f-about">Краткая информация о себе</label>
-          <textarea id="f-about" name="about" placeholder="Расскажите о себе...">После регистрации и покупки курса вы получите доступ в личный кабинет и сразу сможете начать обучение</textarea>
+          <textarea id="f-about" name="about" placeholder="Расскажите о себе..."></textarea>
         </div>
 
         <!-- Опыт -->
         <div class="field-card">
           <label class="field-card__label" for="f-exp">Опыт, чем вы занимаетесь</label>
-          <textarea id="f-exp" name="experience" placeholder="Ваш опыт и деятельность...">После регистрации и покупки курса вы получите доступ в личный кабинет и сразу сможете начать обучение</textarea>
+          <textarea id="f-exp" name="experience" placeholder="Ваш опыт и деятельность..."></textarea>
         </div>
 
         <!-- Соцсети -->
         <div class="field-card">
           <label class="field-card__label" for="f-social">Ваши соцсети, каналы, проекты или портфолио</label>
-          <textarea id="f-social" name="social_links" placeholder="Ссылки на ваши проекты...">https://www.youtube.com/id/23442432432
-https://www.youtube.com/id/23442432432</textarea>
+          <textarea id="f-social" name="social_links" placeholder="Ссылки на ваши проекты..."></textarea>
         </div>
 
         <!-- Откуда будет идти трафик -->
@@ -589,13 +588,13 @@ https://www.youtube.com/id/23442432432</textarea>
         <!-- Почему хотите сотрудничать -->
         <div class="field-card">
           <label class="field-card__label" for="f-why">Почему вы хотите с нами сотрудничать</label>
-          <textarea id="f-why" name="motivation" placeholder="Расскажите о мотивации...">Очень нравится проект</textarea>
+          <textarea id="f-why" name="motivation" placeholder="Расскажите о мотивации..."></textarea>
         </div>
 
         <!-- Дополнительный комментарий -->
         <div class="field-card">
           <label class="field-card__label" for="f-comment">Дополнительный комментарий (необязательно)</label>
-          <textarea id="f-comment" name="comment" placeholder="Любые дополнения...">Очень нравится проект</textarea>
+          <textarea id="f-comment" name="comment" placeholder="Любые дополнения..."></textarea>
         </div>
 
         <!-- Согласие с условиями -->
@@ -610,9 +609,12 @@ https://www.youtube.com/id/23442432432</textarea>
           </span>
         </label>
 
+        <!-- Error message -->
+        <p id="js-form-error" style="display:none;color:#f87171;font-size:13px;padding:4px 2px"></p>
+
         <!-- Submit -->
         <div class="btn-submit-wrap">
-          <button class="btn-submit" type="submit" id="js-submit-btn" onclick="handleSubmit(event)">Продолжить</button>
+          <button class="btn-submit" type="submit" id="js-submit-btn" onclick="handleSubmit(event)">Отправить заявку</button>
         </div>
 
       </form>
@@ -657,6 +659,7 @@ https://www.youtube.com/id/23442432432</textarea>
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
@@ -673,6 +676,16 @@ function setDrawer(v) {
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
+/* ── Pre-fill if logged in ── */
+(function() {
+  const user = window.Auth?.getUser();
+  if (!user) return;
+  const nameEl  = document.getElementById('f-name');
+  const emailEl = document.getElementById('f-email');
+  if (nameEl  && !nameEl.value  && user.name)  nameEl.value  = user.name;
+  if (emailEl && !emailEl.value && user.email) emailEl.value = user.email;
+})();
+
 /* ── Radio type selector ── */
 function selectType(el) {
   document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
@@ -680,33 +693,69 @@ function selectType(el) {
   document.getElementById('f-type').value = el.dataset.val;
 }
 
-/* ── Slug live preview ── */
+/* ── Slug live preview + availability check ── */
+let slugTimer = null;
+let slugStatus = ''; // 'ok' | 'err' | 'checking' | ''
+
 function onSlugInput(input) {
+  clearTimeout(slugTimer);
   const raw   = input.value;
   const clean = raw.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  input.value = clean; // sanitize in place
+
   const preview = document.getElementById('js-slug-preview');
   const errEl   = document.getElementById('js-slug-err');
   const card    = document.getElementById('f-slug-card');
 
-  if (!raw) {
+  if (!clean) {
     preview.style.display = 'none';
     errEl.classList.remove('show');
+    errEl.textContent = 'Только строчные латинские буквы, цифры и дефис. Минимум 3 символа.';
     card.style.borderColor = '';
+    slugStatus = '';
     return;
   }
 
-  const valid = /^[a-z0-9-]{3,}$/.test(clean);
-  errEl.classList.toggle('show', !valid);
-  card.style.borderColor = valid ? 'rgba(59,207,254,.30)' : 'rgba(248,113,113,.45)';
-
-  if (valid) {
-    const promo = clean.replace(/-/g, '').toUpperCase() + '15';
-    document.getElementById('js-slug-link-val').textContent  = clean;
-    document.getElementById('js-slug-promo-val').textContent = promo;
-    preview.style.display = '';
-  } else {
+  const valid = /^[a-z0-9-]{3,32}$/.test(clean);
+  if (!valid) {
+    errEl.textContent = 'Только строчные латинские буквы, цифры и дефис. Минимум 3 символа.';
+    errEl.classList.add('show');
+    card.style.borderColor = 'rgba(248,113,113,.45)';
     preview.style.display = 'none';
+    slugStatus = 'err';
+    return;
   }
+
+  // Show preview optimistically
+  document.getElementById('js-slug-link-val').textContent  = clean;
+  document.getElementById('js-slug-promo-val').textContent = clean.toUpperCase();
+  preview.style.display = '';
+  errEl.classList.remove('show');
+  card.style.borderColor = 'rgba(255,255,255,.15)';
+  slugStatus = 'checking';
+
+  // Debounced availability check
+  slugTimer = setTimeout(async () => {
+    try {
+      const res = await fetch(`/api/partners/check-slug?slug=${encodeURIComponent(clean)}`);
+      const data = await res.json();
+      if (data.available) {
+        card.style.borderColor = 'rgba(59,207,254,.30)';
+        errEl.classList.remove('show');
+        slugStatus = 'ok';
+      } else {
+        card.style.borderColor = 'rgba(248,113,113,.45)';
+        errEl.textContent = data.error || 'Этот идентификатор уже занят. Попробуйте другой.';
+        errEl.classList.add('show');
+        preview.style.display = 'none';
+        slugStatus = 'err';
+      }
+    } catch (_) {
+      // Network error — allow submit, server will validate
+      card.style.borderColor = 'rgba(59,207,254,.30)';
+      slugStatus = 'ok';
+    }
+  }, 500);
 }
 
 /* ── Auto-resize textareas ── */
@@ -716,18 +765,81 @@ document.querySelectorAll('textarea').forEach(ta => {
   resize();
 });
 
-/* ── Submit validation ── */
-function handleSubmit(e) {
+/* ── Show form error ── */
+function showError(msg) {
+  const el = document.getElementById('js-form-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function hideError() {
+  document.getElementById('js-form-error').style.display = 'none';
+}
+
+/* ── Submit ── */
+async function handleSubmit(e) {
   e.preventDefault();
+  hideError();
+
   const agree = document.getElementById('f-agree');
-  const agreeRow = agree.closest('.agree-row');
   if (!agree.checked) {
-    agreeRow.style.borderColor = 'rgba(255,80,80,.55)';
-    agreeRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => { agreeRow.style.borderColor = ''; }, 2000);
+    const row = agree.closest('.agree-row');
+    row.style.borderColor = 'rgba(255,80,80,.55)';
+    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => { row.style.borderColor = ''; }, 2000);
     return;
   }
-  location.href = 'partner-verify.html';
+
+  const name  = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const slug  = document.getElementById('f-slug').value.trim();
+
+  if (!name)  { showError('Пожалуйста, укажите имя или никнейм.'); return; }
+  if (!email) { showError('Пожалуйста, укажите электронную почту.'); return; }
+  if (!slug || slugStatus === 'err') {
+    showError('Пожалуйста, укажите корректный уникальный идентификатор.');
+    document.getElementById('f-slug').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (slugStatus === 'checking') {
+    showError('Подождите, идёт проверка идентификатора...');
+    return;
+  }
+
+  const btn = document.getElementById('js-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Отправка...';
+
+  try {
+    await apiFetch('/api/partners/apply', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        email,
+        slug,
+        telegram:         document.getElementById('f-tg').value.trim() || null,
+        cooperation_type: document.getElementById('f-type').value,
+        audience:         document.getElementById('f-audience').value.trim() || null,
+        about:            document.getElementById('f-about').value.trim() || null,
+        experience:       document.getElementById('f-exp').value.trim() || null,
+        social_links:     document.getElementById('f-social').value.trim() || null,
+        traffic_source:   document.getElementById('f-traffic').value.trim() || null,
+        motivation:       document.getElementById('f-why').value.trim() || null,
+        comment:          document.getElementById('f-comment').value.trim() || null,
+      }),
+    });
+
+    location.href = 'partner-success.html';
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Отправить заявку';
+    const msg = err.data?.error || 'Ошибка при отправке заявки. Попробуйте ещё раз.';
+    showError(msg);
+    if (err.data?.field === 'slug') {
+      document.getElementById('f-slug').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 }
 </script>
 </body>
