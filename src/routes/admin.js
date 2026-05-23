@@ -733,19 +733,20 @@ router.delete('/lessons/:id/topics/:topicId', async (req, res, next) => {
 // POST /api/admin/lessons/:id/videos
 router.post('/lessons/:id/videos', async (req, res, next) => {
   try {
-    const { title, description, video_url, is_main } = req.body;
+    const { title, description, video_url, preview_url, is_main } = req.body;
     if (!title?.trim()) return res.status(400).json({ error: 'title обязателен' });
     const { rows: mx } = await query(
       'SELECT COALESCE(MAX(sort_order), 0) AS max FROM lesson_videos WHERE lesson_id = $1',
       [req.params.id],
     );
     const { rows } = await query(
-      `INSERT INTO lesson_videos (lesson_id, title, description, video_url, is_main, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      `INSERT INTO lesson_videos (lesson_id, title, description, video_url, preview_url, is_main, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [
         req.params.id, title.trim(),
         description?.trim() || null, video_url?.trim() || null,
-        Boolean(is_main), parseInt(mx[0].max, 10) + 1,
+        preview_url?.trim() || null, Boolean(is_main),
+        parseInt(mx[0].max, 10) + 1,
       ],
     );
     res.json({ video: rows[0] });
@@ -755,13 +756,14 @@ router.post('/lessons/:id/videos', async (req, res, next) => {
 // PATCH /api/admin/lessons/:id/videos/:videoId
 router.patch('/lessons/:id/videos/:videoId', async (req, res, next) => {
   try {
-    const { title, description, video_url, is_main, sort_order } = req.body;
+    const { title, description, video_url, preview_url, is_main, sort_order } = req.body;
     const sets = [], params = [];
-    if (title !== undefined)       { params.push(title.trim());            sets.push(`title = $${params.length}`); }
+    if (title !== undefined)       { params.push(title.trim());              sets.push(`title = $${params.length}`); }
     if (description !== undefined) { params.push(description?.trim()||null); sets.push(`description = $${params.length}`); }
-    if (video_url !== undefined)   { params.push(video_url?.trim()||null);  sets.push(`video_url = $${params.length}`); }
-    if (is_main !== undefined)     { params.push(Boolean(is_main));         sets.push(`is_main = $${params.length}`); }
-    if (sort_order !== undefined)  { params.push(parseInt(sort_order, 10)); sets.push(`sort_order = $${params.length}`); }
+    if (video_url !== undefined)   { params.push(video_url?.trim()||null);   sets.push(`video_url = $${params.length}`); }
+    if (preview_url !== undefined) { params.push(preview_url?.trim()||null); sets.push(`preview_url = $${params.length}`); }
+    if (is_main !== undefined)     { params.push(Boolean(is_main));          sets.push(`is_main = $${params.length}`); }
+    if (sort_order !== undefined)  { params.push(parseInt(sort_order, 10));  sets.push(`sort_order = $${params.length}`); }
     if (!sets.length) return res.status(400).json({ error: 'Нечего обновлять' });
     params.push(req.params.videoId);
     const { rows } = await query(
@@ -777,6 +779,87 @@ router.patch('/lessons/:id/videos/:videoId', async (req, res, next) => {
 router.delete('/lessons/:id/videos/:videoId', async (req, res, next) => {
   try {
     await query('DELETE FROM lesson_videos WHERE id = $1', [req.params.videoId]);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  MATERIALS  (maps | assets | extra_maps | extra_lessons | updates)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const VALID_CATEGORIES = ['maps', 'assets', 'extra_maps', 'extra_lessons', 'updates'];
+
+// GET /api/admin/materials?category=maps
+router.get('/materials', async (req, res, next) => {
+  try {
+    const { category } = req.query;
+    const params = [];
+    let where = '';
+    if (category) {
+      params.push(category);
+      where = 'WHERE category = $1';
+    }
+    const { rows } = await query(
+      `SELECT * FROM materials ${where} ORDER BY category, sort_order ASC`,
+      params,
+    );
+    res.json({ materials: rows });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/materials
+router.post('/materials', async (req, res, next) => {
+  try {
+    const { category, title, description, preview_url, download_url } = req.body;
+    if (!VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: `category: ${VALID_CATEGORIES.join(' | ')}` });
+    }
+    if (!title?.trim()) return res.status(400).json({ error: 'title обязателен' });
+
+    const { rows: mx } = await query(
+      'SELECT COALESCE(MAX(sort_order), 0) AS max FROM materials WHERE category = $1',
+      [category],
+    );
+    const { rows } = await query(
+      `INSERT INTO materials (category, title, description, preview_url, download_url, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [
+        category, title.trim(),
+        description?.trim() || null,
+        preview_url?.trim() || null,
+        download_url?.trim() || null,
+        parseInt(mx[0].max, 10) + 1,
+      ],
+    );
+    res.json({ material: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/admin/materials/:id
+router.patch('/materials/:id', async (req, res, next) => {
+  try {
+    const { title, description, preview_url, download_url, sort_order } = req.body;
+    const sets = [], params = [];
+    if (title !== undefined)        { params.push(title.trim());              sets.push(`title = $${params.length}`); }
+    if (description !== undefined)  { params.push(description?.trim()||null); sets.push(`description = $${params.length}`); }
+    if (preview_url !== undefined)  { params.push(preview_url?.trim()||null); sets.push(`preview_url = $${params.length}`); }
+    if (download_url !== undefined) { params.push(download_url?.trim()||null);sets.push(`download_url = $${params.length}`); }
+    if (sort_order !== undefined)   { params.push(parseInt(sort_order, 10));  sets.push(`sort_order = $${params.length}`); }
+    if (!sets.length) return res.status(400).json({ error: 'Нечего обновлять' });
+    params.push(req.params.id);
+    const { rows } = await query(
+      `UPDATE materials SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params,
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Не найдено' });
+    res.json({ material: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/admin/materials/:id
+router.delete('/materials/:id', async (req, res, next) => {
+  try {
+    await query('DELETE FROM materials WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
   } catch (err) { next(err); }
 });

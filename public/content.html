@@ -418,9 +418,10 @@
         </div>
         <div class="add-form" id="js-video-form">
           <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:260px;">
-            <input type="text" id="js-video-title" placeholder="Название видео *" />
-            <input type="text" id="js-video-desc"  placeholder="Описание (необязательно)" />
-            <input type="text" id="js-video-url"   placeholder="Ссылка на видео (Vimeo или YouTube)" />
+            <input type="text" id="js-video-title"   placeholder="Название видео *" />
+            <input type="text" id="js-video-desc"    placeholder="Описание (необязательно)" />
+            <input type="text" id="js-video-url"     placeholder="Ссылка на видео (Vimeo или YouTube)" />
+            <input type="text" id="js-video-preview" placeholder="Ссылка на превью-картинку (необязательно)" />
           </div>
           <div class="add-form__actions">
             <button class="btn-sm btn-sm--primary" id="js-video-save">Добавить</button>
@@ -430,6 +431,38 @@
         <div class="detail-list" id="js-videos-list">
           <div class="skeleton" style="height:52px;"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- ══════════ VIEW: MATERIALS (карты / ассеты / доп. материалы / доп. уроки / обновления) ══════════ -->
+    <div id="view-materials" style="display:none;">
+      <div class="lessons-header">
+        <button class="btn-back" id="js-mat-back-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Назад
+        </button>
+        <h2 class="section-title" id="js-mat-title">Материалы</h2>
+        <button class="btn-add" id="js-mat-add-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить
+        </button>
+      </div>
+
+      <div class="add-form" id="js-mat-form">
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:260px;">
+          <input type="text" id="js-mat-title-inp"   placeholder="Название *" />
+          <input type="text" id="js-mat-desc-inp"    placeholder="Описание (необязательно)" />
+          <input type="text" id="js-mat-preview-inp" placeholder="Ссылка на превью-картинку (необязательно)" />
+          <input type="text" id="js-mat-download-inp" placeholder="Ссылка для скачивания (Яндекс Диск и т.д.)" />
+        </div>
+        <div class="add-form__actions">
+          <button class="btn-sm btn-sm--primary" id="js-mat-save">Добавить</button>
+          <button class="btn-sm btn-sm--ghost" id="js-mat-cancel">Отмена</button>
+        </div>
+      </div>
+
+      <div class="detail-list" id="js-mat-list">
+        <div class="skeleton" style="height:52px;"></div>
       </div>
     </div>
 
@@ -538,15 +571,23 @@ const ICON_EYE   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 /* ── Category grid ── */
 const CATS = [
-  { key: 'lessons',   name: 'Уроки',                                      isLessons: true },
-  { key: 'maps',      name: 'Готовые карты',                              count: '–' },
-  { key: 'assets',    name: 'Ассеты',                                     count: '–' },
-  { key: 'materials', name: 'Дополнительные материалы для создания карт', count: '–' },
-  { key: 'extra',     name: 'Дополнительные уроки',                       count: '–' },
-  { key: 'updates',   name: 'Обновления',                                 count: '–' },
+  { key: 'lessons',       name: 'Уроки',                                      isLessons: true },
+  { key: 'maps',          name: 'Готовые карты',                              count: 0 },
+  { key: 'assets',        name: 'Ассеты',                                     count: 0 },
+  { key: 'extra_maps',    name: 'Дополнительные материалы для создания карт', count: 0 },
+  { key: 'extra_lessons', name: 'Дополнительные уроки',                       count: 0 },
+  { key: 'updates',       name: 'Обновления',                                 count: 0 },
 ];
 
-let lessonCount = 0; // заполним после загрузки
+const MAT_LABELS = {
+  maps:          'Готовые карты',
+  assets:        'Ассеты',
+  extra_maps:    'Доп. материалы для карт',
+  extra_lessons: 'Дополнительные уроки',
+  updates:       'Обновления',
+};
+
+let lessonCount = 0;
 
 function renderGrid() {
   const grid = document.getElementById('js-grid');
@@ -568,10 +609,11 @@ function renderGrid() {
         <span class="cat-card__icon">${icon}</span>
       </div>`;
 
+    el.style.cursor = 'pointer';
     if (cat.isLessons) {
       el.addEventListener('click', openLessonsView);
     } else {
-      el.style.cursor = 'default'; // пока нет функционала для других категорий
+      el.addEventListener('click', () => openMaterialsView(cat.key));
     }
 
     grid.appendChild(el);
@@ -579,12 +621,19 @@ function renderGrid() {
 }
 
 /* ── Views ── */
-const viewGrid    = document.getElementById('view-grid');
-const viewLessons = document.getElementById('view-lessons');
+const viewGrid      = document.getElementById('view-grid');
+const viewLessons   = document.getElementById('view-lessons');
+const viewMaterials = document.getElementById('view-materials');
+
+function showOnly(view) {
+  viewGrid.style.display      = view === 'grid'      ? 'block' : 'none';
+  viewLessons.style.display   = view === 'lessons'   ? 'block' : 'none';
+  viewMaterials.style.display = view === 'materials' ? 'block' : 'none';
+  viewDetail.style.display    = view === 'detail'    ? 'block' : 'none';
+}
 
 function openLessonsView() {
-  viewGrid.style.display    = 'none';
-  viewLessons.style.display = 'block';
+  showOnly('lessons');
   if (!lessonsLoaded) {
     loadLessons();
   } else {
@@ -592,9 +641,8 @@ function openLessonsView() {
   }
 }
 function openGridView() {
-  viewLessons.style.display = 'none';
-  viewGrid.style.display    = 'block';
-  renderGrid(); // обновим счётчик уроков
+  showOnly('grid');
+  renderGrid();
 }
 
 document.getElementById('js-back-btn').addEventListener('click', openGridView);
@@ -822,15 +870,13 @@ let currentLessonId = null;
 let detailTopics = [], detailVideos = [];
 
 document.getElementById('js-detail-back-btn').addEventListener('click', () => {
-  viewDetail.style.display  = 'none';
-  viewLessons.style.display = 'block';
+  showOnly('lessons');
   currentLessonId = null;
 });
 
 async function openDetailView(lesson) {
   currentLessonId = lesson.id;
-  viewLessons.style.display = 'none';
-  viewDetail.style.display  = 'block';
+  showOnly('detail');
   document.getElementById('js-detail-title').textContent = lesson.title;
 
   // Reset forms
@@ -978,9 +1024,10 @@ const videoCancel  = document.getElementById('js-video-cancel');
 
 function closeVideoForm() {
   videoForm.classList.remove('visible');
-  document.getElementById('js-video-title').value = '';
-  document.getElementById('js-video-desc').value  = '';
-  document.getElementById('js-video-url').value   = '';
+  document.getElementById('js-video-title').value   = '';
+  document.getElementById('js-video-desc').value    = '';
+  document.getElementById('js-video-url').value     = '';
+  document.getElementById('js-video-preview').value = '';
   videoAddBtn.style.display = '';
 }
 videoAddBtn.addEventListener('click', () => { videoForm.classList.add('visible'); document.getElementById('js-video-title').focus(); videoAddBtn.style.display = 'none'; });
@@ -992,12 +1039,106 @@ videoSave.addEventListener('click', async () => {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       title,
-      description: document.getElementById('js-video-desc').value.trim() || null,
-      video_url:   document.getElementById('js-video-url').value.trim()  || null,
+      description: document.getElementById('js-video-desc').value.trim()    || null,
+      video_url:   document.getElementById('js-video-url').value.trim()     || null,
+      preview_url: document.getElementById('js-video-preview').value.trim() || null,
     }),
   }).then(r => r.json());
   if (data.video) { detailVideos.push(data.video); renderVideos(); closeVideoForm(); }
 });
+
+/* ── Materials view ── */
+let currentMatCategory = null;
+let matItems = [];
+
+document.getElementById('js-mat-back-btn').addEventListener('click', () => {
+  showOnly('grid');
+  renderGrid();
+});
+
+const matAddBtn    = document.getElementById('js-mat-add-btn');
+const matForm      = document.getElementById('js-mat-form');
+const matSave      = document.getElementById('js-mat-save');
+const matCancel    = document.getElementById('js-mat-cancel');
+const matListEl    = document.getElementById('js-mat-list');
+
+function closeMatForm() {
+  matForm.classList.remove('visible');
+  document.getElementById('js-mat-title-inp').value    = '';
+  document.getElementById('js-mat-desc-inp').value     = '';
+  document.getElementById('js-mat-preview-inp').value  = '';
+  document.getElementById('js-mat-download-inp').value = '';
+  matAddBtn.style.display = '';
+}
+matAddBtn.addEventListener('click', () => { matForm.classList.add('visible'); document.getElementById('js-mat-title-inp').focus(); matAddBtn.style.display = 'none'; });
+matCancel.addEventListener('click', closeMatForm);
+
+matSave.addEventListener('click', async () => {
+  const title = document.getElementById('js-mat-title-inp').value.trim();
+  if (!title) { document.getElementById('js-mat-title-inp').focus(); return; }
+  const data = await apiFetch('/api/admin/materials', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      category:     currentMatCategory,
+      title,
+      description:  document.getElementById('js-mat-desc-inp').value.trim()     || null,
+      preview_url:  document.getElementById('js-mat-preview-inp').value.trim()  || null,
+      download_url: document.getElementById('js-mat-download-inp').value.trim() || null,
+    }),
+  }).then(r => r.json());
+  if (data.material) { matItems.push(data.material); renderMaterials(); closeMatForm(); }
+});
+
+function renderMaterials() {
+  if (!matItems.length) {
+    matListEl.innerHTML = '<div class="detail-empty">Материалов пока нет — добавьте первый.</div>';
+    return;
+  }
+  matListEl.innerHTML = '';
+  matItems.forEach((m, idx) => {
+    const row = document.createElement('div');
+    row.className = 'detail-row';
+    row.style.alignItems = 'flex-start';
+    row.innerHTML = `
+      <span class="detail-row__num">${idx + 1}</span>
+      <div class="detail-row__text" style="flex:1;min-width:0;">
+        ${m.preview_url
+          ? `<img src="${escHtml(m.preview_url)}" alt="" style="width:80px;height:52px;object-fit:cover;border-radius:6px;margin-bottom:6px;display:block;" />`
+          : ''}
+        <strong style="display:block;margin-bottom:3px;">${escHtml(m.title)}</strong>
+        ${m.description ? `<span style="font-size:12px;color:var(--c-muted);display:block;margin-bottom:3px;">${escHtml(m.description)}</span>` : ''}
+        ${m.download_url ? `<a href="${escHtml(m.download_url)}" target="_blank" style="font-size:11px;color:var(--c-cyan);word-break:break-all;">🔗 ${escHtml(m.download_url)}</a>` : ''}
+      </div>
+      <div class="detail-row__actions">
+        <button class="icon-btn icon-btn--danger btn-m-del" title="Удалить">${ICON_DEL}</button>
+      </div>`;
+    row.querySelector('.btn-m-del').addEventListener('click', async () => {
+      if (!confirm('Удалить материал?')) return;
+      await apiFetch(`/api/admin/materials/${m.id}`, { method: 'DELETE' });
+      matItems = matItems.filter(x => x.id !== m.id);
+      renderMaterials();
+    });
+    matListEl.appendChild(row);
+  });
+}
+
+async function openMaterialsView(category) {
+  currentMatCategory = category;
+  document.getElementById('js-mat-title').textContent = MAT_LABELS[category] || category;
+  showOnly('materials');
+  closeMatForm();
+  matListEl.innerHTML = '<div class="skeleton" style="height:52px;"></div>';
+  try {
+    const data = await apiFetch(`/api/admin/materials?category=${category}`).then(r => r.json());
+    matItems = data.materials || [];
+    renderMaterials();
+    // Обновить счётчик в CATS
+    const cat = CATS.find(c => c.key === category);
+    if (cat) cat.count = matItems.length;
+  } catch (e) {
+    matListEl.innerHTML = `<div class="detail-empty" style="color:#f87;">Ошибка загрузки: ${e.message}</div>`;
+  }
+}
 
 /* ── Init ── */
 async function init() {
@@ -1009,12 +1150,24 @@ async function init() {
   const nameEl = document.getElementById('js-user-name');
   if (nameEl) nameEl.textContent = user.name || user.email || 'Admin';
 
-  // Подгружаем кол-во уроков для счётчика на карточке
+  // Параллельно загружаем уроки и счётчики материалов
   try {
-    const data = await apiFetch('/api/admin/lessons').then(r => r.json());
-    lessons = data.lessons || [];
+    const [lessonsData, mapsData, assetsData, extraMapsData, extraLessonsData, updatesData] = await Promise.all([
+      apiFetch('/api/admin/lessons').then(r => r.json()),
+      apiFetch('/api/admin/materials?category=maps').then(r => r.json()),
+      apiFetch('/api/admin/materials?category=assets').then(r => r.json()),
+      apiFetch('/api/admin/materials?category=extra_maps').then(r => r.json()),
+      apiFetch('/api/admin/materials?category=extra_lessons').then(r => r.json()),
+      apiFetch('/api/admin/materials?category=updates').then(r => r.json()),
+    ]);
+    lessons = lessonsData.lessons || [];
     lessonCount = lessons.length;
     lessonsLoaded = true;
+    CATS.find(c => c.key === 'maps').count          = (mapsData.materials || []).length;
+    CATS.find(c => c.key === 'assets').count        = (assetsData.materials || []).length;
+    CATS.find(c => c.key === 'extra_maps').count    = (extraMapsData.materials || []).length;
+    CATS.find(c => c.key === 'extra_lessons').count = (extraLessonsData.materials || []).length;
+    CATS.find(c => c.key === 'updates').count       = (updatesData.materials || []).length;
   } catch (_) {}
 
   renderGrid();

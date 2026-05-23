@@ -80,7 +80,8 @@ CREATE TABLE IF NOT EXISTS lesson_videos (
   lesson_id   INTEGER REFERENCES lessons (id) ON DELETE CASCADE,
   title       VARCHAR(255) NOT NULL,
   description TEXT,
-  video_url   VARCHAR(500),   -- YouTube embed URL или прямая ссылка
+  video_url   VARCHAR(500),   -- YouTube / Vimeo URL
+  preview_url VARCHAR(500),   -- превью-картинка
   is_main     BOOLEAN      NOT NULL DEFAULT FALSE,
   sort_order  INTEGER      NOT NULL DEFAULT 0,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -197,3 +198,17 @@ CREATE TABLE IF NOT EXISTS promo_codes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_promo_code ON promo_codes (code);
+
+-- ── Content materials (maps, assets, extra lessons, updates, etc.) ─────────────
+CREATE TABLE IF NOT EXISTS materials (
+  id            SERIAL PRIMARY KEY,
+  category      VARCHAR(64)  NOT NULL,  -- maps | assets | extra_maps | extra_lessons | updates
+  title         VARCHAR(255) NOT NULL,
+  description   TEXT,
+  preview_url   VARCHAR(500),
+  download_url  VARCHAR(500),
+  sort_order    INTEGER      NOT NULL DEFAULT 0,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_materials_category ON materials (category);
