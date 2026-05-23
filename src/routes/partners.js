@@ -329,4 +329,92 @@ router.post('/payouts', requireAuth, async (req, res, next) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/partners/stats
+//  Dashboard summary for current partner
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/stats', requireAuth, async (req, res, next) => {
+  try {
+    const { rows: partnerRows } = await query(
+      'SELECT id, balance, total_earned, promo_code FROM partners WHERE user_id = $1',
+      [req.user.id],
+    );
+    if (!partnerRows.length) return res.status(404).json({ error: 'Партнёрский профиль не найден.' });
+    const partner = partnerRows[0];
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const [refAll, refMonth, purchAll, purchMonth, promoAll, promoMonth] = await Promise.all([
+      // Total referrals (by link)
+      query('SELECT COUNT(*) AS cnt FROM referrals WHERE partner_id = $1', [partner.id]),
+      // Referrals last 30 days
+      query('SELECT COUNT(*) AS cnt FROM referrals WHERE partner_id = $1 AND created_at >= $2', [partner.id, thirtyDaysAgo]),
+      // Paid purchases
+      query("SELECT COUNT(*) AS cnt FROM orders WHERE referral_partner_id = $1 AND status = 'paid'", [partner.id]),
+      // Paid purchases last 30 days
+      query("SELECT COUNT(*) AS cnt FROM orders WHERE referral_partner_id = $1 AND status = 'paid' AND paid_at >= $2", [partner.id, thirtyDaysAgo]),
+      // Promo code uses (orders with partner's promo_code)
+      query('SELECT COUNT(*) AS cnt FROM orders WHERE promo_code = $1', [partner.promo_code]),
+      // Promo code uses last 30 days
+      query('SELECT COUNT(*) AS cnt FROM orders WHERE promo_code = $1 AND created_at >= $2', [partner.promo_code, thirtyDaysAgo]),
+    ]);
+
+    res.json({
+      balance:      parseFloat(partner.balance),
+      totalEarned:  parseFloat(partner.total_earned),
+      referrals:    { total: parseInt(refAll.rows[0].cnt, 10),   last30d: parseInt(refMonth.rows[0].cnt, 10) },
+      purchases:    { total: parseInt(purchAll.rows[0].cnt, 10), last30d: parseInt(purchMonth.rows[0].cnt, 10) },
+      promoCodes:   { total: parseInt(promoAll.rows[0].cnt, 10), last30d: parseInt(promoMonth.rows[0].cnt, 10) },
+    });
+  } catch (err) { next(err); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/partners/chart?period=day|week|month|all
+//  Earnings chart data for current partner
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/chart', requireAuth, async (req, res, next) => {
+  try {
+    const { rows: partnerRows } = await query(
+      'SELECT id FROM partners WHERE user_id = $1', [req.user.id],
+    );
+    if (!partnerRows.length) return res.status(404).json({ error: 'Партнёрский профиль не найден.' });
+    const partnerId = partnerRows[0].id;
+    const period = req.query.period || 'month';
+
+    let groupBy, dateTrunc, whereClause;
+    if (period === 'day') {
+      dateTrunc = `date_trunc('hour', paid_at)`;
+      whereClause = `paid_at >= NOW() - INTERVAL '1 day'`;
+      groupBy = `date_trunc('hour', paid_at)`;
+    } else if (period === 'week') {
+      dateTrunc = `date_trunc('day', paid_at)`;
+      whereClause = `paid_at >= NOW() - INTERVAL '7 days'`;
+      groupBy = `date_trunc('day', paid_at)`;
+    } else if (period === 'month') {
+      dateTrunc = `date_trunc('day', paid_at)`;
+      whereClause = `paid_at >= NOW() - INTERVAL '30 days'`;
+      groupBy = `date_trunc('day', paid_at)`;
+    } else {
+      dateTrunc = `date_trunc('month', paid_at)`;
+      whereClause = `paid_at IS NOT NULL`;
+      groupBy = `date_trunc('month', paid_at)`;
+    }
+
+    const { rows } = await query(
+      `SELECT ${dateTrunc} AS period,
+              COALESCE(SUM(amount), 0)::numeric AS revenue,
+              COUNT(*)::int AS sales
+       FROM orders
+       WHERE referral_partner_id = $1 AND status = 'paid' AND ${whereClause}
+       GROUP BY ${groupBy}
+       ORDER BY period ASC`,
+      [partnerId],
+    );
+
+    res.json({ chart: rows, period });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

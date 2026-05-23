@@ -222,6 +222,11 @@
     @media (max-width: 900px) { .footer__grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; column-gap: clamp(20px,3vw,40px); } .footer__brand { grid-column: 1; grid-row: 1; } .footer__legal { grid-column: 1; grid-row: 2; } .footer__nav { grid-column: 2; grid-row: 1 / 3; justify-self: start; align-self: center; } .footer__tg-capsule { grid-column: 1 / -1; grid-row: 3; margin-top: 28px; width: 100%; max-width: 360px; height: auto; min-height: 80px; } }
     @media (max-width: 540px) { .footer__grid { display: flex; flex-direction: column; gap: 0; } .footer__brand { order: 1; align-items: center; text-align: center; padding-bottom: 24px; } .footer__tg-capsule { order: 2; width: 100%; height: auto; min-height: 90px; border-radius: 46px; padding: 20px 24px; margin-bottom: 36px; justify-content: space-between; } .footer__nav { order: 3; grid-template-columns: 1fr 1fr; gap: 13px clamp(20px,8vw,48px); margin-bottom: 28px; } .footer__nav a { font-size: 15px; } .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; } }
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--c-bg); } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
+    .nav-logout-btn { display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.65);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s; }
+    .nav-logout-btn:hover { border-color:rgba(248,113,113,.45);color:#f87171; }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.05) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 12px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .error-msg { color:#f87171;font-size:14px;padding:16px 0; }
   </style>
 </head>
 <body>
@@ -239,10 +244,14 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__user-name">Татьяна</span>
+      <span class="nav__user-name" id="js-nav-name"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
-        <img src="фотографии/avatar.png" alt="Татьяна" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' stroke-width=\'1.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\' aria-hidden=\'true\'><circle cx=\'12\' cy=\'8\' r=\'4\'/><path d=\'M4 20c0-4 3.6-7 8-7s8 3 8 7\'/></svg>'" />
+        <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="rgba(255,255,255,.55)" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
+      <button onclick="window.Auth && window.Auth.logout()" class="nav-logout-btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Выйти
+      </button>
     </div>
     <button class="nav__burger" id="js-burger" aria-label="Меню" aria-expanded="false"><span></span><span></span><span></span></button>
     <a href="profile.html" class="nav__avatar nav__avatar-mobile" aria-label="Профиль">
@@ -356,6 +365,7 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
 
@@ -383,22 +393,46 @@ function copyRef(valueId, feedbackId) {
 /* ════════════════════════════════════
    METRICS
 ════════════════════════════════════ */
-const metrics = [
-  { label: 'Перешло по вашей ссылке',        value: '1 335', delta: '+42 за месяц' },
-  { label: 'Ввели ваш промокод',              value: '1 335', delta: '+18 за месяц' },
-  { label: 'Совершили покупки по промокоду',  value: '1 335', delta: '+11 за месяц' },
-  { label: 'Оформили подписку',               value: '1 335', delta: '+7 за месяц'  },
-];
-
 const metricsEl = document.getElementById('js-metrics');
-metrics.forEach(m => {
-  metricsEl.insertAdjacentHTML('beforeend', `
-    <div class="metric-card">
-      <p class="metric-card__label">${m.label}</p>
-      <p class="metric-card__value">${m.value}</p>
-      <p class="metric-card__delta">${m.delta}</p>
-    </div>`);
-});
+
+function renderMetrics(stats, partner) {
+  const fmt = n => n.toLocaleString('ru-RU');
+  const fmtMoney = n => n.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' ₽';
+
+  const items = [
+    {
+      label: 'Перешло по вашей ссылке',
+      value: fmt(stats.referrals.total),
+      delta: `+${fmt(stats.referrals.last30d)} за месяц`,
+    },
+    {
+      label: 'Ввели ваш промокод',
+      value: fmt(stats.promoCodes.total),
+      delta: `+${fmt(stats.promoCodes.last30d)} за месяц`,
+    },
+    {
+      label: 'Совершили покупки',
+      value: fmt(stats.purchases.total),
+      delta: `+${fmt(stats.purchases.last30d)} за месяц`,
+    },
+    {
+      label: 'Заработано всего',
+      value: fmtMoney(stats.totalEarned),
+      delta: `Баланс: ${fmtMoney(stats.balance)}`,
+      deltaGreen: false,
+    },
+  ];
+
+  metricsEl.innerHTML = '';
+  items.forEach(m => {
+    metricsEl.insertAdjacentHTML('beforeend', `
+      <div class="metric-card">
+        <p class="metric-card__label">${m.label}</p>
+        <p class="metric-card__value">${m.value}</p>
+        <p class="metric-card__delta" style="${m.deltaGreen === false ? 'color:var(--c-muted)' : ''}">${m.delta}</p>
+      </div>`);
+  });
+}
 
 /* ════════════════════════════════════
    SMOOTH PATH (Catmull-Rom → Bezier)
@@ -519,17 +553,91 @@ overlay.addEventListener('touchmove',  e => { e.preventDefault(); showChartTip(e
 overlay.addEventListener('touchend',   () => { touchActive=false; hideChartTip(); });
 document.addEventListener('touchstart', e => { if (touchActive && !chartSvg.contains(e.target)) hideChartTip(); });
 
+/* ════════════════════════════════════
+   CHART FROM API
+════════════════════════════════════ */
+let currentPeriod = 'month';
+
+function apiChartToLocal(rows, period) {
+  if (!rows.length) return { labels: ['Нет данных'], values: [0] };
+
+  const labels = rows.map(r => {
+    const d = new Date(r.period);
+    if (period === 'day')  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    if (period === 'all')  return d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' });
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  });
+  const values = rows.map(r => parseFloat(r.revenue) || 0);
+  return { labels, values };
+}
+
+async function loadChart(period) {
+  currentPeriod = period;
+  try {
+    const data = await apiFetch(`/api/partners/chart?period=${period}`).then(r => r.json());
+    const local = apiChartToLocal(data.chart || [], period);
+    renderChart(local);
+  } catch (e) {
+    renderChart({ labels: ['Ошибка'], values: [0] });
+  }
+}
+
 /* Period buttons */
 document.querySelectorAll('.period-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderChart(PERIODS[btn.dataset.period]);
+    loadChart(btn.dataset.period);
   });
 });
 
-/* Initial render */
-renderChart(PERIODS.month);
+/* ════════════════════════════════════
+   INIT — load real data
+════════════════════════════════════ */
+async function init() {
+  // Auth check
+  const user = window.Auth?.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+
+  const nameEl = document.getElementById('js-nav-name');
+  if (nameEl) nameEl.textContent = user.name || user.email || '';
+
+  // Show skeletons in metrics while loading
+  metricsEl.innerHTML = Array(4).fill('<div class="metric-card skeleton" style="height:120px;"></div>').join('');
+
+  try {
+    // Load partner profile + stats in parallel
+    const [meRes, statsRes] = await Promise.all([
+      apiFetch('/api/partners/me'),
+      apiFetch('/api/partners/stats'),
+    ]);
+
+    if (!meRes.ok) {
+      // Not a partner yet
+      metricsEl.innerHTML = '<div class="error-msg" style="grid-column:1/-1;">Партнёрский профиль не найден. Подайте заявку на сотрудничество.</div>';
+      return;
+    }
+
+    const partner = await meRes.json();
+    const stats   = await statsRes.json();
+
+    // Fill referral link & promo
+    const baseUrl = window.location.origin;
+    document.getElementById('js-ref-link').textContent  = `${baseUrl}/r/${partner.slug}`;
+    document.getElementById('js-ref-promo').textContent = partner.promo_code;
+
+    // Render metrics
+    renderMetrics(stats, partner);
+
+    // Load chart (default: month)
+    await loadChart('month');
+
+  } catch (e) {
+    metricsEl.innerHTML = `<div class="error-msg" style="grid-column:1/-1;">Ошибка загрузки: ${e.message}</div>`;
+  }
+}
+
+init();
 </script>
 </body>
 </html>
