@@ -529,6 +529,39 @@
       margin-bottom: calc(-1 * clamp(6px, .8vw, 12px));
     }
 
+    /* ── Video modal ── */
+    .video-modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.85);
+      align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .video-modal-overlay.active { display: flex; }
+    .video-modal {
+      position: relative;
+      width: 100%; max-width: 960px;
+      border-radius: 16px; overflow: hidden;
+      background: #000;
+      box-shadow: 0 24px 80px rgba(0,0,0,.8);
+    }
+    .video-modal__ratio {
+      position: relative; width: 100%; padding-top: 56.25%;
+    }
+    .video-modal__ratio iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: none;
+    }
+    .video-modal__close {
+      position: absolute; top: -40px; right: 0;
+      background: none; border: none; cursor: pointer;
+      color: #fff; font-size: 28px; line-height: 1;
+      padding: 4px 8px; opacity: .8;
+      transition: opacity .15s;
+    }
+    .video-modal__close:hover { opacity: 1; }
+
     /* ── 4. Locked lesson card ── */
     .lcard--locked {
       background: rgba(255,255,255,.015);
@@ -950,7 +983,7 @@ function selectLesson(lesson) {
 
   wrap.innerHTML = `<div style="display:flex;flex-direction:column;gap:clamp(20px,2.5vw,32px);">${
     videos.map(v => `
-      <div class="video-card">
+      <div class="video-card" onclick="openVideoModal(${JSON.stringify(v.video_url || '')})">
         <div class="video-card__thumb">
           <div class="video-card__play">
             <div class="video-card__play-btn">
@@ -1127,6 +1160,44 @@ async function init() {
 }
 
 init();
+
+/* ── Video modal ── */
+const videoModal = document.getElementById('js-video-modal');
+const videoModalIframe = document.getElementById('js-video-modal-iframe');
+
+function openVideoModal(url) {
+  if (!url) return;
+  // Convert youtu.be short links to embed
+  let embedUrl = url;
+  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+  const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+  if (shortMatch) embedUrl = `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
+  else if (watchMatch) embedUrl = `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1`;
+  else if (!url.includes('/embed/')) embedUrl = url; // use as-is if already embed or other format
+
+  videoModalIframe.src = embedUrl;
+  videoModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideoModal() {
+  videoModal.classList.remove('active');
+  videoModalIframe.src = '';
+  document.body.style.overflow = '';
+}
+
+videoModal.addEventListener('click', e => { if (e.target === videoModal) closeVideoModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideoModal(); });
 </script>
+
+<!-- Video modal -->
+<div class="video-modal-overlay" id="js-video-modal">
+  <div class="video-modal">
+    <button class="video-modal__close" onclick="closeVideoModal()">✕</button>
+    <div class="video-modal__ratio">
+      <iframe id="js-video-modal-iframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+    </div>
+  </div>
+</div>
 </body>
 </html>
