@@ -686,6 +686,14 @@
 <script src="api.js"></script>
 <script>
 'use strict';
+/* ── Уже залогинен → редирект на свою страницу ── */
+(function() {
+  const user = Auth.getUser();
+  if (!Auth.getToken() || !user) return;
+  if (user.role === 'admin')   { window.location.replace('dashboard.html'); return; }
+  if (user.role === 'partner') { window.location.replace('partner-dashboard.html'); return; }
+  window.location.replace('course.html');
+})();
 
 /* Nav scroll shadow */
 const navEl = document.getElementById('js-nav');

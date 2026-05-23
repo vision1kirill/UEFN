@@ -378,7 +378,11 @@ function renderList(purchases) {
 async function init() {
   // Auth check
   const user = window.Auth?.getUser();
-  if (!user) { window.location.href = 'login.html'; return; }
+  if (!user) { window.location.replace('login.html'); return; }
+  if (user.role !== 'partner') {
+    window.location.replace(user.role === 'admin' ? 'dashboard.html' : 'index.html');
+    return;
+  }
   const nameEl = document.getElementById('js-nav-name');
   if (nameEl) nameEl.textContent = user.name || user.email || '';
 

@@ -191,7 +191,90 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// ── Защита страниц ────────────────────────────────────────────────────────────
+/**
+ * guardPage(mode) — вызывай в начале скрипта каждой защищённой страницы.
+ * mode:
+ *   'admin'        — только role=admin
+ *   'partner'      — только role=partner
+ *   'auth'         — любой авторизованный
+ *   'course'       — авторизованный с оплаченным курсом
+ *   'subscription' — авторизованный с активной подпиской «Сотрудничество»
+ *
+ * Возвращает Promise<boolean>. false = редирект уже запущен.
+ */
+async function guardPage(mode) {
+  const token = Auth.getToken();
+  const user  = Auth.getUser();
+
+  if (!token) {
+    window.location.replace('login.html');
+    return false;
+  }
+
+  // ── Синхронные проверки (по кешу localStorage) ──
+  if (mode === 'admin') {
+    if (!user || user.role !== 'admin') {
+      window.location.replace(
+        user?.role === 'partner' ? 'partner-dashboard.html' : 'index.html'
+      );
+      return false;
+    }
+    return true;
+  }
+
+  if (mode === 'partner') {
+    if (!user || user.role !== 'partner') {
+      window.location.replace(
+        user?.role === 'admin' ? 'dashboard.html' : 'index.html'
+      );
+      return false;
+    }
+    return true;
+  }
+
+  if (mode === 'auth') {
+    return true; // токен есть — хватит
+  }
+
+  // ── Серверные проверки (требуют запроса к API) ──
+  try {
+    const res = await apiFetch('/api/auth/me');
+    if (!res.ok) {
+      Auth.clearToken(); Auth.clearUser();
+      window.location.replace('login.html');
+      return false;
+    }
+    const me = await res.json();
+
+    if (mode === 'course') {
+      if (!me.course_plan) {
+        window.location.replace('index.html#pricing');
+        return false;
+      }
+      return true;
+    }
+
+    if (mode === 'subscription') {
+      const active = me.subscription_status === 'active'
+                     && me.expires_at
+                     && new Date(me.expires_at) > new Date();
+      if (!active) {
+        window.location.replace('profile.html');
+        return false;
+      }
+      return true;
+    }
+  } catch {
+    window.location.replace('login.html');
+    return false;
+  }
+
+  return true;
+}
+
 // Экспортируем в глобальную область видимости
+window.guardPage = guardPage;
 window.API_BASE  = API_BASE;
 window.Auth      = Auth;
 window.apiFetch  = apiFetch;

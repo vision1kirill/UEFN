@@ -572,8 +572,10 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
+guardPage('subscription');
 const navEl = document.getElementById('js-nav');
 window.addEventListener('scroll', () => {
   navEl.classList.toggle('scrolled', window.scrollY > 8);
