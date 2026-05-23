@@ -1185,10 +1185,19 @@ const videoModalIframe = document.getElementById('js-video-modal-iframe');
 function openVideoModal(url) {
   if (!url) return;
   let embedUrl = url;
-  const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
-  const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
-  if (shortMatch)      embedUrl = `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1`;
-  else if (watchMatch) embedUrl = `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1`;
+
+  // YouTube
+  const ytShort = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+  const ytWatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+  if (ytShort)      embedUrl = `https://www.youtube.com/embed/${ytShort[1]}?autoplay=1&rel=0`;
+  else if (ytWatch) embedUrl = `https://www.youtube.com/embed/${ytWatch[1]}?autoplay=1&rel=0`;
+
+  // Vimeo: vimeo.com/123456789  or  player.vimeo.com/video/123456789
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) {
+    embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&title=0&byline=0&portrait=0&badge=0&dnt=1`;
+  }
+
   videoModalIframe.src = embedUrl;
   videoModal.classList.add('active');
   document.body.style.overflow = 'hidden';
