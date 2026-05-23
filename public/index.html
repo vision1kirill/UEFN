@@ -2489,6 +2489,8 @@
 /* ── Auth-aware nav ── */
 (function() {
   const loggedIn = window.Auth?.isLoggedIn();
+  const user     = window.Auth?.getUser();
+  const isAdmin  = user?.role === 'admin';
 
   const loginBtn    = document.getElementById('js-login-btn');
   const loginMobile = document.getElementById('js-login-mobile');
@@ -2496,12 +2498,23 @@
   const avatarBtn   = document.getElementById('js-avatar-btn');
   const avatarMob   = document.getElementById('js-avatar-mobile');
   const profileDraw = document.getElementById('js-profile-drawer');
+  const tariffBtn   = document.querySelector('.nav__actions .nav__btn-dark');
 
   if (loggedIn) {
     // Авторизован — показываем аватар, кнопки "Войти" остаются скрытыми
     if (avatarBtn)   avatarBtn.classList.add('visible');
     if (avatarMob)   avatarMob.classList.add('visible');
     if (profileDraw) profileDraw.style.display = '';
+
+    // Для админа: иконка профиля → в дашборд, кнопка "Выбрать тариф" → "Admin"
+    if (isAdmin) {
+      if (avatarBtn) avatarBtn.href = 'dashboard.html';
+      if (avatarMob) avatarMob.href = 'dashboard.html';
+      if (tariffBtn) {
+        tariffBtn.textContent = 'Admin';
+        tariffBtn.href = 'dashboard.html';
+      }
+    }
   } else {
     // Гость — показываем кнопки "Войти"
     if (loginBtn)    loginBtn.classList.add('visible');
