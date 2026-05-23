@@ -150,6 +150,47 @@ async function extractError(res) {
   }
 }
 
+// ── Автоматическая инициализация навигации ────────────────────────────────────
+// Запускается на любой странице с api.js: обновляет аватарку и badge тарифа
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = Auth.getUser();
+  if (!user) return;
+
+  const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
+  const ROLE_HREF   = { admin: 'dashboard.html', partner: 'partner-dashboard.html' };
+  const ROLE_BADGE  = { admin: 'Admin', partner: 'Partner' };
+
+  // Обновляем все ссылки-аватарки (desktop + mobile)
+  document.querySelectorAll('a.nav__avatar').forEach(link => {
+    const dest = ROLE_HREF[user.role];
+    if (dest) link.href = dest;
+  });
+
+  // Обновляем badge тарифа
+  const badges = document.querySelectorAll('.nav__plan-badge');
+  if (!badges.length) return;
+
+  if (ROLE_BADGE[user.role]) {
+    // Админ или партнёр — показываем роль
+    badges.forEach(b => { b.textContent = ROLE_BADGE[user.role]; b.style.display = ''; });
+  } else {
+    // Обычный пользователь — подтягиваем реальный тариф из API
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: Auth.getToken() ? { 'Authorization': `Bearer ${Auth.getToken()}` } : {},
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const me = await res.json();
+        const plan = me.subscription_plan;
+        if (plan && PLAN_LABELS[plan]) {
+          badges.forEach(b => { b.textContent = PLAN_LABELS[plan]; b.style.display = ''; });
+        }
+      }
+    } catch (_) { /* нет подписки — badge не показываем */ }
+  }
+});
+
 // Экспортируем в глобальную область видимости
 window.API_BASE  = API_BASE;
 window.Auth      = Auth;
