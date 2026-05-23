@@ -706,6 +706,16 @@ async function initPage() {
     if (statusEl) { statusEl.textContent = 'Активна'; statusEl.classList.add('status-field__value--active'); }
     if (expiryEl) expiryEl.textContent = formatDate(user.expires_at);
 
+    // Nav plan badge (course plan from orders)
+    const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
+    const coursePlan = user.course_plan;
+    if (coursePlan && PLAN_LABELS[coursePlan]) {
+      document.querySelectorAll('.nav__plan-badge').forEach(b => {
+        b.textContent    = PLAN_LABELS[coursePlan];
+        b.style.display  = '';
+      });
+    }
+
   } catch (e) {
     // Network error — redirect to profile as safe fallback
     window.location.href = 'profile.html';
