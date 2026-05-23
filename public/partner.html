@@ -463,7 +463,7 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__plan-badge">Essential</span>
+      <span class="nav__plan-badge" id="js-plan-badge" style="display:none"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
@@ -482,7 +482,7 @@
   <a href="index.html#pricing">Тарифы</a>
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
-  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge">Essential</a></div>
+  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge" id="js-plan-badge-mobile" style="display:none"></a></div>
 </nav>
 
 <!-- ██████ MAIN ██████ -->
@@ -676,14 +676,30 @@ function setDrawer(v) {
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
-/* ── Pre-fill if logged in ── */
-(function() {
+/* ── Nav: plan badge + pre-fill ── */
+const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
+
+(async function() {
   const user = window.Auth?.getUser();
   if (!user) return;
+
+  // Pre-fill form
   const nameEl  = document.getElementById('f-name');
   const emailEl = document.getElementById('f-email');
   if (nameEl  && !nameEl.value  && user.name)  nameEl.value  = user.name;
   if (emailEl && !emailEl.value && user.email) emailEl.value = user.email;
+
+  // Fetch real plan from API
+  try {
+    const me = await apiFetch('/api/auth/me');
+    const plan = me.subscription_plan;
+    if (plan && PLAN_LABELS[plan]) {
+      const badge = document.getElementById('js-plan-badge');
+      const badgeMobile = document.getElementById('js-plan-badge-mobile');
+      if (badge) { badge.textContent = PLAN_LABELS[plan]; badge.style.display = ''; }
+      if (badgeMobile) { badgeMobile.textContent = PLAN_LABELS[plan]; badgeMobile.style.display = ''; }
+    }
+  } catch (_) { /* not logged in or no subscription — badge stays hidden */ }
 })();
 
 /* ── Radio type selector ── */
