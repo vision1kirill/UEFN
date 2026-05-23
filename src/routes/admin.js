@@ -8,51 +8,6 @@ const router = express.Router();
 router.use(requireAuth, requireRole('admin'));
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  GET /api/admin/applications
-//  Query: ?status=pending|approved|rejected&page=1&limit=20
-// ─────────────────────────────────────────────────────────────────────────────
-router.get('/applications', async (req, res, next) => {
-  try {
-    const { status, page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
-
-    let whereClause = '';
-    const params = [];
-    if (status) {
-      params.push(status);
-      whereClause = `WHERE pa.status = $${params.length}`;
-    }
-
-    params.push(parseInt(limit, 10));
-    params.push(offset);
-
-    const { rows } = await query(
-      `SELECT pa.*, u.email AS user_email
-       FROM partner_applications pa
-       LEFT JOIN users u ON u.id = pa.user_id
-       ${whereClause}
-       ORDER BY pa.created_at DESC
-       LIMIT $${params.length - 1} OFFSET $${params.length}`,
-      params,
-    );
-
-    const { rows: countRows } = await query(
-      `SELECT COUNT(*) AS total FROM partner_applications ${whereClause}`,
-      status ? [status] : [],
-    );
-
-    res.json({
-      applications: rows,
-      total: parseInt(countRows[0].total, 10),
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/admin/applications/:id
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/applications/:id', async (req, res, next) => {
@@ -68,86 +23,6 @@ router.get('/applications/:id', async (req, res, next) => {
     res.json(rows[0]);
   } catch (err) {
     next(err);
-  }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  PATCH /api/admin/applications/:id
-//  Body: { status: 'approved' | 'rejected', rejectReason? }
-//  On approval: creates partner record + updates user role
-// ─────────────────────────────────────────────────────────────────────────────
-router.patch('/applications/:id', async (req, res, next) => {
-  const client = await require('../db').getClient();
-  try {
-    const { status, rejectReason } = req.body;
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'status должен быть approved или rejected.' });
-    }
-
-    // Fetch application
-    const { rows: app } = await client.query(
-      'SELECT * FROM partner_applications WHERE id = $1',
-      [req.params.id],
-    );
-    if (!app.length) return res.status(404).json({ error: 'Заявка не найдена.' });
-    const application = app[0];
-
-    if (application.status !== 'pending') {
-      return res.status(400).json({ error: 'Заявка уже рассмотрена.' });
-    }
-
-    await client.query('BEGIN');
-
-    // Update application status
-    await client.query(
-      `UPDATE partner_applications
-       SET status = $1, reject_reason = $2, reviewed_at = NOW(), reviewed_by = $3
-       WHERE id = $4`,
-      [status, rejectReason || null, req.user.id, req.params.id],
-    );
-
-    if (status === 'approved') {
-      // Find or create user for this email
-      let userId = application.user_id;
-
-      if (!userId) {
-        const { rows: existingUser } = await client.query(
-          'SELECT id FROM users WHERE email = $1',
-          [application.email],
-        );
-        if (existingUser.length) {
-          userId = existingUser[0].id;
-        }
-        // If user doesn't exist yet they'll need to register separately
-      }
-
-      // Create partner record
-      const promoCode = application.slug.replace(/-/g, '').toUpperCase() + '15';
-
-      await client.query(
-        `INSERT INTO partners (user_id, slug, promo_code)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (slug) DO NOTHING`,
-        [userId, application.slug, promoCode],
-      );
-
-      // Update user role to partner
-      if (userId) {
-        await client.query(
-          `UPDATE users SET role = 'partner', updated_at = NOW() WHERE id = $1`,
-          [userId],
-        );
-      }
-    }
-
-    await client.query('COMMIT');
-
-    res.json({ message: `Заявка ${status === 'approved' ? 'одобрена' : 'отклонена'}.` });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    next(err);
-  } finally {
-    client.release();
   }
 });
 
