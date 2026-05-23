@@ -198,7 +198,12 @@
     .add-form input::placeholder { color: var(--c-dim); }
     .add-form input:focus { border-color: rgba(59,207,254,.4); }
     .add-form__actions { display: flex; gap: 8px; }
-    .btn-sm { padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; transition: opacity .2s, background .2s; }
+    .btn-sm {
+      padding: 9px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      min-width: 100px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      transition: opacity .2s, background .2s;
+    }
+    .btn-sm svg { width: 14px; height: 14px; flex-shrink: 0; }
     .btn-sm--primary { background: var(--g-accent); color: #fff; }
     .btn-sm--primary:hover { opacity: .85; }
     .btn-sm--ghost { background: rgba(255,255,255,.07); color: var(--c-muted); border: 1px solid var(--c-border-mid); }
@@ -661,8 +666,8 @@ function renderLessons() {
         <button class="icon-btn icon-btn--danger btn-delete" title="Удалить">${ICON_DEL}</button>
       </div>
       <div class="lesson-row__edit-actions" data-view="edit-actions" style="display:none;">
-        <button class="btn-sm btn-sm--primary btn-save">${ICON_CHECK} Сохранить</button>
-        <button class="btn-sm btn-sm--ghost btn-edit-cancel">${ICON_CROSS} Отмена</button>
+        <button class="btn-sm btn-sm--primary btn-save">Сохранить</button>
+        <button class="btn-sm btn-sm--ghost btn-edit-cancel">Отмена</button>
       </div>`;
 
     row.querySelector('.btn-edit').addEventListener('click', () => enterEdit(row));
