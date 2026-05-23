@@ -983,7 +983,7 @@ function selectLesson(lesson) {
 
   wrap.innerHTML = `<div style="display:flex;flex-direction:column;gap:clamp(20px,2.5vw,32px);">${
     videos.map(v => `
-      <div class="video-card" onclick="openVideoModal(${JSON.stringify(v.video_url || '')})">
+      <div class="video-card" data-video-url="${(v.video_url || '').replace(/"/g, '&quot;')}">
         <div class="video-card__thumb">
           <div class="video-card__play">
             <div class="video-card__play-btn">
@@ -997,6 +997,9 @@ function selectLesson(lesson) {
         </div>
       </div>`).join('')
   }</div>`;
+  wrap.querySelectorAll('.video-card[data-video-url]').forEach(card => {
+    card.addEventListener('click', () => openVideoModal(card.dataset.videoUrl));
+  });
 
   /* Topics (из API) */
   const topics = lesson.topics || [];
