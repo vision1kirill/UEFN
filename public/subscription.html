@@ -679,30 +679,45 @@ function formatDate(iso) {
 
 /* ── Init ── */
 async function initPage() {
-  const ok = await guardPage('subscription');
-  if (!ok) return;
+  if (!Auth.getToken()) {
+    window.location.replace('login.html');
+    return;
+  }
 
+  let user;
   try {
     const res = await apiFetch('/api/auth/me');
-    if (!res.ok) return;
-    const user = await res.json();
+    if (!res.ok) { Auth.clearToken(); Auth.clearUser(); window.location.replace('login.html'); return; }
+    user = await res.json();
+  } catch {
+    window.location.replace('login.html');
+    return;
+  }
 
-    // Fill status bar
-    const statusEl = document.getElementById('js-sub-status');
-    const expiryEl = document.getElementById('js-sub-expiry');
-    if (statusEl) { statusEl.textContent = 'Активна'; statusEl.classList.add('status-field__value--active'); }
-    if (expiryEl) expiryEl.textContent = formatDate(user.expires_at);
+  // Проверка активной подписки
+  const subActive = user.subscription_status === 'active'
+                    && user.expires_at
+                    && new Date(user.expires_at) > new Date();
+  if (!subActive) {
+    window.location.replace('profile.html');
+    return;
+  }
 
-    // Nav plan badge
-    const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
-    const coursePlan = user.course_plan;
-    if (coursePlan && PLAN_LABELS[coursePlan]) {
-      document.querySelectorAll('.nav__plan-badge').forEach(b => {
-        b.textContent = PLAN_LABELS[coursePlan];
-        b.style.display = '';
-      });
-    }
-  } catch {}
+  // Статус-бар
+  const statusEl = document.getElementById('js-sub-status');
+  const expiryEl = document.getElementById('js-sub-expiry');
+  if (statusEl) { statusEl.textContent = 'Активна'; statusEl.classList.add('status-field__value--active'); }
+  if (expiryEl) expiryEl.textContent = formatDate(user.expires_at);
+
+  // Бейдж тарифа в навигации
+  const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
+  const coursePlan = user.course_plan;
+  if (coursePlan && PLAN_LABELS[coursePlan]) {
+    document.querySelectorAll('.nav__plan-badge').forEach(b => {
+      b.textContent   = PLAN_LABELS[coursePlan];
+      b.style.display = '';
+    });
+  }
 }
 
 initPage();
