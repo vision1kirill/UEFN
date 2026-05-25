@@ -672,7 +672,7 @@
       <a href="index.html#faq">Ответы на вопросы</a>
     </nav>
     <div class="nav__auth">
-      <span class="nav__plan-badge">Essential</span>
+      <span class="nav__plan-badge" style="display:none;"></span>
       <a href="profile.html" class="nav__avatar" aria-label="Профиль">
         <svg viewBox="0 0 24 24" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </a>
@@ -691,7 +691,7 @@
   <a href="index.html#pricing">Тарифы</a>
   <a href="index.html#partnership">Подписка</a>
   <a href="index.html#faq">Ответы на вопросы</a>
-  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge">Essential</a></div>
+  <div class="drawer-btns"><a href="profile.html" class="nav__plan-badge" style="display:none;"></a></div>
 </nav>
 
 <!-- ██████ MAIN ██████ -->
@@ -977,8 +977,19 @@
   </div>
 </footer>
 
+<script src="api.js"></script>
 <script>
 'use strict';
+
+/* ── Auth guard ── */
+if (!Auth.getToken()) {
+  window.location.replace('login.html');
+}
+
+/* ── URL params (parsed once at module scope) ── */
+const _params   = new URLSearchParams(location.search);
+const _planParam = _params.get('plan');
+const isCoopMode = _planParam === 'cooperation';
 
 /* ── Nav ── */
 const navEl = document.getElementById('js-nav');
@@ -993,12 +1004,6 @@ function setDrawer(v) {
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
 document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
 
-/* ── Promo clear ── */
-document.getElementById('js-promo-clear').addEventListener('click', () => {
-  document.getElementById('js-promo').value = '';
-  document.getElementById('js-promo').focus();
-});
-
 /* ── Partnership subscription ── */
 let partnerSubPrice = 0;
 let activeSubBtn = null;
@@ -1006,15 +1011,13 @@ let activeSubBtn = null;
 document.querySelectorAll('.psub-btn-c').forEach(btn => {
   btn.addEventListener('click', () => {
     const isAlreadyActive = btn.classList.contains('psub-active');
-    /* Clear all */
     document.querySelectorAll('.psub-btn-c').forEach(b => b.classList.remove('psub-active'));
     document.getElementById('js-psub-card').classList.remove('psub-card--active');
-    if (isAlreadyActive) {
-      /* Toggle off */
+    /* In cooperation mode the period is always required — don't allow deselect */
+    if (isAlreadyActive && !isCoopMode) {
       partnerSubPrice = 0;
       activeSubBtn = null;
     } else {
-      /* Select */
       btn.classList.add('psub-active');
       partnerSubPrice = +btn.dataset.price;
       activeSubBtn = btn;
@@ -1054,16 +1057,27 @@ function formatPrice(n) {
   return n.toLocaleString('ru-RU');
 }
 function updateTotal() {
-  const planPrice = PLANS[selectedPlan];
-  let extra = 0;
-  document.querySelectorAll('.svc-row input[type=checkbox][data-price]').forEach(inp => {
-    if (inp.checked) extra += parseInt(inp.dataset.price, 10);
-  });
-  const subtotal = planPrice + extra + partnerSubPrice;
+  let subtotal;
+  if (isCoopMode) {
+    /* Renewal: only the chosen subscription period counts */
+    subtotal = partnerSubPrice;
+  } else {
+    const planPrice = PLANS[selectedPlan] || 0;
+    let extra = 0;
+    document.querySelectorAll('.svc-row input[type=checkbox][data-price]').forEach(inp => {
+      if (inp.checked) extra += parseInt(inp.dataset.price, 10);
+    });
+    subtotal = planPrice + extra + partnerSubPrice;
+  }
+
   const discount = Math.round(subtotal * promoDiscount);
   const total    = subtotal - discount;
+  const btn      = document.getElementById('js-btn-buy');
 
-  const btn = document.getElementById('js-btn-buy');
+  if (subtotal === 0) {
+    btn.textContent = 'Выберите период';
+    return;
+  }
   if (discount > 0) {
     btn.innerHTML =
       'Оплатить&nbsp;<s style="opacity:.5;font-weight:400">' + formatPrice(subtotal) + '&nbsp;₽</s>&nbsp;' + formatPrice(total) + '&nbsp;₽';
@@ -1073,15 +1087,7 @@ function updateTotal() {
 }
 
 /* ── Promo logic ── */
-const PROMO_CODES = {
-  'UEFN2026':    { discount: 0.15, label: 'Скидка 15% применена' },
-  'HAPPYNEWYEAR':{ discount: 0.10, label: 'Скидка 10% применена' },
-  'PARTNER10':   { discount: 0.10, label: 'Партнёрский промокод — скидка 10%' },
-  'EXPIRED':     { expired: true },
-  'NOFIT':       { nofit: true },
-};
-
-let promoDiscount = 0; // 0–1
+let promoDiscount = 0; // 0–1 fraction
 
 function showPromoFeedback(type, text) {
   const fb   = document.getElementById('js-promo-feedback');
@@ -1094,7 +1100,6 @@ function showPromoFeedback(type, text) {
   inp.classList.toggle('promo-input--ok',  type === 'ok');
   inp.classList.toggle('promo-input--err', type === 'err');
 
-  /* SVG icon: checkmark or x */
   if (type === 'ok') {
     icon.innerHTML = '<polyline points="2 8 6 12 14 4"/>';
   } else {
@@ -1111,23 +1116,36 @@ function clearPromoFeedback() {
   updateTotal();
 }
 
-document.getElementById('js-promo-apply').addEventListener('click', () => {
-  const raw  = document.getElementById('js-promo').value.trim().toUpperCase();
+document.getElementById('js-promo-apply').addEventListener('click', async () => {
+  const raw = document.getElementById('js-promo').value.trim();
   if (!raw) { showPromoFeedback('err', 'Введите промокод'); return; }
 
-  const code = PROMO_CODES[raw];
-  if (!code) {
+  const applyBtn = document.getElementById('js-promo-apply');
+  applyBtn.disabled = true;
+  applyBtn.textContent = 'Проверяем...';
+
+  try {
+    const res  = await fetch(`/api/courses/promo?code=${encodeURIComponent(raw)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      promoDiscount = 0;
+      showPromoFeedback('err', data.error || 'Промокод не найден или недействителен');
+    } else if (data.type === 'discount' && data.discount > 0) {
+      promoDiscount = data.discount / 100;
+      showPromoFeedback('ok', `Скидка ${data.discount}% применена`);
+    } else if (data.type === 'partner') {
+      promoDiscount = 0;
+      showPromoFeedback('ok', 'Партнёрский промокод принят');
+    } else {
+      promoDiscount = 0;
+      showPromoFeedback('err', 'Промокод не найден или недействителен');
+    }
+  } catch {
     promoDiscount = 0;
-    showPromoFeedback('err', 'Промокод не найден или недействителен');
-  } else if (code.expired) {
-    promoDiscount = 0;
-    showPromoFeedback('err', 'Срок действия промокода истёк');
-  } else if (code.nofit) {
-    promoDiscount = 0;
-    showPromoFeedback('err', 'Промокод не применяется к выбранному товару');
-  } else {
-    promoDiscount = code.discount;
-    showPromoFeedback('ok', code.label);
+    showPromoFeedback('err', 'Ошибка сети. Попробуйте ещё раз.');
+  } finally {
+    applyBtn.disabled = false;
+    applyBtn.textContent = 'Применить';
   }
   updateTotal();
 });
@@ -1139,18 +1157,33 @@ document.getElementById('js-promo-clear').addEventListener('click', () => {
 
 document.getElementById('js-promo').addEventListener('input', clearPromoFeedback);
 
-/* Init — read URL params */
+/* ── Init ── */
 (function () {
-  const params = new URLSearchParams(location.search);
-  const plan = params.get('plan');
-  selectPlan(['essential', 'extra', 'deluxe'].includes(plan) ? plan : 'extra');
+  /* Pre-fill promo code from URL ?promo=XXX */
+  const promoParam = _params.get('promo');
+  if (promoParam) {
+    document.getElementById('js-promo').value = promoParam;
+  }
 
-  if (params.get('psub') === '1') {
-    /* Scroll to partnership sub block after a short delay so layout is ready */
-    setTimeout(() => {
-      const el = document.getElementById('js-psub-card');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 150);
+  if (isCoopMode) {
+    /* ── Subscription renewal mode ── */
+    document.querySelector('.page-title').textContent = 'Продление подписки';
+    /* Hide course plan cards and additional services */
+    document.querySelector('.plans-grid').style.display    = 'none';
+    document.querySelector('.services-title').style.display = 'none';
+    document.querySelector('.services-list').style.display  = 'none';
+    /* Pre-select 1-month period */
+    const firstBtn = document.querySelector('.psub-btn-c');
+    if (firstBtn) firstBtn.click();
+  } else {
+    selectPlan(['essential', 'extra', 'deluxe'].includes(_planParam) ? _planParam : 'extra');
+
+    if (_params.get('psub') === '1') {
+      setTimeout(() => {
+        const el = document.getElementById('js-psub-card');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
   }
 })();
 updateTotal();
