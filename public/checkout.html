@@ -704,7 +704,7 @@
     <div class="promo-bar">
       <span class="promo-bar__label">Есть промокод?</span>
       <div class="promo-input-wrap">
-        <input class="promo-input" id="js-promo" name="promo_code" type="text" value="HappyNewYear" placeholder="Введите промокод" autocomplete="off" />
+        <input class="promo-input" id="js-promo" name="promo_code" type="text" placeholder="Введите промокод" autocomplete="off" />
         <button class="promo-clear" id="js-promo-clear" type="button" aria-label="Очистить">
           <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
         </button>
@@ -1159,10 +1159,12 @@ document.getElementById('js-promo').addEventListener('input', clearPromoFeedback
 
 /* ── Init ── */
 (function () {
-  /* Pre-fill promo code from URL ?promo=XXX */
+  /* Pre-fill promo code from URL ?promo=XXX and auto-apply it */
   const promoParam = _params.get('promo');
   if (promoParam) {
     document.getElementById('js-promo').value = promoParam;
+    /* Auto-apply asynchronously after DOM is fully ready */
+    setTimeout(() => document.getElementById('js-promo-apply').click(), 0);
   }
 
   if (isCoopMode) {
