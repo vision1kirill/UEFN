@@ -712,9 +712,10 @@ async function initPage() {
   // Бейдж тарифа в навигации
   const PLAN_LABELS = { essential: 'Essential', extra: 'Extra', deluxe: 'Deluxe' };
   const coursePlan = user.course_plan;
-  if (coursePlan && PLAN_LABELS[coursePlan]) {
+  const planLabel  = coursePlan ? (PLAN_LABELS[coursePlan.toLowerCase()] || coursePlan) : null;
+  if (planLabel) {
     document.querySelectorAll('.nav__plan-badge').forEach(b => {
-      b.textContent   = PLAN_LABELS[coursePlan];
+      b.textContent   = planLabel;
       b.style.display = '';
     });
   }

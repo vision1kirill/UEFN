@@ -183,8 +183,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (res.ok) {
         const me = await res.json();
         const plan = me.course_plan;
-        if (plan && PLAN_LABELS[plan]) {
-          badges.forEach(b => { b.textContent = PLAN_LABELS[plan]; b.style.display = ''; });
+        const planLabel = plan ? (PLAN_LABELS[plan.toLowerCase()] || plan) : null;
+        if (planLabel) {
+          badges.forEach(b => { b.textContent = planLabel; b.style.display = ''; });
         }
       }
     } catch (_) { /* нет подписки — badge не показываем */ }
