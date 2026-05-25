@@ -4,6 +4,50 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/courses/promo?code=XXX  — публичная проверка промокода
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/promo', async (req, res, next) => {
+  const code = (req.query.code || '').trim().toUpperCase();
+  if (!code) return res.status(400).json({ error: 'Укажите промокод.' });
+
+  try {
+    // 1. Проверяем таблицу promo_codes (скидочные коды)
+    const { rows: discountRows } = await query(
+      `SELECT id, code, discount_percent, is_active, expires_at
+       FROM promo_codes
+       WHERE UPPER(code) = $1`,
+      [code],
+    );
+
+    if (discountRows.length) {
+      const p = discountRows[0];
+      if (!p.is_active)
+        return res.status(400).json({ error: 'Промокод неактивен.' });
+      if (p.expires_at && new Date(p.expires_at) < new Date())
+        return res.status(400).json({ error: 'Срок действия промокода истёк.' });
+      return res.json({ type: 'discount', code: p.code, discount: p.discount_percent });
+    }
+
+    // 2. Проверяем партнёрский промокод (реферал)
+    const { rows: partnerRows } = await query(
+      `SELECT p.promo_code, u.name AS partner_name
+       FROM partners p
+       JOIN users u ON u.id = p.user_id
+       WHERE p.promo_code = $1`,
+      [code],
+    );
+
+    if (partnerRows.length) {
+      return res.json({ type: 'partner', code: partnerRows[0].promo_code, discount: 0 });
+    }
+
+    return res.status(404).json({ error: 'Промокод не найден.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // All course routes require authentication
 router.use(requireAuth);
 

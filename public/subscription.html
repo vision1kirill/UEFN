@@ -285,6 +285,9 @@
       white-space: nowrap; flex-shrink: 0;
     }
     .btn-apply:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.40); }
+    .btn-apply:disabled { opacity: .5; cursor: default; }
+    .promo-status--ok  { color: #4ADE80; }
+    .promo-status--err { color: #F87171; }
 
     /* ═══════════════════════════════════
        3. CATALOG GRID
@@ -507,7 +510,7 @@
       <div class="status-divider" aria-hidden="true"></div>
 
       <!-- Продлить -->
-      <button class="btn-renew" type="button">Продлить</button>
+      <button class="btn-renew" type="button" id="js-renew-btn">Продлить</button>
 
       <div class="status-divider" aria-hidden="true"></div>
 
@@ -521,15 +524,17 @@
               id="js-promo-input"
               type="text"
               placeholder="Введите промокод"
-              value="HappyNewYear"
+              value=""
               autocomplete="off"
+              style="text-transform:uppercase;"
             />
             <button class="promo-clear" id="js-promo-clear" type="button" aria-label="Очистить">
               <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
             </button>
           </div>
-          <button class="btn-apply" type="button">Применить</button>
+          <button class="btn-apply" type="button" id="js-promo-apply">Применить</button>
         </div>
+        <div id="js-promo-status" style="font-size:13px;margin-top:8px;display:none;"></div>
       </div>
 
     </div>
@@ -661,15 +666,75 @@ document.querySelectorAll('.nav__drawer a').forEach(a => {
   a.addEventListener('click', () => setDrawer(false));
 });
 
-/* Promo clear button */
-const promoInput = document.getElementById('js-promo-input');
-const promoClear = document.getElementById('js-promo-clear');
-if (promoInput && promoClear) {
-  promoClear.addEventListener('click', () => {
-    promoInput.value = '';
-    promoInput.focus();
-  });
+/* ── Промокод ── */
+const promoInput  = document.getElementById('js-promo-input');
+const promoClear  = document.getElementById('js-promo-clear');
+const promoApply  = document.getElementById('js-promo-apply');
+const promoStatus = document.getElementById('js-promo-status');
+let appliedPromo  = null; // { code, discount, type }
+
+function setPromoStatus(msg, ok) {
+  promoStatus.textContent = msg;
+  promoStatus.className   = ok ? 'promo-status--ok' : 'promo-status--err';
+  promoStatus.style.display = msg ? '' : 'none';
 }
+
+promoClear?.addEventListener('click', () => {
+  promoInput.value = '';
+  promoInput.focus();
+  appliedPromo = null;
+  setPromoStatus('', false);
+});
+
+promoInput?.addEventListener('input', () => {
+  // Сбрасываем результат при изменении поля
+  if (appliedPromo) {
+    appliedPromo = null;
+    setPromoStatus('', false);
+  }
+});
+
+promoApply?.addEventListener('click', async () => {
+  const code = promoInput.value.trim().toUpperCase();
+  if (!code) { promoInput.focus(); return; }
+
+  promoApply.disabled = true;
+  promoApply.textContent = 'Проверка…';
+  setPromoStatus('', false);
+
+  try {
+    const res  = await fetch(`${window.API_BASE}/api/courses/promo?code=${encodeURIComponent(code)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      setPromoStatus(data.error || 'Промокод не найден.', false);
+      appliedPromo = null;
+    } else {
+      appliedPromo = data;
+      if (data.type === 'discount' && data.discount > 0) {
+        setPromoStatus(`✓ Скидка ${data.discount}% применена`, true);
+      } else if (data.type === 'partner') {
+        setPromoStatus('✓ Партнёрский промокод принят', true);
+      } else {
+        setPromoStatus('✓ Промокод принят', true);
+      }
+    }
+  } catch {
+    setPromoStatus('Ошибка соединения. Попробуйте ещё раз.', false);
+  }
+
+  promoApply.disabled = false;
+  promoApply.textContent = 'Применить';
+});
+
+/* ── Кнопка "Продлить" ── */
+document.getElementById('js-renew-btn')?.addEventListener('click', () => {
+  let url = 'checkout.html?plan=cooperation';
+  if (appliedPromo?.code) {
+    url += `&promo=${encodeURIComponent(appliedPromo.code)}`;
+  }
+  window.location.href = url;
+});
 
 /* Helper */
 function formatDate(iso) {
