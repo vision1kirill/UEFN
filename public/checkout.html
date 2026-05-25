@@ -933,8 +933,9 @@
     </div>
 
     <!-- PAY BUTTON (bottom) -->
-    <div class="btn-buy-wrap">
+    <div class="btn-buy-wrap" style="flex-direction:column; align-items:center; gap:12px;">
       <button class="btn-pay" id="js-btn-buy" type="button">Оплатить 2&nbsp;749&nbsp;₽</button>
+      <p id="js-renewal-hint" style="display:none; font-family:'Golos Text',sans-serif; font-size:14px; color:rgba(255,255,255,.55); text-align:center;"></p>
     </div>
 
   </div>
@@ -987,9 +988,12 @@ if (!Auth.getToken()) {
 }
 
 /* ── URL params (parsed once at module scope) ── */
-const _params   = new URLSearchParams(location.search);
+const _params    = new URLSearchParams(location.search);
 const _planParam = _params.get('plan');
 const isCoopMode = _planParam === 'cooperation';
+
+/* ── Current subscription expiry (loaded in coop mode) ── */
+let currentExpiresAt = null; // Date or null
 
 /* ── Nav ── */
 const navEl = document.getElementById('js-nav');
@@ -1056,10 +1060,19 @@ function toggleExpand(expandId) {
 function formatPrice(n) {
   return n.toLocaleString('ru-RU');
 }
+/* ── Renewal date calculation ── */
+function addMonths(date, months) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+function formatDateRu(date) {
+  return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 function updateTotal() {
   let subtotal;
   if (isCoopMode) {
-    /* Renewal: only the chosen subscription period counts */
     subtotal = partnerSubPrice;
   } else {
     const planPrice = PLANS[selectedPlan] || 0;
@@ -1073,16 +1086,33 @@ function updateTotal() {
   const discount = Math.round(subtotal * promoDiscount);
   const total    = subtotal - discount;
   const btn      = document.getElementById('js-btn-buy');
+  const hint     = document.getElementById('js-renewal-hint');
 
   if (subtotal === 0) {
-    btn.textContent = 'Выберите период';
+    btn.textContent = isCoopMode ? 'Выберите период' : 'Выберите тариф';
+    if (hint) hint.style.display = 'none';
     return;
   }
+
+  /* Button label */
+  const verb = isCoopMode ? 'Продлить' : 'Оплатить';
   if (discount > 0) {
     btn.innerHTML =
-      'Оплатить&nbsp;<s style="opacity:.5;font-weight:400">' + formatPrice(subtotal) + '&nbsp;₽</s>&nbsp;' + formatPrice(total) + '&nbsp;₽';
+      verb + '&nbsp;<s style="opacity:.5;font-weight:400">' + formatPrice(subtotal) + '&nbsp;₽</s>&nbsp;' + formatPrice(total) + '&nbsp;₽';
   } else {
-    btn.textContent = 'Оплатить ' + formatPrice(total) + ' ₽';
+    btn.textContent = verb + ' ' + formatPrice(total) + ' ₽';
+  }
+
+  /* Renewal hint: "Подписка будет активна до …" */
+  if (isCoopMode && hint && activeSubBtn) {
+    const months  = +activeSubBtn.dataset.months;
+    /* Start from the later of: today or current expiry */
+    const base    = currentExpiresAt && currentExpiresAt > new Date() ? currentExpiresAt : new Date();
+    const newDate = addMonths(base, months);
+    hint.textContent = 'Подписка будет активна до ' + formatDateRu(newDate);
+    hint.style.display = '';
+  } else if (hint) {
+    hint.style.display = 'none';
   }
 }
 
@@ -1171,12 +1201,18 @@ document.getElementById('js-promo').addEventListener('input', clearPromoFeedback
     /* ── Subscription renewal mode ── */
     document.querySelector('.page-title').textContent = 'Продление подписки';
     /* Hide course plan cards and additional services */
-    document.querySelector('.plans-grid').style.display    = 'none';
+    document.querySelector('.plans-grid').style.display     = 'none';
     document.querySelector('.services-title').style.display = 'none';
     document.querySelector('.services-list').style.display  = 'none';
-    /* Pre-select 1-month period */
-    const firstBtn = document.querySelector('.psub-btn-c');
-    if (firstBtn) firstBtn.click();
+    /* Load current expires_at from API, then pre-select 1-month period */
+    apiFetch('/api/auth/me').then(res => {
+      if (res.ok) return res.json();
+    }).then(me => {
+      if (me && me.expires_at) currentExpiresAt = new Date(me.expires_at);
+    }).catch(() => {}).finally(() => {
+      const firstBtn = document.querySelector('.psub-btn-c');
+      if (firstBtn) firstBtn.click();
+    });
   } else {
     selectPlan(['essential', 'extra', 'deluxe'].includes(_planParam) ? _planParam : 'extra');
 
