@@ -371,6 +371,14 @@
       .footer__nav a { font-size: 15px; }
       .footer__legal { order: 4; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px 16px; padding-top: 24px; border-top: 1px solid var(--c-border); text-align: center; }
     }
+    /* Grid empty/loading state */
+    .grid-state {
+      grid-column: 1 / -1;
+      font-family: 'Golos Text', sans-serif;
+      font-size: 15px; color: var(--c-dim);
+      padding: clamp(40px,6vw,80px) 0;
+      text-align: center;
+    }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: var(--c-bg); }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.10); border-radius: 3px; }
@@ -445,92 +453,8 @@
     </section>
 
     <!-- VIDEO GRID -->
-    <div class="video-grid">
-
-      <div class="vcard">
-        <div class="vcard__thumb">
-          <div class="vcard__play">
-            <div class="vcard__play-btn">
-              <svg viewBox="0 0 16 16"><polygon points="3,1 15,8 3,15"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="vcard__body">
-          <h2 class="vcard__title">Старт: установка и знакомство с UEFN</h2>
-          <p class="vcard__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
-          <div class="vcard__action">
-            <a href="#" class="vcard__btn">
-              <svg viewBox="0 0 16 16"><path d="M8 2v8m-4-4 4 4 4-4"/><path d="M3 13h10"/></svg>
-              Скачать
-            </a>
-            <a href="#" class="vcard__btn vcard__btn--outline">Открыть</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="vcard">
-        <div class="vcard__thumb">
-          <div class="vcard__play">
-            <div class="vcard__play-btn">
-              <svg viewBox="0 0 16 16"><polygon points="3,1 15,8 3,15"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="vcard__body">
-          <h2 class="vcard__title">Старт: установка и знакомство с UEFN</h2>
-          <p class="vcard__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
-          <div class="vcard__action">
-            <a href="#" class="vcard__btn">
-              <svg viewBox="0 0 16 16"><path d="M8 2v8m-4-4 4 4 4-4"/><path d="M3 13h10"/></svg>
-              Скачать
-            </a>
-            <a href="#" class="vcard__btn vcard__btn--outline">Открыть</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="vcard">
-        <div class="vcard__thumb">
-          <div class="vcard__play">
-            <div class="vcard__play-btn">
-              <svg viewBox="0 0 16 16"><polygon points="3,1 15,8 3,15"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="vcard__body">
-          <h2 class="vcard__title">Старт: установка и знакомство с UEFN</h2>
-          <p class="vcard__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
-          <div class="vcard__action">
-            <a href="#" class="vcard__btn">
-              <svg viewBox="0 0 16 16"><path d="M8 2v8m-4-4 4 4 4-4"/><path d="M3 13h10"/></svg>
-              Скачать
-            </a>
-            <a href="#" class="vcard__btn vcard__btn--outline">Открыть</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="vcard">
-        <div class="vcard__thumb">
-          <div class="vcard__play">
-            <div class="vcard__play-btn">
-              <svg viewBox="0 0 16 16"><polygon points="3,1 15,8 3,15"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="vcard__body">
-          <h2 class="vcard__title">Старт: установка и знакомство с UEFN</h2>
-          <p class="vcard__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
-          <div class="vcard__action">
-            <a href="#" class="vcard__btn">
-              <svg viewBox="0 0 16 16"><path d="M8 2v8m-4-4 4 4 4-4"/><path d="M3 13h10"/></svg>
-              Скачать
-            </a>
-            <a href="#" class="vcard__btn vcard__btn--outline">Открыть</a>
-          </div>
-        </div>
-      </div>
-
+    <div class="video-grid" id="js-grid">
+      <p class="grid-state" id="js-grid-state">Загрузка…</p>
     </div>
   </div>
 </main>
@@ -575,25 +499,70 @@
 <script src="api.js"></script>
 <script>
 'use strict';
-guardPage('subscription');
+
+/* ── Category config ── */
+const _CAT = 'extra_maps';
+const _LABEL = 'Скачать материал';
+
+/* ── Nav ── */
 const navEl = document.getElementById('js-nav');
-window.addEventListener('scroll', () => {
-  navEl.classList.toggle('scrolled', window.scrollY > 8);
-}, { passive: true });
+window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', window.scrollY > 8), { passive: true });
 const burger = document.getElementById('js-burger');
 const drawer = document.getElementById('js-drawer');
 let drawerOpen = false;
 function setDrawer(v) {
-  drawerOpen = v;
-  burger.classList.toggle('open', v);
-  drawer.classList.toggle('open', v);
-  burger.setAttribute('aria-expanded', String(v));
-  document.body.style.overflow = v ? 'hidden' : '';
+  drawerOpen = v; burger.classList.toggle('open', v); drawer.classList.toggle('open', v);
+  burger.setAttribute('aria-expanded', String(v)); document.body.style.overflow = v ? 'hidden' : '';
 }
 burger.addEventListener('click', () => setDrawer(!drawerOpen));
-document.querySelectorAll('.nav__drawer a').forEach(a => {
-  a.addEventListener('click', () => setDrawer(false));
-});
+document.querySelectorAll('.nav__drawer a').forEach(a => a.addEventListener('click', () => setDrawer(false)));
+
+/* ── Helpers ── */
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+function renderDownloadCard(m) {
+  return `<div class="vcard">
+    <div class="vcard__thumb">
+      ${m.preview_url ? `<img src="${esc(m.preview_url)}" alt="" loading="lazy" />` : ''}
+    </div>
+    <div class="vcard__body">
+      <h2 class="vcard__title">${esc(m.title)}</h2>
+      ${m.description ? `<p class="vcard__desc">${esc(m.description)}</p>` : ''}
+      <div class="vcard__action">
+        ${m.download_url
+          ? `<a href="${esc(m.download_url)}" class="vcard__btn" target="_blank" rel="noopener noreferrer">
+               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M8 2v8m-4-4 4 4 4-4"/><path d="M3 13h10"/>
+               </svg>
+               ${esc(_LABEL)}
+             </a>`
+          : `<span style="font-size:13px;color:var(--c-dim);">Файл недоступен</span>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Load from API ── */
+async function loadMaterials() {
+  const grid      = document.getElementById('js-grid');
+  const stateEl   = document.getElementById('js-grid-state');
+
+  try {
+    const res  = await apiFetch(`/api/courses/materials?category=${_CAT}`);
+    if (!res.ok) { if (stateEl) stateEl.textContent = 'Ошибка загрузки.'; return; }
+    const { materials } = await res.json();
+
+    if (!materials.length) {
+      if (stateEl) stateEl.textContent = 'Материалов пока нет — следите за обновлениями.';
+      return;
+    }
+    grid.innerHTML = materials.map(renderDownloadCard).join('');
+  } catch {
+    if (stateEl) stateEl.textContent = 'Ошибка соединения. Попробуйте обновить страницу.';
+  }
+}
+
+guardPage('subscription').then(ok => { if (ok) loadMaterials(); });
 </script>
 </body>
 </html>

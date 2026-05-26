@@ -241,6 +241,40 @@ router.get('/orders', async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/courses/materials?category=maps|assets|extra_maps|extra_lessons
+//  Материалы по категории — только для активных подписчиков
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/materials', async (req, res, next) => {
+  const { category } = req.query;
+  const VALID = ['maps', 'assets', 'extra_maps', 'extra_lessons'];
+  if (!VALID.includes(category))
+    return res.status(400).json({ error: 'Неверная категория.' });
+
+  try {
+    // Проверяем активную подписку (admins не ограничены)
+    if (req.user.role !== 'admin') {
+      const { rows: sub } = await query(
+        `SELECT id FROM subscriptions
+         WHERE user_id = $1 AND status = 'active'
+           AND (expires_at IS NULL OR expires_at > NOW())`,
+        [req.user.id],
+      );
+      if (!sub.length)
+        return res.status(403).json({ error: 'Требуется активная подписка.' });
+    }
+
+    const { rows } = await query(
+      `SELECT id, title, description, preview_url, download_url
+       FROM materials WHERE category = $1 ORDER BY sort_order ASC`,
+      [category],
+    );
+    res.json({ materials: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  GET /api/courses/catalog-counts
 //  Количество материалов по каждой категории (для карточек subscription.html)
 // ─────────────────────────────────────────────────────────────────────────────
