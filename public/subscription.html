@@ -543,60 +543,66 @@
     <div class="catalog-grid">
 
       <!-- Готовые карты -->
-      <div class="cat-card" onclick="location.href='maps.html'" style="cursor:pointer">
+      <div class="cat-card" onclick="location.href='maps.html'">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
-          <span class="cat-card__count">315</span>
+          <span class="cat-card__time" id="js-time-maps"></span>
+          <span class="cat-card__count" id="js-count-maps">—</span>
         </div>
         <h2 class="cat-card__title">Готовые карты</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Скачивай и запускай в своём проекте: карты с разными механиками, уже настроенные и готовые к доработке под твою идею.</p>
       </div>
 
       <!-- Ассеты -->
-      <div class="cat-card" onclick="location.href='assets.html'" style="cursor:pointer">
+      <div class="cat-card" onclick="location.href='assets.html'">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
-          <span class="cat-card__count">315</span>
+          <span class="cat-card__time" id="js-time-assets"></span>
+          <span class="cat-card__count" id="js-count-assets">—</span>
         </div>
         <h2 class="cat-card__title">Ассеты</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Модели, текстуры и префабы — бери готовые элементы вместо создания с нуля и собирай карту в разы быстрее.</p>
       </div>
 
       <!-- Дополнительные материалы -->
-      <div class="cat-card" onclick="location.href='materials.html'" style="cursor:pointer">
+      <div class="cat-card" onclick="location.href='materials.html'">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
+          <span class="cat-card__time" id="js-time-extra_maps"></span>
+          <span class="cat-card__count" id="js-count-extra_maps">—</span>
         </div>
         <h2 class="cat-card__title">Дополнительные материалы для создания карт</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Гайды, схемы и справочники — закрывают пробелы там, где нужно понять конкретную механику глубже, чем в основном курсе.</p>
       </div>
 
       <!-- Дополнительные уроки -->
-      <div class="cat-card" onclick="location.href='lessons.html'" style="cursor:pointer">
+      <div class="cat-card" onclick="location.href='lessons.html'">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
-          <span class="cat-card__count">315</span>
+          <span class="cat-card__time" id="js-time-extra_lessons"></span>
+          <span class="cat-card__count" id="js-count-extra_lessons">—</span>
         </div>
         <h2 class="cat-card__title">Дополнительные уроки</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Уроки вне основной программы: продвинутые техники, нестандартные механики и разбор реальных проектов от команды.</p>
       </div>
 
       <!-- Закрытый Telegram-чат -->
-      <div class="cat-card">
+      <div class="cat-card" id="js-tg-card">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
+          <span class="cat-card__time"></span>
+          <!-- Telegram icon white -->
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0;opacity:.85">
+            <path d="M21.8 2.2 2.4 9.7c-1.3.5-1.3 1.3-.2 1.6l4.9 1.5 11.4-7.2c.5-.3 1-.1.6.2L8.5 15.5v3.6c0 .7.9 1 1.3.5l2.2-2.1 4.5 3.3c.8.5 1.4.2 1.6-.7L22.8 3.3c.3-1.2-.5-1.7-1-.9z" fill="white"/>
+          </svg>
         </div>
         <h2 class="cat-card__title">Закрытый Telegram-чат</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Общение с командой и другими участниками подписки: задавай вопросы, делись прогрессом и получай фидбек от тех, кто уже прошёл этот путь.</p>
       </div>
 
       <!-- Обновления -->
-      <div class="cat-card" onclick="location.href='updates.html'" style="cursor:pointer">
+      <div class="cat-card" onclick="location.href='updates.html'">
         <div class="cat-card__top">
-          <span class="cat-card__time">5 минут назад</span>
+          <span class="cat-card__time" id="js-time-updates"></span>
+          <span class="cat-card__count" id="js-count-updates">—</span>
         </div>
         <h2 class="cat-card__title">Обновления</h2>
-        <p class="cat-card__desc">Главное для новичка — быстро сделать первую карту, не застрять на сложных местах и понять, как выйти на публикацию и продвижение.</p>
+        <p class="cat-card__desc">Следи за изменениями в UEFN, новыми возможностями и советами от команды — чтобы не пропустить важное и всегда быть в теме.</p>
       </div>
 
     </div>
@@ -784,6 +790,34 @@ async function initPage() {
       b.style.display = '';
     });
   }
+
+  // Счётчики карточек из БД
+  loadCatalogCounts();
+}
+
+async function loadCatalogCounts() {
+  try {
+    const res  = await apiFetch('/api/courses/catalog-counts');
+    if (!res.ok) return;
+    const { counts } = await res.json();
+
+    // Категории с соответствующими id-элементами
+    const cats = ['maps', 'assets', 'extra_maps', 'extra_lessons', 'updates'];
+    for (const cat of cats) {
+      const countEl = document.getElementById(`js-count-${cat}`);
+      const timeEl  = document.getElementById(`js-time-${cat}`);
+      if (countEl) countEl.textContent = counts[cat] != null ? counts[cat] : '0';
+      if (timeEl)  timeEl.textContent  = counts[cat] > 0 ? pluralItems(counts[cat]) : '';
+    }
+  } catch { /* счётчики останутся "—" */ }
+}
+
+function pluralItems(n) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 14) return n + ' материалов';
+  if (mod10 === 1) return n + ' материал';
+  if (mod10 >= 2 && mod10 <= 4) return n + ' материала';
+  return n + ' материалов';
 }
 
 initPage();

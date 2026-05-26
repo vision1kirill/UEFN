@@ -240,4 +240,21 @@ router.get('/orders', async (req, res, next) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  GET /api/courses/catalog-counts
+//  Количество материалов по каждой категории (для карточек subscription.html)
+// ─────────────────────────────────────────────────────────────────────────────
+router.get('/catalog-counts', async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      `SELECT category, COUNT(*)::int AS cnt FROM materials GROUP BY category`,
+    );
+    const counts = {};
+    for (const r of rows) counts[r.category] = r.cnt;
+    res.json({ counts });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
