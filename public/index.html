@@ -206,6 +206,15 @@
       text-decoration: none;
     }
     .nav__btn-dark:hover { background: rgba(255,255,255,0.18); }
+    .nav__plan-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: 'Golos Text', sans-serif; font-size: 14px; font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(1,102,195,.20) 0%, rgba(59,207,254,.20) 100%);
+      border: 1px solid rgba(59,207,254,.18);
+      border-radius: 100px; padding: 10px 22px;
+      white-space: nowrap; text-decoration: none;
+    }
     .nav__btn-login {
       /* Скрыта по умолчанию — JS покажет только незалогиненным */
       display: none;
@@ -2534,7 +2543,11 @@
         const label = raw ? (PLAN_LABELS[raw.toLowerCase()] || raw) : null;
         if (label) {
           [tariffBtn, drawerTariffBtn].forEach(b => {
-            if (b) { b.textContent = label; b.href = 'course.html'; }
+            if (b) {
+              b.textContent = label;
+              b.href = 'course.html';
+              b.className = b.className.replace('nav__btn-dark', 'nav__plan-badge');
+            }
           });
         } else {
           // Нет курса — ведём на профиль
